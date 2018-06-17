@@ -9,6 +9,11 @@ public class Utility : MonoBehaviour {
     private bool fadeFlag;                                      //フェードイン・フェードアウト中か否か
     public bool pushObjectFlag;                                 //ボタンオブジェクトのタップ(true)か画面自体（ストーリー進行）のタップ(false)かの判定
     public bool selectFlag;                                     //選択待ち中、どれかが選択されたか否かの判定
+    public string[] scenarioText = new string[10000];           //シナリオテキスト保存変数
+    public AudioClip[] scenarioAudio = new AudioClip[10];       //シナリオＢＧＭ保存変数
+    public Sprite[] scenarioGraphic = new Sprite[100];          //シナリオ画像保存変数
+
+    const string _FILE_HEADER = "file://";                      //ファイル場所の頭
 
     // Use this for initialization
     void Start () {
@@ -81,20 +86,9 @@ public class Utility : MonoBehaviour {
         objBGM.GetComponent<AudioSource>().Play();
     }
 
-    //SEはシーンごとにオブジェクト作成するので（コンポーネントが複数個必要になる場合があるため）、AddComponentと同時にvolume操作を行う専用関数を作ってAddComponentの代わりに使用し、SEvolumeを反映させる。
-    public void SEAdd(GameObject obj)
+    public void SEPlay(AudioClip se)
     {
-        obj.AddComponent<AudioSource>();
-        AudioSource[] se = obj.GetComponents<AudioSource>();
-        for (int i = 0; i < se.Length; i++)
-        {
-            se[i].volume = PlayerPrefs.GetFloat("SEVolume", 0.8f);//addcomponentが複数あると重複処理することになるが、１関数にまとめた方が分かりやすい
-        }
-    }
-
-    public void SEPlay(GameObject obj ,AudioClip se)
-    {
-        obj.GetComponent<AudioSource>().PlayOneShot(se);
+        GetComponent<AudioSource>().PlayOneShot(se);
     }
 
     //画面が押されたかチェックするコルーチン
@@ -131,11 +125,17 @@ public class Utility : MonoBehaviour {
         }
     }
 
+    public int DiceRoll(int diceNum,int diceMax)
+    {
+        int x=0;
+        for (int i = 0; i < diceNum; i++) { x += Random.Range(0, diceMax)+1; }
+        return x;
+    }
+
     //URLへの遷移と、その前の演出等を見せるための待機をセットにしたコルーチン
     public IEnumerator GoToURL(string URL,float waitTime)
     {
         yield return new WaitForSeconds(waitTime);
         Application.OpenURL(URL);
     }
-
 }
