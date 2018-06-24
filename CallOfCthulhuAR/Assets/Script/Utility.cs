@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 [DefaultExecutionOrder(-1)]//utilityは他から引用されるのでstartを先行処理させる。
 public class Utility : MonoBehaviour {
-    private GameObject objBGM;                                  //BGMのオブジェクト
+    public GameObject objBGM;                                  //BGMのオブジェクト
     private bool fadeFlag;                                      //フェードイン・フェードアウト中か否か
     public bool pushObjectFlag;                                 //ボタンオブジェクトのタップ(true)か画面自体（ストーリー進行）のタップ(false)かの判定
     public bool selectFlag;                                     //選択待ち中、どれかが選択されたか否かの判定
@@ -50,7 +50,6 @@ public class Utility : MonoBehaviour {
 
     public IEnumerator BGMFadeOut(int time)
     {
-        ScenariosceneManager s1 = GetComponent<ScenariosceneManager>();
         while (fadeFlag == true) { yield return null; }//他でフェイドインフェイドアウト中なら待つ。
         fadeFlag = true;
         for (int i = 0; i < time; i++)
@@ -60,12 +59,11 @@ public class Utility : MonoBehaviour {
         }
         objBGM.GetComponent<AudioSource>().volume = 0f;//最終的には０に。（for文をi<=timeにするとtime=0で０除算が発生しうる構造になるので、最後のvol=0のみfor文から隔離）
         fadeFlag = false;
-        s1.sentenceEnd=true;
+        yield return null;
     }
 
     public IEnumerator BGMFadeIn(int time)
     {
-        ScenariosceneManager s1 = GetComponent<ScenariosceneManager>();
         while (fadeFlag == true) { yield return null; }//他でフェイドインフェイドアウト中なら待つ。
         fadeFlag = true;
         for (int i = 0; i < time; i++)
@@ -75,7 +73,7 @@ public class Utility : MonoBehaviour {
         }
         objBGM.GetComponent<AudioSource>().volume = PlayerPrefs.GetFloat("BGMVolume", 0.8f);//最終的には０に。（for文をi<=timeにするとtime=0で０除算が発生しうる構造になるので、最後のvol=BGMVolumeのみfor文から隔離）
         fadeFlag = false;
-        s1.sentenceEnd = true;
+        yield return null;
     }
 
     public void BGMPlay(AudioClip bgm)
@@ -92,7 +90,6 @@ public class Utility : MonoBehaviour {
     //画面が押されたかチェックするコルーチン
     public IEnumerator PushWait()
     {
-        ScenariosceneManager s1 = GetComponent<ScenariosceneManager>();
         while (true)//ブレークするまでループを続ける。
         {
             if (Input.GetMouseButtonDown(0) == true)
@@ -100,7 +97,6 @@ public class Utility : MonoBehaviour {
                 yield return null;//本体に処理を返して他のオブジェクトのイベントトリガーを確認。
                 if (pushObjectFlag == false)//フラグが立っていたらオブジェクト処理のためのタップだったと判定。
                 {
-                    s1.sentenceEnd = true;
                     yield break;//falseならコルーチン脱出
                 }
                 else
