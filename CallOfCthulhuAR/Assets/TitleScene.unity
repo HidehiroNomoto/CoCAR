@@ -893,7 +893,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u30B7\u30CA\u30EA\u30AA\u3092\u63A2\u3059"
+  m_Text: "\u63A2\u7D22\u8005\u4F5C\u6210"
 --- !u!222 &674703088
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1626,6 +1626,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: baec54ceda222624aafab7742c381fcf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  objBGM: {fileID: 0}
   pushObjectFlag: 0
   selectFlag: 0
 --- !u!1 &1790610473
@@ -1708,7 +1709,7 @@ GameObject:
   - component: {fileID: 1861726690}
   - component: {fileID: 1861726689}
   m_Layer: 5
-  m_Name: SearchButton
+  m_Name: CharacterButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1773,7 +1774,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1694972840}
-        m_MethodName: PushSearchButton
+        m_MethodName: PushCharacterButton
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

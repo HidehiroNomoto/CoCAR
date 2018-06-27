@@ -59,10 +59,44 @@ public class ScenariosceneManager : MonoBehaviour
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Item:") { ItemDraw(int.Parse(scenarioText[i].Substring(5))); sentenceEnd = true; }
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Shake") { StartCoroutine(ShakeScreen()); }
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Jump:") { StartCoroutine(CharacterJump(int.Parse(scenarioText[i].Substring(5, 1)))); }
+            if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Hantei:") { Hantei(50); StartCoroutine(PushWait()); }
             while (sentenceEnd == false) { yield return null; }
             objBackText.gameObject.SetActive(false);//背景テキストは出っ放しにならない
         }
     }
+
+    private int Hantei(int target)
+    {
+        int dice;
+        Utility u1 = GetComponent<Utility>();
+        objTextBox.gameObject.SetActive(true);
+        dice =u1.DiceRoll(1, 100);
+        if (dice > target)
+        {
+            objText.GetComponent<Text>().text = "<color=#ff0000ff>DiceRoll:1D100→  " + dice.ToString() + " > " + target.ToString() + "   （失敗）</color>";
+            if (dice > 95)
+            {
+                objText.GetComponent<Text>().text = "<color=#990000ff>DiceRoll:1D100→  " + dice.ToString() + " >> " + target.ToString() + "   （大失敗）</color>";
+                return -2;
+            }
+            return -1;
+        }
+        if (dice <= target)
+        {
+            objText.GetComponent<Text>().text = "<color=#000099ff>DiceRoll:1D100→  " + dice.ToString() + " <= " + target.ToString() + "   （成功）</color>";
+            objText.GetComponent<Text>().color = new Color(0.2f, 0.2f, 1.0f);
+            if (dice <= 5)
+            {
+                objText.GetComponent<Text>().text = "<color=#0000ffff>DiceRoll:1D100→  " + dice.ToString() + " << " + target.ToString() + "   （大成功）</color>";
+                objText.GetComponent<Text>().color = new Color(0.4f, 0.4f, 1.0f);
+                return 2;
+            }
+            return 1;
+        }
+        return 0;
+    }
+
+
 
     private void TextDraw(string text)
     {

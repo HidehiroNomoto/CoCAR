@@ -28,12 +28,12 @@ public class TitleManager : MonoBehaviour {
 
     public void PushStartButton()
     {
-        GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "CharacterSheet");
+        GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "ScenarioScene");
     }
 
-    public void PushSearchButton()
+    public void PushCharacterButton()
     {
-        GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "SearchScene");
+        GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "CharacterSheet");
     }
 
     public void PushMaskButton()
