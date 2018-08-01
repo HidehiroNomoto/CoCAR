@@ -18,6 +18,10 @@ public class ScenariosceneManager : MonoBehaviour
     GameObject objBackText;
     GameObject objItem;
     GameObject objCanvas;
+    GameObject[] objBox=new GameObject[4];
+    public int selectNum=1;
+    public string[] buttonText = new string[4];
+    public string[] hanteiText = new string[2];
     const string _FILE_HEADER = "C:\\Users\\hoto\\Documents\\GitHub\\CoCAR\\CallOfCthulhuAR\\Assets\\Scenario\\";                      //ファイル場所の頭
     const int CHARACTER_Y = -300;
 
@@ -32,6 +36,7 @@ public class ScenariosceneManager : MonoBehaviour
         objBackText = GameObject.Find("BackText").gameObject as GameObject; objBackText.gameObject.SetActive(false);
         objItem = GameObject.Find("Item").gameObject as GameObject; objItem.gameObject.SetActive(false);
         objCanvas = GameObject.Find("CanvasDraw").gameObject as GameObject;
+        for (int i = 0; i < 4; i++) { objBox[i] = GameObject.Find("select" + (i + 1).ToString()).gameObject as GameObject; objBox[i].gameObject.SetActive(false); }
         StartCoroutine(MainCoroutine());
     }
 
@@ -45,8 +50,9 @@ public class ScenariosceneManager : MonoBehaviour
     //ノベルゲーム処理
     private IEnumerator NovelGame()
     {
-        for (int i = 1; i < 10000; i++)
+        for (int i = 1; i < 100; i++)
         {
+            for (int j = 0; j < 4; j++) { buttonText[j] = null; }
             sentenceEnd = false;
             if (scenarioText[i] == "[END]") { break; }
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Text:") { TextDraw(scenarioText[i].Substring(5)); StartCoroutine(PushWait()); }
@@ -59,37 +65,118 @@ public class ScenariosceneManager : MonoBehaviour
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Item:") { ItemDraw(int.Parse(scenarioText[i].Substring(5))); sentenceEnd = true; }
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Shake") { StartCoroutine(ShakeScreen()); }
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Jump:") { StartCoroutine(CharacterJump(int.Parse(scenarioText[i].Substring(5, 1)))); }
-            if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Hantei:") { Hantei(50); StartCoroutine(PushWait()); }
+            if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Select:") { buttonText=scenarioText[i].Substring(7).Split(','); StartCoroutine(Select(buttonText[0],buttonText[1],buttonText[2],buttonText[3].Replace("\r", "").Replace("\n", ""))); while (sentenceEnd == false) { yield return null; };i += selectNum;continue; }
+            if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "NextFile:") { yield return StartCoroutine(LoadFile(scenarioText[i].Substring(9).Replace("\r", "").Replace("\n", "")));i = 0;sentenceEnd = true; }
+            if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Hantei:") { hanteiText=scenarioText[i].Substring(7).Split(','); i += Hantei(hanteiText[0],int.Parse(hanteiText[1].Replace("\r", "").Replace("\n", ""))); StartCoroutine(PushWait()); }
             while (sentenceEnd == false) { yield return null; }
             objBackText.gameObject.SetActive(false);//背景テキストは出っ放しにならない
         }
     }
 
-    private int Hantei(int target)
+    public void SelePush(int selectnum)
+    {
+        selectNum=selectnum;
+    }
+
+    private IEnumerator Select(string choiceA,string choiceB,string choiceC,string choiceD)
+    {
+        objBox[0].gameObject.SetActive(true); objBox[0].GetComponentInChildren<Text>().text = choiceA;
+        if (choiceB.Length>0) { objBox[1].gameObject.SetActive(true); objBox[1].GetComponentInChildren<Text>().text = choiceB; }
+        if (choiceC.Length>0) { objBox[2].gameObject.SetActive(true); objBox[2].GetComponentInChildren<Text>().text = choiceC; }
+        if (choiceD.Length>0) { objBox[3].gameObject.SetActive(true); objBox[3].GetComponentInChildren<Text>().text = choiceD; }
+        //ボタンがクリックされるまでループ。
+        selectNum = 0;
+        while (selectNum == 0)
+        {
+            yield return null;
+        }
+        for (int i = 0; i < 4; i++) { objBox[i].gameObject.SetActive(false); }
+        sentenceEnd = true;
+    }
+
+    private int Hantei(string targetStr,int bonus)
     {
         int dice;
+        int target=0;
+        string bonusStr="";
+        if (targetStr == "言いくるめ") { target=PlayerPrefs.GetInt("Skill0",target); }
+        if (targetStr == "医学") { target=PlayerPrefs.GetInt("Skill1", target); }
+        if (targetStr == "運転") { target=PlayerPrefs.GetInt("Skill2", target); }
+        if (targetStr == "応急手当") { target=PlayerPrefs.GetInt("Skill3", target); }
+        if (targetStr == "オカルト") { target=PlayerPrefs.GetInt("Skill4", target); }
+        if (targetStr == "回避") { target=PlayerPrefs.GetInt("Skill5", target); }
+        if (targetStr == "化学") { target=PlayerPrefs.GetInt("Skill6", target); }
+        if (targetStr == "鍵開け") { target=PlayerPrefs.GetInt("Skill7", target); }
+        if (targetStr == "隠す") { target=PlayerPrefs.GetInt("Skill8", target); }
+        if (targetStr == "隠れる") { target=PlayerPrefs.GetInt("Skill9", target); }
+        if (targetStr == "機械修理") { target=PlayerPrefs.GetInt("Skill10", target); }
+        if (targetStr == "聞き耳") { target=PlayerPrefs.GetInt("Skill11", target); }
+        if (targetStr == "芸術") { target=PlayerPrefs.GetInt("Skill12", target); }
+        if (targetStr == "経理") { target=PlayerPrefs.GetInt("Skill13", target); }
+        if (targetStr == "考古学") { target=PlayerPrefs.GetInt("Skill14", target); }
+        if (targetStr == "コンピューター") { target=PlayerPrefs.GetInt("Skill15", target); }
+        if (targetStr == "忍び歩き") { target=PlayerPrefs.GetInt("Skill16", target); }
+        if (targetStr == "写真術") { target=PlayerPrefs.GetInt("Skill17", target); }
+        if (targetStr == "重機械操作") { target=PlayerPrefs.GetInt("Skill18", target); }
+        if (targetStr == "乗馬") { target=PlayerPrefs.GetInt("Skill19", target); }
+        if (targetStr == "信用") { target=PlayerPrefs.GetInt("Skill20", target); }
+        if (targetStr == "心理学") { target=PlayerPrefs.GetInt("Skill21", target); }
+        if (targetStr == "人類学") { target=PlayerPrefs.GetInt("Skill22", target); }
+        if (targetStr == "水泳") { target=PlayerPrefs.GetInt("Skill23", target); }
+        if (targetStr == "製作") { target=PlayerPrefs.GetInt("Skill24", target); }
+        if (targetStr == "精神分析") { target=PlayerPrefs.GetInt("Skill25", target); }
+        if (targetStr == "生物学") { target=PlayerPrefs.GetInt("Skill26", target); }
+        if (targetStr == "説得") { target=PlayerPrefs.GetInt("Skill27", target); }
+        if (targetStr == "操縦") { target=PlayerPrefs.GetInt("Skill28", target); }
+        if (targetStr == "地質学") { target=PlayerPrefs.GetInt("Skill29", target); }
+        if (targetStr == "跳躍") { target=PlayerPrefs.GetInt("Skill30", target); }
+        if (targetStr == "追跡") { target=PlayerPrefs.GetInt("Skill31", target); }
+        if (targetStr == "電気修理") { target=PlayerPrefs.GetInt("Skill32", target); }
+        if (targetStr == "電子工学") { target=PlayerPrefs.GetInt("Skill33", target); }
+        if (targetStr == "天文学") { target=PlayerPrefs.GetInt("Skill34", target); }
+        if (targetStr == "投擲") { target=PlayerPrefs.GetInt("Skill35", target); }
+        if (targetStr == "登攀") { target=PlayerPrefs.GetInt("Skill36", target); }
+        if (targetStr == "図書館") { target=PlayerPrefs.GetInt("Skill37", target); }
+        if (targetStr == "ナビゲート") { target=PlayerPrefs.GetInt("Skill38", target); }
+        if (targetStr == "値切り") { target=PlayerPrefs.GetInt("Skill39", target); }
+        if (targetStr == "博物学") { target=PlayerPrefs.GetInt("Skill40", target); }
+        if (targetStr == "物理学") { target=PlayerPrefs.GetInt("Skill41", target); }
+        if (targetStr == "変装") { target=PlayerPrefs.GetInt("Skill42", target); }
+        if (targetStr == "法律") { target=PlayerPrefs.GetInt("Skill43", target); }
+        if (targetStr == "ほかの言語") { target=PlayerPrefs.GetInt("Skill44", target); }
+        if (targetStr == "母国語") { target=PlayerPrefs.GetInt("Skill45", target); }
+        if (targetStr == "マーシャルアーツ") { target=PlayerPrefs.GetInt("Skill46", target); }
+        if (targetStr == "目星") { target=PlayerPrefs.GetInt("Skill47", target); }
+        if (targetStr == "薬学") { target=PlayerPrefs.GetInt("Skill48", target); }
+        if (targetStr == "歴史") { target=PlayerPrefs.GetInt("Skill49", target); }
+        if (targetStr == "火器") { target=PlayerPrefs.GetInt("Skill50", target); }
+        if (targetStr == "格闘") { target=PlayerPrefs.GetInt("Skill51", target); }
+        if (targetStr == "武器術") { target=PlayerPrefs.GetInt("Skill52", target); }
+        if (targetStr == "クトゥルフ神話") { target=PlayerPrefs.GetInt("Skill53", target); }
+
+        if (bonus > 0) { bonusStr = " + " + bonus.ToString(); }
+        if (bonus < 0) { bonusStr = " - " + (-1*bonus).ToString(); }
+
         Utility u1 = GetComponent<Utility>();
         objTextBox.gameObject.SetActive(true);
         dice =u1.DiceRoll(1, 100);
-        if (dice > target)
+        if (dice > target + bonus)
         {
-            objText.GetComponent<Text>().text = "<color=#ff0000ff>DiceRoll:1D100→  " + dice.ToString() + " > " + target.ToString() + "   （失敗）</color>";
+            objText.GetComponent<Text>().text = "<color=#ff0000ff>[DiceRoll]\n1D100→　" + dice.ToString() + " > " + target.ToString() + bonusStr + " (<" + targetStr + ">" + bonusStr + ")\n<size=72>（失敗）</size></color>";
             if (dice > 95)
             {
-                objText.GetComponent<Text>().text = "<color=#990000ff>DiceRoll:1D100→  " + dice.ToString() + " >> " + target.ToString() + "   （大失敗）</color>";
-                return -2;
+                objText.GetComponent<Text>().text = "<color=#990000ff>DiceRoll:1D100→  " + dice.ToString() + " >> " + target.ToString() + bonusStr + "\n　　　　　　　　" + targetStr + bonusStr + "   （大失敗）</color>";
+                return 3;
             }
-            return -1;
+            return 2;
         }
-        if (dice <= target)
+        if (dice <= target+ bonus)
         {
-            objText.GetComponent<Text>().text = "<color=#000099ff>DiceRoll:1D100→  " + dice.ToString() + " <= " + target.ToString() + "   （成功）</color>";
-            objText.GetComponent<Text>().color = new Color(0.2f, 0.2f, 1.0f);
+            objText.GetComponent<Text>().text = "<color=#000099ff>DiceRoll:1D100→  " + dice.ToString() + " <= " + target.ToString() + bonusStr + "\n　　　　　　　　" + targetStr + bonusStr + "   （成功）</color>";
             if (dice <= 5)
             {
-                objText.GetComponent<Text>().text = "<color=#0000ffff>DiceRoll:1D100→  " + dice.ToString() + " << " + target.ToString() + "   （大成功）</color>";
-                objText.GetComponent<Text>().color = new Color(0.4f, 0.4f, 1.0f);
-                return 2;
+                objText.GetComponent<Text>().text = "<color=#0000ffff>DiceRoll:1D100→  " + dice.ToString() + " << " + target.ToString() + bonusStr + "\n　　　　　　　　" + targetStr + bonusStr + "   （大成功）</color>";
+                return 0;
             }
             return 1;
         }
@@ -343,7 +430,6 @@ public class ScenariosceneManager : MonoBehaviour
             }
         }
     }
-    //データを２重で読み込んでる。なぜ？
 
 
 

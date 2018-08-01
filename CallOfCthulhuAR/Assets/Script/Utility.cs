@@ -26,8 +26,6 @@ public class Utility : MonoBehaviour {
     public IEnumerator LoadSceneCoroutine(string scene)
     {
         SEPlay(Resources.Load<AudioClip>("pera"));
-        yield return new WaitForSeconds(0.2f);//操作感のために僅かにウェイトを持たせる。
-        GameObject.Find("NowLoading").GetComponent<Image>().enabled = true;
         SceneManager.LoadScene(scene);
         yield return null;
     }
