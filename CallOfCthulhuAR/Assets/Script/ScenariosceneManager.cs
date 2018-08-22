@@ -18,7 +18,13 @@ public class ScenariosceneManager : MonoBehaviour
     GameObject objBackText;
     GameObject objItem;
     GameObject objCanvas;
+    GameObject objRollText;
+    GameObject[] objDice = new GameObject[2];
     GameObject[] objBox=new GameObject[4];
+    public Sprite[] moveDice10Graphic = new Sprite[7];
+    public Sprite[] dice10Graphic = new Sprite[10];
+    public Sprite[] moveDice6Graphic = new Sprite[8];
+    public Sprite[] dice6Graphic = new Sprite[6];
     public int selectNum=1;
     public string[] buttonText = new string[4];
     public string[] hanteiText = new string[2];
@@ -28,6 +34,7 @@ public class ScenariosceneManager : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        objRollText = GameObject.Find("Rolltext").gameObject as GameObject; objRollText.gameObject.SetActive(false);
         obj = GameObject.Find("error").gameObject as GameObject;
         for (int i = 0; i < 5; i++) { objCharacter[i] = GameObject.Find("Chara" + (i + 1).ToString()).gameObject as GameObject; objCharacter[i].gameObject.SetActive(false); }
         objText = GameObject.Find("MainText").gameObject as GameObject;
@@ -37,6 +44,7 @@ public class ScenariosceneManager : MonoBehaviour
         objItem = GameObject.Find("Item").gameObject as GameObject; objItem.gameObject.SetActive(false);
         objCanvas = GameObject.Find("CanvasDraw").gameObject as GameObject;
         for (int i = 0; i < 4; i++) { objBox[i] = GameObject.Find("select" + (i + 1).ToString()).gameObject as GameObject; objBox[i].gameObject.SetActive(false); }
+        for (int i = 0; i < 2; i++) { objDice[i] = GameObject.Find("Dice" + (i + 1).ToString()).gameObject as GameObject; objDice[i].gameObject.SetActive(false); }
         StartCoroutine(MainCoroutine());
     }
 
@@ -70,6 +78,8 @@ public class ScenariosceneManager : MonoBehaviour
             if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Hantei:") { hanteiText=scenarioText[i].Substring(7).Split(','); i += Hantei(hanteiText[0],int.Parse(hanteiText[1].Replace("\r", "").Replace("\n", ""))); StartCoroutine(PushWait()); }
             while (sentenceEnd == false) { yield return null; }
             objBackText.gameObject.SetActive(false);//背景テキストは出っ放しにならない
+            for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
+            objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
         }
     }
 
@@ -85,8 +95,8 @@ public class ScenariosceneManager : MonoBehaviour
         if (choiceC.Length>0) { objBox[2].gameObject.SetActive(true); objBox[2].GetComponentInChildren<Text>().text = choiceC; }
         if (choiceD.Length>0) { objBox[3].gameObject.SetActive(true); objBox[3].GetComponentInChildren<Text>().text = choiceD; }
         //ボタンがクリックされるまでループ。
-        selectNum = 0;
-        while (selectNum == 0)
+        selectNum = -1;
+        while (selectNum == -1)
         {
             yield return null;
         }
@@ -156,10 +166,13 @@ public class ScenariosceneManager : MonoBehaviour
 
         if (bonus > 0) { bonusStr = " + " + bonus.ToString(); }
         if (bonus < 0) { bonusStr = " - " + (-1*bonus).ToString(); }
-
+        objRollText.gameObject.SetActive(true);
+        objRollText.GetComponent<Text>().text = targetStr + "\n" + "<color=#88ff88ff>" + target.ToString() + "</color>";
         Utility u1 = GetComponent<Utility>();
         objTextBox.gameObject.SetActive(true);
         dice =u1.DiceRoll(1, 100);
+        if (dice != 100) { StartCoroutine(DiceEffect(0, 10, dice / 10)); } else { StartCoroutine(DiceEffect(0, 10, 0)); }
+        StartCoroutine(DiceEffect(1, 10, dice % 10));
         if (dice > target + bonus)
         {
             objText.GetComponent<Text>().text = "<color=#ff0000ff>[DiceRoll]\n1D100→　" + dice.ToString() + " > " + target.ToString() + bonusStr + " (<" + targetStr + ">" + bonusStr + ")\n<size=72>（失敗）</size></color>";
@@ -182,6 +195,32 @@ public class ScenariosceneManager : MonoBehaviour
         }
         return 0;
     }
+
+    private IEnumerator DiceEffect(int dicenum,int dicetype,int num)
+    {
+        objDice[dicenum].gameObject.SetActive(true);
+
+        if (dicetype == 10)
+        {
+            for (int i = 0; i < 7; i++)
+            {
+                objDice[dicenum].GetComponent<Image>().sprite = moveDice10Graphic[i];
+                for (int j = 0; j < 6; j++) { yield return null; }
+            }
+            objDice[dicenum].GetComponent<Image>().sprite = dice10Graphic[num];
+
+        }
+        if (dicetype == 6)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                objDice[dicenum].GetComponent<Image>().sprite = moveDice6Graphic[i];
+                for (int j = 0; j < 6; j++) { yield return null; }
+            }
+            objDice[dicenum].GetComponent<Image>().sprite = dice6Graphic[num];
+        }
+    }
+
 
 
 
