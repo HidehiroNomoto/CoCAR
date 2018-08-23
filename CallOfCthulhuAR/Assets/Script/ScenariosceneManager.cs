@@ -19,6 +19,7 @@ public class ScenariosceneManager : MonoBehaviour
     GameObject objItem;
     GameObject objCanvas;
     GameObject objRollText;
+    GameObject objName;
     GameObject[] objDice = new GameObject[2];
     GameObject[] objBox=new GameObject[4];
     public Sprite[] moveDice10Graphic = new Sprite[7];
@@ -28,12 +29,14 @@ public class ScenariosceneManager : MonoBehaviour
     public int selectNum=1;
     public string[] buttonText = new string[4];
     public string[] hanteiText = new string[2];
+    public string[] serifuText = new string[2];
     const string _FILE_HEADER = "C:\\Users\\hoto\\Documents\\GitHub\\CoCAR\\CallOfCthulhuAR\\Assets\\Scenario\\";                      //ファイル場所の頭
     const int CHARACTER_Y = -300;
 
     // Use this for initialization
     void Start()
     {
+        objName= GameObject.Find("CharacterName").gameObject as GameObject;
         objRollText = GameObject.Find("Rolltext").gameObject as GameObject; objRollText.gameObject.SetActive(false);
         obj = GameObject.Find("error").gameObject as GameObject;
         for (int i = 0; i < 5; i++) { objCharacter[i] = GameObject.Find("Chara" + (i + 1).ToString()).gameObject as GameObject; objCharacter[i].gameObject.SetActive(false); }
@@ -63,7 +66,7 @@ public class ScenariosceneManager : MonoBehaviour
             for (int j = 0; j < 4; j++) { buttonText[j] = null; }
             sentenceEnd = false;
             if (scenarioText[i] == "[END]") { break; }
-            if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Text:") { TextDraw(scenarioText[i].Substring(5)); StartCoroutine(PushWait()); }
+            if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Text:") {serifuText=scenarioText[i].Substring(5).Split(','); ; TextDraw(serifuText[0],serifuText[1]); StartCoroutine(PushWait()); }
             if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "BackText:") { BackTextDraw(scenarioText[i].Substring(9)); StartCoroutine(PushWait()); }
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Back:") { BackDraw(int.Parse(scenarioText[i].Substring(5))); sentenceEnd = true; }
             if (scenarioText[i].Length > 4 && scenarioText[i].Substring(0, 4) == "BGM:") { BGMIn(int.Parse(scenarioText[i].Substring(4, 4))); BGMPlay(int.Parse(scenarioText[i].Substring(9))); sentenceEnd = true; }
@@ -75,7 +78,7 @@ public class ScenariosceneManager : MonoBehaviour
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Jump:") { StartCoroutine(CharacterJump(int.Parse(scenarioText[i].Substring(5, 1)))); }
             if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Select:") { buttonText=scenarioText[i].Substring(7).Split(','); StartCoroutine(Select(buttonText[0],buttonText[1],buttonText[2],buttonText[3].Replace("\r", "").Replace("\n", ""))); while (sentenceEnd == false) { yield return null; };i += selectNum;continue; }
             if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "NextFile:") { yield return StartCoroutine(LoadFile(scenarioText[i].Substring(9).Replace("\r", "").Replace("\n", "")));i = 0;sentenceEnd = true; }
-            if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Hantei:") { hanteiText=scenarioText[i].Substring(7).Split(','); i += Hantei(hanteiText[0],int.Parse(hanteiText[1].Replace("\r", "").Replace("\n", ""))); StartCoroutine(PushWait()); }
+            if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Hantei:") { hanteiText=scenarioText[i].Substring(7).Split(','); i += Hantei(hanteiText[0],int.Parse(hanteiText[1].Replace("\r", "").Replace("\n", ""))); while (sentenceEnd == false) { yield return null; };sentenceEnd = false; StartCoroutine(PushWait()); }
             while (sentenceEnd == false) { yield return null; }
             objBackText.gameObject.SetActive(false);//背景テキストは出っ放しにならない
             for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
@@ -173,22 +176,19 @@ public class ScenariosceneManager : MonoBehaviour
         dice =u1.DiceRoll(1, 100);
         if (dice != 100) { StartCoroutine(DiceEffect(0, 10, dice / 10)); } else { StartCoroutine(DiceEffect(0, 10, 0)); }
         StartCoroutine(DiceEffect(1, 10, dice % 10));
+        StartCoroutine(DiceText(dice, target, bonus,targetStr,bonusStr));
         if (dice > target + bonus)
         {
-            objText.GetComponent<Text>().text = "<color=#ff0000ff>[DiceRoll]\n1D100→　" + dice.ToString() + " > " + target.ToString() + bonusStr + " (<" + targetStr + ">" + bonusStr + ")\n<size=72>（失敗）</size></color>";
             if (dice > 95)
             {
-                objText.GetComponent<Text>().text = "<color=#990000ff>DiceRoll:1D100→  " + dice.ToString() + " >> " + target.ToString() + bonusStr + "\n　　　　　　　　" + targetStr + bonusStr + "   （大失敗）</color>";
                 return 3;
             }
             return 2;
         }
         if (dice <= target+ bonus)
         {
-            objText.GetComponent<Text>().text = "<color=#000099ff>DiceRoll:1D100→  " + dice.ToString() + " <= " + target.ToString() + bonusStr + "\n　　　　　　　　" + targetStr + bonusStr + "   （成功）</color>";
             if (dice <= 5)
             {
-                objText.GetComponent<Text>().text = "<color=#0000ffff>DiceRoll:1D100→  " + dice.ToString() + " << " + target.ToString() + bonusStr + "\n　　　　　　　　" + targetStr + bonusStr + "   （大成功）</color>";
                 return 0;
             }
             return 1;
@@ -196,7 +196,30 @@ public class ScenariosceneManager : MonoBehaviour
         return 0;
     }
 
-    private IEnumerator DiceEffect(int dicenum,int dicetype,int num)
+    private IEnumerator DiceText(int dice, int target, int bonus,string targetStr,string bonusStr)
+    {
+        for (int j = 0; j < 50; j++) { yield return null; }
+        if (dice > target + bonus)
+        {
+            objText.GetComponent<Text>().text = "<color=#ff0000ff>[DiceRoll]\n1D100→　" + dice.ToString() + " > " + target.ToString() + bonusStr + " (<" + targetStr + ">" + bonusStr + ")\n<size=72>（失敗）</size></color>";
+            if (dice > 95)
+            {
+                objText.GetComponent<Text>().text = "<color=#990000ff>DiceRoll:1D100→  " + dice.ToString() + " >> " + target.ToString() + bonusStr + "\n　　　　　　　　" + targetStr + bonusStr + "   （大失敗）</color>";
+            }
+        }
+        if (dice <= target + bonus)
+        {
+            objText.GetComponent<Text>().text = "<color=#000099ff>DiceRoll:1D100→  " + dice.ToString() + " <= " + target.ToString() + bonusStr + "\n　　　　　　　　" + targetStr + bonusStr + "   （成功）</color>";
+            if (dice <= 5)
+            {
+                objText.GetComponent<Text>().text = "<color=#0000ffff>DiceRoll:1D100→  " + dice.ToString() + " << " + target.ToString() + bonusStr + "\n　　　　　　　　" + targetStr + bonusStr + "   （大成功）</color>";
+            }
+        }
+        sentenceEnd = true;
+    }
+
+
+        private IEnumerator DiceEffect(int dicenum,int dicetype,int num)
     {
         objDice[dicenum].gameObject.SetActive(true);
 
@@ -224,10 +247,11 @@ public class ScenariosceneManager : MonoBehaviour
 
 
 
-    private void TextDraw(string text)
+    private void TextDraw(string name,string text)
     {
         objTextBox.gameObject.SetActive(true);
         objText.GetComponent<Text>().text = text;
+        objName.GetComponent<Text>().text = name;
     }
 
     private void BackTextDraw(string text)

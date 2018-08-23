@@ -2674,6 +2674,9 @@ MonoBehaviour:
   hanteiText:
   - 
   - 
+  serifuText:
+  - 
+  - 
 --- !u!114 &1608122640
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3510,6 +3513,7 @@ GameObject:
   - component: {fileID: 2059522593}
   - component: {fileID: 2059522595}
   - component: {fileID: 2059522594}
+  - component: {fileID: 2059522596}
   m_Layer: 5
   m_Name: CharacterName
   m_TagString: Untagged
@@ -3556,12 +3560,12 @@ MonoBehaviour:
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_FontData:
     m_Font: {fileID: 12800000, guid: 482c194c7c59a5140af0f09e1dd24c17, type: 3}
-    m_FontSize: 48
+    m_FontSize: 64
     m_FontStyle: 0
     m_BestFit: 0
-    m_MinSize: 2
-    m_MaxSize: 48
-    m_Alignment: 0
+    m_MinSize: 0
+    m_MaxSize: 64
+    m_Alignment: 3
     m_AlignByGeometry: 0
     m_RichText: 1
     m_HorizontalOverflow: 0
@@ -3574,3 +3578,17 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2059522592}
+--- !u!114 &2059522596
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2059522592}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1573420865, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_EffectColor: {r: 1, g: 1, b: 1, a: 1}
+  m_EffectDistance: {x: 2, y: -2}
+  m_UseGraphicAlpha: 1
