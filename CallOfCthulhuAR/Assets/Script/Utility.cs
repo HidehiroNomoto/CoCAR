@@ -82,6 +82,7 @@ public class Utility : MonoBehaviour {
 
     public void SEPlay(AudioClip se)
     {
+        GetComponent<AudioSource>().volume = PlayerPrefs.GetFloat("SEVolume", 0.8f);
         GetComponent<AudioSource>().PlayOneShot(se);
     }
 
