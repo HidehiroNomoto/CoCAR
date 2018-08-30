@@ -156,7 +156,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -404,7 +404,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -478,7 +478,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -1250,7 +1250,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -2631,6 +2631,7 @@ MonoBehaviour:
   - 
   sentenceEnd: 0
   pushObjectFlag: 0
+  battleFlag: -10
   systemAudio:
   - {fileID: 0}
   - {fileID: 0}
@@ -2678,17 +2679,6 @@ MonoBehaviour:
   - {fileID: 21300000, guid: f1bc6ed5b004e144ab8a8e24ebdb1935, type: 3}
   - {fileID: 21300000, guid: a0ac499ddb71969458ce811f2ecceb6c, type: 3}
   selectNum: 1
-  buttonText:
-  - 
-  - 
-  - 
-  - 
-  hanteiText:
-  - 
-  - 
-  serifuText:
-  - 
-  - 
 --- !u!114 &1608122640
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -25,7 +25,6 @@ public class Utility : MonoBehaviour {
 
     public IEnumerator LoadSceneCoroutine(string scene)
     {
-        SEPlay(Resources.Load<AudioClip>("pera"));
         SceneManager.LoadScene(scene);
         yield return null;
     }
