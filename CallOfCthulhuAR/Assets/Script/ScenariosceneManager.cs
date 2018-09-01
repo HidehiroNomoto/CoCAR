@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
-//戦闘(ステータス)、フラグ管理、時間利用処理（マップ側）、マップとシナリオシーンの連携、文字入力
+//フラグ管理、時間利用処理（マップ側）、マップとシナリオシーンの連携、文字入力、呪文（戦闘用）
 
 
 public class ScenariosceneManager : MonoBehaviour
@@ -31,6 +31,8 @@ public class ScenariosceneManager : MonoBehaviour
     public Sprite[] dice10Graphic = new Sprite[10];
     public Sprite[] moveDice6Graphic = new Sprite[8];
     public Sprite[] dice6Graphic = new Sprite[6];
+    public Sprite[] moveDice4Graphic = new Sprite[7];
+    public Sprite[] dice4Graphic = new Sprite[4];
     public int selectNum=1;
     const string _FILE_HEADER = "C:\\Users\\hoto\\Documents\\GitHub\\CoCAR\\CallOfCthulhuAR\\Assets\\Scenario\\";                      //ファイル場所の頭
     const int CHARACTER_Y = -300;
@@ -89,7 +91,7 @@ public class ScenariosceneManager : MonoBehaviour
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Item:") { ItemDraw(int.Parse(scenarioText[i].Substring(5))); sentenceEnd = true; }
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Shake") { StartCoroutine(ShakeScreen()); }
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Jump:") { StartCoroutine(CharacterJump(int.Parse(scenarioText[i].Substring(5, 1)))); }
-            if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Select:") { buttonText = scenarioText[i].Substring(7).Split(','); StartCoroutine(Select(buttonText[0], buttonText[1], buttonText[2], buttonText[3].Replace("\r", "").Replace("\n", ""))); while (sentenceEnd == false) { yield return null; }; SystemSEPlay(systemAudio[3]); i += selectNum; continue; }
+            if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Select:") { buttonText = scenarioText[i].Substring(7).Split(','); StartCoroutine(Select(buttonText[0], buttonText[1], buttonText[2], buttonText[3].Replace("\r", "").Replace("\n", ""),false)); while (sentenceEnd == false) { yield return null; }; SystemSEPlay(systemAudio[3]); i += selectNum; continue; }
             if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "NextFile:") { yield return StartCoroutine(LoadFile(scenarioText[i].Substring(9).Replace("\r", "").Replace("\n", ""))); i = 0; sentenceEnd = true; }
             if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Hantei:") { hanteiText = scenarioText[i].Substring(7).Split(','); i += Hantei(hanteiText[0], int.Parse(hanteiText[1].Replace("\r", "").Replace("\n", ""))); while (sentenceEnd == false) { yield return null; }; sentenceEnd = false; StartCoroutine(PushWait()); }
             if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Battle:") { battleText = scenarioText[i].Substring(7).Split(','); battleFlag = -1; StartCoroutine(Battle(int.Parse(battleText[0]), int.Parse(battleText[1]), int.Parse(battleText[2]), int.Parse(battleText[3]), int.Parse(battleText[4]), int.Parse(battleText[5]), int.Parse(battleText[6]), int.Parse(battleText[7]), bool.Parse(battleText[8]), battleText[9], battleText[10], int.Parse(battleText[11]), int.Parse(battleText[12]), bool.Parse(battleText[13].Replace("\r", "").Replace("\n", "")))); while (battleFlag == -1) { yield return null; }; i += battleFlag;sentenceEnd = true; }
@@ -106,7 +108,7 @@ public class ScenariosceneManager : MonoBehaviour
         int[] enemyHP = new int[enemyNum];
         int kill = 0;
         int sleep = 0;
-        int playerHP = 300;//PlayerPrefs.GetInt("Status9", 3);
+        int playerHP = PlayerPrefs.GetInt("Status9", 3);
         int playerDEX = PlayerPrefs.GetInt("Status2", 3);
         int damage = 0;
         int avoid = 2;
@@ -117,6 +119,7 @@ public class ScenariosceneManager : MonoBehaviour
             objCharacter[i].gameObject.SetActive(true);
             objCharacter[i].GetComponent<Image>().sprite = scenarioGraphic[enemyGraph];
             enemyHP[i] = HP;
+            StartCoroutine(Status(playerHP,0));
         }
         Utility u1 = GetComponent<Utility>();
         for (int x=0;x<maxTurn;x++)
@@ -124,25 +127,31 @@ public class ScenariosceneManager : MonoBehaviour
             firstSelect:
             cutFlag = false;
             selectNum = -1;
-            StartCoroutine(Select("攻撃", "回避","拘束", tokusyu)); while (selectNum==-1) { yield return null; }; SystemSEPlay(systemAudio[3]);
+            TextDraw("1.行動選択", "");
+            StartCoroutine(Select("攻撃", "回避","拘束", tokusyu,true)); while (selectNum==-1) { yield return null; }; SystemSEPlay(systemAudio[3]);
             if (selectNum == 0)
             {
                 selectNum = -1;
-                StartCoroutine(Select("火器", "格闘", "武器術", "行動選択に戻る")); while (selectNum == -1) { yield return null; }; SystemSEPlay(systemAudio[3]);
+                TextDraw("1.行動選択→2.攻撃選択", "");
+                StartCoroutine(Select("火器", "格闘", "武器術", "戻る",true)); while (selectNum == -1) { yield return null; }; SystemSEPlay(systemAudio[3]);
                 if (selectNum == 3) { goto firstSelect; }
+                if (selectNum == 2) {cutFlag=true; }
                 detailAct =selectNum;selectNum = 0;
+                TextDraw("", "");
             }
             for (int v = 0; v < 50; v++) { yield return null; }
             if (DEX <= playerDEX && selectNum==0)
             {
                 StartCoroutine(PlayerBattle(detailAct, enemyHP, humanFlag, enemyNum));
                 while (selectNum == 0) { yield return null; }
+                for (int v = 0; v < 100; v++) { yield return null; }
             }//攻撃１（相手より早い場合）
 
             if (DEX <= playerDEX && selectNum==2)
             {
                 StartCoroutine(Catcher(enemyNum, humanFlag, enemyHP));
                 while (selectNum == 2) { yield return null; }
+                for (int v = 0; v < 100; v++) { yield return null; }
             }//拘束１（相手より早い場合）
             for (int i = 0; i < enemyNum; i++)
             {
@@ -150,11 +159,12 @@ public class ScenariosceneManager : MonoBehaviour
                 {
                     if (u1.DiceRoll(1, 100) < AP)
                     {
-                        if (selectNum == 0 && humanFlag==true && detailAct==2 && cutFlag==false)
+                        if (humanFlag==true && cutFlag==true)
                         {
                             sentenceEnd = false;
                             avoid = Hantei("武器術", 0);
-                            if (avoid >= 1) { cutFlag = true; }
+                            objRollText.GetComponent<Text>().text = "受け流し\n（武器術）" + objRollText.GetComponent<Text>().text.Substring(3);
+                            if (avoid >= 1) { cutFlag = false; }
                             while (sentenceEnd == false) { yield return null; }
                             for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                             objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
@@ -181,7 +191,9 @@ public class ScenariosceneManager : MonoBehaviour
                             damage = u1.DiceRoll(ATDiceNum, ATDice);
                             sentenceEnd = false;
                             StartCoroutine(EnemyHit(i, damage));
+                            StartCoroutine(Status(playerHP, damage));
                             playerHP -= damage;
+                            if (playerHP <= 2) { break; }
                         }
                         if (selectNum==1 && avoid!=0) { selectNum = -1; }//スペシャルなら回避を連続でできる。
                     }
@@ -190,18 +202,20 @@ public class ScenariosceneManager : MonoBehaviour
                         sentenceEnd = false;
                         StartCoroutine(EnemyMiss(i));
                     }
+                    for (int v = 0; v < 100; v++) { yield return null; }
                 }
-                for (int v = 0; v < 100; v++) { yield return null; }
             }//敵の攻撃
             if(selectNum == 0)
             {
                 StartCoroutine(PlayerBattle(detailAct, enemyHP, humanFlag, enemyNum));
                 while (selectNum == 0) {  yield return null; }
+                for (int v = 0; v < 100; v++) { yield return null; }
             }//攻撃２（相手より遅い場合）
             if (selectNum == 2)
             {
                 StartCoroutine(Catcher(enemyNum,humanFlag,enemyHP));
                 while (selectNum == 2) { yield return null; }
+                for (int v = 0; v < 100; v++) { yield return null; }
             }//拘束２（相手より遅い場合）
             if(selectNum==3)
             {
@@ -211,9 +225,10 @@ public class ScenariosceneManager : MonoBehaviour
                     while (sentenceEnd == false) { yield return null; }
                     for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                     objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
-                    battleFlag = 0; yield break;
+                    battleFlag = 0; BattleEnd(); yield break;
                 }
                 while (sentenceEnd == false) { yield return null; }
+                for (int v = 0; v < 100; v++) { yield return null; }
                 for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                 objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
             }//特殊行動に成功したら戦闘終了
@@ -221,12 +236,14 @@ public class ScenariosceneManager : MonoBehaviour
             for (int i = 0; i < enemyNum; i++) { if (enemyHP[i] <= 2 && humanFlag==true) { sleep++; } if (enemyHP[i] <= 0) { kill++; sleep--; } }
             if (sleep + kill == enemyNum)
             {
+                BattleEnd();
                 if (kill == enemyNum) { battleFlag = 1; yield break; }//皆殺し勝利
                 if (sleep == enemyNum) { battleFlag = 3; yield break; }//全員捕縛勝利
                 battleFlag = 2; yield break;//捕縛者あり勝利
             }//勝ち
             if (playerHP <= 2)
             {
+                BattleEnd();
                 if (playerHP <= 0) { battleFlag = 5; yield break; }//死亡敗北
                 battleFlag = 4; yield break;//生存敗北
             }//負け
@@ -234,6 +251,7 @@ public class ScenariosceneManager : MonoBehaviour
         }
         //戦闘終了判定
         for (int i = 0; i < enemyNum; i++) { if (enemyHP[i] <= 2 && humanFlag==true) { sleep++; } if (enemyHP[i] <= 0) { kill++; sleep--; } }
+        BattleEnd();
         if (maxTurnWin == true)
         {
             if (kill == enemyNum) { battleFlag = 1; yield break; }//皆殺し勝利
@@ -244,6 +262,14 @@ public class ScenariosceneManager : MonoBehaviour
         {
             if (playerHP <= 0) { battleFlag = 5; yield break; }//死亡敗北
             battleFlag = 4; yield break;//生存敗北
+        }
+    }
+
+    private void BattleEnd()
+    {
+        for (int i = 0; i < 5; i++)
+        {
+            objCharacter[i].gameObject.SetActive(false);
         }
     }
 
@@ -335,7 +361,7 @@ public class ScenariosceneManager : MonoBehaviour
                 if (attack == 2)
                 {
                     sentenceEnd = false;
-                    for (y = 0; y < enemyNum - 1; y++) { if (enemyHP[y] > 3 || (enemyHP[y] > 0 && humanFlag == false)) { break; } }
+                    for (y = 0; y < enemyNum - 1; y++) { if (enemyHP[y] >= 3 || (enemyHP[y] > 0 && humanFlag == false)) { break; } }
                     StartCoroutine(PlayerMiss(y));
                 }
                 else
@@ -349,7 +375,7 @@ public class ScenariosceneManager : MonoBehaviour
                     if (PlayerPrefs.GetInt("Status8", 0) == -6) { playerDB = -u1.DiceRoll(1, 6); StartCoroutine(DiceEffect(1, 6, -playerDB)); }
                     for (int i = 0; i < 60; i++) { yield return null; } 
                     sentenceEnd = false;
-                    for (y = 0; y < enemyNum - 1; y++) { if (enemyHP[y] > 3 || (enemyHP[y] > 0 && humanFlag == false)) { break; } }
+                    for (y = 0; y < enemyNum - 1; y++) { if (enemyHP[y] >= 3 || (enemyHP[y] > 0 && humanFlag == false)) { break; } }
                     if (damage + playerDB > 0) { enemyHP[y] -= damage + playerDB; }
                     StartCoroutine(PlayerHit(y, damage, playerDB, detailAct));
                     for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
@@ -360,6 +386,22 @@ public class ScenariosceneManager : MonoBehaviour
             }
         }
         selectNum = -1;
+    }
+    private IEnumerator Status(int playerHP,int damage)
+    {
+        int maxHP = PlayerPrefs.GetInt("Status9", 0);
+        string color1="";
+        string color2="";
+        if(playerHP<=0){ color1 = "<color=red>";color2 = "</color>"; }else if (playerHP < 2) { color1 = "<color=orange>";color2 = "</color>"; }else if(playerHP<=maxHP/2){ color1="<color=yellow>"; color2 = "</color>"; } else { color1 = ""; color2 = ""; }
+        objTextBox.GetComponent<Text>().text = color1 + "耐久力：" + playerHP.ToString() + " ／ " + maxHP.ToString() + color2;
+        for (int i = 0; i < 6; i++) { yield return null; }
+        while (damage > 0)
+        {
+            playerHP--; damage--;
+            if (playerHP <= 0) { color1 = "<color=red>"; color2 = "</color>"; } else if (playerHP < 2) { color1 = "<color=orange>"; color2 = "</color>"; } else if (playerHP <= maxHP/2) { color1 = "<color=yellow>"; color2 = "</color>"; } else { color1 = "";color2 = ""; }
+            objTextBox.GetComponent<Text>().text =color1 + "耐久力：" + playerHP.ToString() + " ／ " + maxHP.ToString() + color2;
+            for (int i=0;i<6;i++) { yield return null; }
+        }
     }
 
     private IEnumerator Catcher(int enemyNum,bool humanFlag,int[] enemyHP)
@@ -461,17 +503,34 @@ public class ScenariosceneManager : MonoBehaviour
         objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(target * 150 - 300, CHARACTER_Y, 0);
     }
 
+    private void SelectBoxMake(int choiceA, int choiceB, int choiceC, int choiceD,bool battleFlag)
+    {
+        if (battleFlag == false)
+        {
+            if (choiceA > 0 && choiceB > 0 && choiceC > 0 && choiceD > 0) { objBox[0].GetComponent<RectTransform>().localPosition = new Vector3(0, 500, 0); objBox[1].GetComponent<RectTransform>().localPosition = new Vector3(0, 350, 0); objBox[2].GetComponent<RectTransform>().localPosition = new Vector3(0, 200, 0); objBox[3].GetComponent<RectTransform>().localPosition = new Vector3(0, 50, 0); for (int i = 0; i < 4; i++) { objBox[i].GetComponent<RectTransform>().sizeDelta = new Vector2(660, 100); } }
+            if (choiceA > 0 && choiceB > 0 && choiceC > 0 && choiceD == 0) { objBox[0].GetComponent<RectTransform>().localPosition = new Vector3(0, 350, 0); objBox[1].GetComponent<RectTransform>().localPosition = new Vector3(0, 200, 0); objBox[2].GetComponent<RectTransform>().localPosition = new Vector3(0, 50, 0); for (int i = 0; i < 3; i++) { objBox[i].GetComponent<RectTransform>().sizeDelta = new Vector2(660, 100); } }
+            if (choiceA > 0 && choiceB > 0 && choiceC == 0 && choiceD == 0) { objBox[0].GetComponent<RectTransform>().localPosition = new Vector3(0, 350, 0); objBox[1].GetComponent<RectTransform>().localPosition = new Vector3(0, 200, 0); for (int i = 0; i < 2; i++) { objBox[i].GetComponent<RectTransform>().sizeDelta = new Vector2(660, 100); } }
+            if (choiceA > 0 && choiceB == 0 && choiceC == 0 && choiceD == 0) { objBox[0].GetComponent<RectTransform>().localPosition = new Vector3(0, 200, 0); for (int i = 0; i < 1; i++) { objBox[i].GetComponent<RectTransform>().sizeDelta = new Vector2(660, 100); } }
+        }
+        else
+        {
+            objBox[0].GetComponent<RectTransform>().localPosition = new Vector3(-200, -250, 0); objBox[1].GetComponent<RectTransform>().localPosition = new Vector3(-200, -400, 0); objBox[2].GetComponent<RectTransform>().localPosition = new Vector3(200, -250, 0); objBox[3].GetComponent<RectTransform>().localPosition = new Vector3(200, -400, 0);
+            for(int i=0;i<4;i++){ objBox[i].GetComponent<RectTransform>().sizeDelta = new Vector2(300, 100); }
+        }
+    }
+
     public void SelePush(int selectnum)
     {
         selectNum=selectnum;
     }
 
-    private IEnumerator Select(string choiceA,string choiceB,string choiceC,string choiceD)
+    private IEnumerator Select(string choiceA,string choiceB,string choiceC,string choiceD,bool battleFlag)
     {
         objBox[0].gameObject.SetActive(true); objBox[0].GetComponentInChildren<Text>().text = choiceA;
         if (choiceB.Length>0) { objBox[1].gameObject.SetActive(true); objBox[1].GetComponentInChildren<Text>().text = choiceB; }
         if (choiceC.Length>0) { objBox[2].gameObject.SetActive(true); objBox[2].GetComponentInChildren<Text>().text = choiceC; }
         if (choiceD.Length>0) { objBox[3].gameObject.SetActive(true); objBox[3].GetComponentInChildren<Text>().text = choiceD; }
+        SelectBoxMake(choiceA.Length, choiceB.Length, choiceC.Length, choiceD.Length,battleFlag);
         //ボタンがクリックされるまでループ。
         selectNum = -1;
         while (selectNum == -1)
@@ -559,7 +618,7 @@ public class ScenariosceneManager : MonoBehaviour
         if (bonus > 0) { bonusStr = " + " + bonus.ToString(); }
         if (bonus < 0) { bonusStr = " - " + (-1*bonus).ToString(); }
         objRollText.gameObject.SetActive(true);
-        objRollText.GetComponent<Text>().text = targetStr + bonusStr + "\n" + "<color=#88ff88ff>" + target.ToString() + "</color>";
+        if (target > -bonus) { objRollText.GetComponent<Text>().text = targetStr + bonusStr + "\n" + "<color=#88ff88ff>" + (target + bonus).ToString() + "</color>"; } else { objRollText.GetComponent<Text>().text = targetStr + bonusStr + "\n" + "<color=#88ff88ff>" + "自動失敗" + "</color>"; }
         Utility u1 = GetComponent<Utility>();
         objTextBox.gameObject.SetActive(true);
         dice =u1.DiceRoll(1, 100);
@@ -616,7 +675,6 @@ public class ScenariosceneManager : MonoBehaviour
                 for (int j = 0; j < 6; j++) { yield return null; }
             }
             objDice[dicenum].GetComponent<Image>().sprite = dice10Graphic[num];
-
         }
         if (dicetype == 6)
         {
@@ -625,7 +683,16 @@ public class ScenariosceneManager : MonoBehaviour
                 objDice[dicenum].GetComponent<Image>().sprite = moveDice6Graphic[i];
                 for (int j = 0; j < 6; j++) { yield return null; }
             }
-            objDice[dicenum].GetComponent<Image>().sprite = dice6Graphic[num];
+            objDice[dicenum].GetComponent<Image>().sprite = dice6Graphic[num-1];
+        }
+        if (dicetype == 4)
+        {
+            for (int i = 0; i < 7; i++)
+            {
+                objDice[dicenum].GetComponent<Image>().sprite = moveDice4Graphic[i];
+                for (int j = 0; j < 6; j++) { yield return null; }
+            }
+            objDice[dicenum].GetComponent<Image>().sprite = dice4Graphic[num-1];
         }
         SystemSEPlay(systemAudio[0]);
     }

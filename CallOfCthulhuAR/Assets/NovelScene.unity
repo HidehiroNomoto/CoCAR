@@ -878,7 +878,7 @@ MonoBehaviour:
     m_FontSize: 72
     m_FontStyle: 0
     m_BestFit: 0
-    m_MinSize: 4
+    m_MinSize: 3
     m_MaxSize: 72
     m_Alignment: 0
     m_AlignByGeometry: 0
@@ -2678,6 +2678,19 @@ MonoBehaviour:
   - {fileID: 21300000, guid: c8e55387cd5ebce4c95a36e3cb41b929, type: 3}
   - {fileID: 21300000, guid: f1bc6ed5b004e144ab8a8e24ebdb1935, type: 3}
   - {fileID: 21300000, guid: a0ac499ddb71969458ce811f2ecceb6c, type: 3}
+  moveDice4Graphic:
+  - {fileID: 21300000, guid: 2d28a9151a310534bbc45bca4588a716, type: 3}
+  - {fileID: 21300000, guid: f0890336a84e5184dac42861977d9e74, type: 3}
+  - {fileID: 21300000, guid: b8eb0d2a6724bcb4998f30b48148f6c8, type: 3}
+  - {fileID: 21300000, guid: bcc61ffaeb8ef4a4c8f7103b9021920c, type: 3}
+  - {fileID: 21300000, guid: 35f238bcfcbd10b41894afb91e685c5c, type: 3}
+  - {fileID: 21300000, guid: eb600d3ac43ab264ca7c42586e842a84, type: 3}
+  - {fileID: 21300000, guid: dacd78074ee6ba54d9a6341d8d87f54d, type: 3}
+  dice4Graphic:
+  - {fileID: 21300000, guid: 5a2dc63f74c4e97499af7ce8d2f4c59a, type: 3}
+  - {fileID: 21300000, guid: 543c31cf433339945997da9fd565d3da, type: 3}
+  - {fileID: 21300000, guid: bab46fbcfe00a3146b2f204444e3143e, type: 3}
+  - {fileID: 21300000, guid: d750a836da3c00547913f86e1295cd9b, type: 3}
   selectNum: 1
 --- !u!114 &1608122640
 MonoBehaviour:
