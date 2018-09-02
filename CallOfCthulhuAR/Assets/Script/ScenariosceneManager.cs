@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 
-//マップとシナリオシーンの連携、文字入力、呪文（戦闘用）
+//マップとシナリオシーンの連携(残テストのみ)、マップで時間表示、ステータス変更処理（シナリオ部）、文字入力（シナリオ部）、呪文（戦闘用）
 
 
 public class ScenariosceneManager : MonoBehaviour
@@ -77,7 +77,6 @@ public class ScenariosceneManager : MonoBehaviour
         string[] separateText = new string[2];
         string[] separate3Text = new string[3];
         DateTime dt;
-        int x1,x2;
         for (int i = 1; i < 100; i++)
         {
             for (int j = 0; j < 4; j++) { buttonText[j] = null; }
@@ -101,34 +100,8 @@ public class ScenariosceneManager : MonoBehaviour
             if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "FlagChange:"){ separateText = scenarioText[i].Substring(11).Split(','); PlayerPrefs.SetInt(separateText[0],int.Parse(separateText[1].Replace("\r", "").Replace("\n", ""))); sentenceEnd = true; }
             if (scenarioText[i].Length > 8 && scenarioText[i].Substring(0, 8) == "GetTime:"){ dt = DateTime.Now; PlayerPrefs.SetInt("Month", dt.Month); PlayerPrefs.SetInt("Day", dt.Day); PlayerPrefs.SetInt("Hour",dt.Hour); PlayerPrefs.SetInt("Minute", dt.Minute); sentenceEnd = true; }
             if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "FlagName:"){ separateText = scenarioText[i].Substring(9).Split(','); PlayerPrefs.SetInt(separateText[1].Replace("\r", "").Replace("\n", ""), PlayerPrefs.GetInt(separateText[0], 0)); sentenceEnd = true; }//フラグを別名で保存する
-                if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "Difference:")
-            {
-                separate3Text = scenarioText[i].Substring(11).Split(',');
-                if (int.TryParse(separate3Text[0], out x1))
-                {
-                    if (int.TryParse(separate3Text[1], out x2))
-                    {
-                        if (x1 >= x2 + int.Parse(separate3Text[2].Replace("\r", "").Replace("\n", ""))) { i++; }
-                    }
-                    else
-                    {
-                        if (x1 >= PlayerPrefs.GetInt(separate3Text[1], 0) + int.Parse(separate3Text[2].Replace("\r", "").Replace("\n", ""))) { i++; }
-                    }
-                }
-                else
-                {
-                    if (int.TryParse(separate3Text[1], out x2))
-                    {
-                        if (PlayerPrefs.GetInt(separate3Text[0], 0) >= x2 + int.Parse(separate3Text[2].Replace("\r", "").Replace("\n", ""))) { i++; }
-                    }
-                    else
-                    {
-                        if (PlayerPrefs.GetInt(separate3Text[0], 0) >= PlayerPrefs.GetInt(separate3Text[1], 0) + int.Parse(separate3Text[2].Replace("\r", "").Replace("\n", ""))) { i++; }
-                    }
-                }
-                sentenceEnd = true;
-            }
-
+            if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "Difference:"){separate3Text = scenarioText[i].Substring(11).Split(',');i+=Difference(separate3Text);sentenceEnd = true; }
+            if (scenarioText[i].Length > 13 && scenarioText[i].Substring(0, 13) == "StatusChange:"){separateText = scenarioText[i].Substring(13).Split(',');StatusChange(separateText);sentenceEnd = true;}//「StatusChange:正気度,-2D6」のように①変動ステータス、②変動値（○D○または固定値どちらでもプログラム側で適切な解釈をしてくれる）
 
 
             while (sentenceEnd == false) { yield return null; }
@@ -136,6 +109,69 @@ public class ScenariosceneManager : MonoBehaviour
             for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
             objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
         }
+    }
+
+    private IEnumerator StatusChange(string[] separateText)
+    {
+        int changeValue = 0;
+        int x1, y1, y2;
+        Utility u1 = GetComponent<Utility>();
+        string[] separate3Text;
+        if (int.TryParse(separateText[1].Replace("\r", "").Replace("\n", ""), out x1))
+        {
+            PlayerPrefs.SetInt(separateText[0], x1);
+            TextDraw("", separateText[0] + "のステータスが" + x1.ToString() + "点変動した。");
+            for (int v = 0; v < 60; v++) { yield return null; }
+        }
+        else
+        {
+            separate3Text = separateText[1].Split('D');
+            if (int.Parse(separate3Text[0]) >= 0) { y2 = 1; } else { y2 = -1; }
+            for (y1 = 0; y1 < int.Parse(separate3Text[0]) * y2; y1++)
+            {
+                changeValue = u1.DiceRoll(1, int.Parse(separate3Text[1]));
+                if (int.Parse(separate3Text[1]) != 100)
+                {
+                    StartCoroutine(DiceEffect(1, int.Parse(separate3Text[1]), changeValue));
+                }
+                else
+                {
+                    if (changeValue != 100) { StartCoroutine(DiceEffect(0, 10, changeValue / 10)); } else { StartCoroutine(DiceEffect(0, 10, 0)); }
+                    StartCoroutine(DiceEffect(1, 10, changeValue % 10));
+                }
+                PlayerPrefs.SetInt(separateText[0], PlayerPrefs.GetInt(separateText[0], 0) + changeValue * y2);
+                TextDraw("", separateText[0] + "のステータスが" + changeValue.ToString() + "点変動した。");
+                for (int v = 0; v < 60; v++) { yield return null; }
+            }
+        }
+    }
+
+    private int Difference(string[] separate3Text)
+    {
+        int x1, x2;
+        if (int.TryParse(separate3Text[0], out x1))
+        {
+            if (int.TryParse(separate3Text[1], out x2))
+            {
+                if (x1 >= x2 + int.Parse(separate3Text[2].Replace("\r", "").Replace("\n", ""))) { return 1; }
+            }
+            else
+            {
+                if (x1 >= PlayerPrefs.GetInt(separate3Text[1], 0) + int.Parse(separate3Text[2].Replace("\r", "").Replace("\n", ""))) { return 1; }
+            }
+        }
+        else
+        {
+            if (int.TryParse(separate3Text[1], out x2))
+            {
+                if (PlayerPrefs.GetInt(separate3Text[0], 0) >= x2 + int.Parse(separate3Text[2].Replace("\r", "").Replace("\n", ""))) { return 1; }
+            }
+            else
+            {
+                if (PlayerPrefs.GetInt(separate3Text[0], 0) >= PlayerPrefs.GetInt(separate3Text[1], 0) + int.Parse(separate3Text[2].Replace("\r", "").Replace("\n", ""))) {return 1; }
+            }
+        }
+        return 0;
     }
 
     //戦闘処理
