@@ -1,8 +1,9 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using System;
 
-//フラグ管理、時間利用処理（マップ側）、マップとシナリオシーンの連携、文字入力、呪文（戦闘用）
+//マップとシナリオシーンの連携、文字入力、呪文（戦闘用）
 
 
 public class ScenariosceneManager : MonoBehaviour
@@ -72,16 +73,17 @@ public class ScenariosceneManager : MonoBehaviour
     private IEnumerator NovelGame()
     {
         string[] buttonText = new string[4];
-        string[] hanteiText = new string[2];
-        string[] serifuText = new string[2];
         string[] battleText = new string[14];
-
+        string[] separateText = new string[2];
+        string[] separate3Text = new string[3];
+        DateTime dt;
+        int x1,x2;
         for (int i = 1; i < 100; i++)
         {
             for (int j = 0; j < 4; j++) { buttonText[j] = null; }
             sentenceEnd = false;
             if (scenarioText[i] == "[END]") { break; }
-            if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Text:") { serifuText = scenarioText[i].Substring(5).Split(','); TextDraw(serifuText[0], serifuText[1]); StartCoroutine(PushWait()); }
+            if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Text:") { separateText = scenarioText[i].Substring(5).Split(','); TextDraw(separateText[0], separateText[1]); StartCoroutine(PushWait()); }
             if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "BackText:") { BackTextDraw(scenarioText[i].Substring(9)); StartCoroutine(PushWait()); }
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Back:") { BackDraw(int.Parse(scenarioText[i].Substring(5))); sentenceEnd = true; }
             if (scenarioText[i].Length > 4 && scenarioText[i].Substring(0, 4) == "BGM:") { BGMIn(int.Parse(scenarioText[i].Substring(4, 4))); BGMPlay(int.Parse(scenarioText[i].Substring(9))); sentenceEnd = true; }
@@ -93,8 +95,42 @@ public class ScenariosceneManager : MonoBehaviour
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Jump:") { StartCoroutine(CharacterJump(int.Parse(scenarioText[i].Substring(5, 1)))); }
             if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Select:") { buttonText = scenarioText[i].Substring(7).Split(','); StartCoroutine(Select(buttonText[0], buttonText[1], buttonText[2], buttonText[3].Replace("\r", "").Replace("\n", ""),false)); while (sentenceEnd == false) { yield return null; }; SystemSEPlay(systemAudio[3]); i += selectNum; continue; }
             if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "NextFile:") { yield return StartCoroutine(LoadFile(scenarioText[i].Substring(9).Replace("\r", "").Replace("\n", ""))); i = 0; sentenceEnd = true; }
-            if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Hantei:") { hanteiText = scenarioText[i].Substring(7).Split(','); i += Hantei(hanteiText[0], int.Parse(hanteiText[1].Replace("\r", "").Replace("\n", ""))); while (sentenceEnd == false) { yield return null; }; sentenceEnd = false; StartCoroutine(PushWait()); }
+            if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Hantei:") { separateText = scenarioText[i].Substring(7).Split(','); i += Hantei(separateText[0], int.Parse(separateText[1].Replace("\r", "").Replace("\n", ""))); while (sentenceEnd == false) { yield return null; }; sentenceEnd = false; StartCoroutine(PushWait()); }
             if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Battle:") { battleText = scenarioText[i].Substring(7).Split(','); battleFlag = -1; StartCoroutine(Battle(int.Parse(battleText[0]), int.Parse(battleText[1]), int.Parse(battleText[2]), int.Parse(battleText[3]), int.Parse(battleText[4]), int.Parse(battleText[5]), int.Parse(battleText[6]), int.Parse(battleText[7]), bool.Parse(battleText[8]), battleText[9], battleText[10], int.Parse(battleText[11]), int.Parse(battleText[12]), bool.Parse(battleText[13].Replace("\r", "").Replace("\n", "")))); while (battleFlag == -1) { yield return null; }; i += battleFlag;sentenceEnd = true; }
+            if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "FlagBranch:") { i+=PlayerPrefs.GetInt(scenarioText[i].Substring(11).Replace("\r", "").Replace("\n", ""),0);sentenceEnd = true; }
+            if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "FlagChange:"){ separateText = scenarioText[i].Substring(11).Split(','); PlayerPrefs.SetInt(separateText[0],int.Parse(separateText[1].Replace("\r", "").Replace("\n", ""))); sentenceEnd = true; }
+            if (scenarioText[i].Length > 8 && scenarioText[i].Substring(0, 8) == "GetTime:"){ dt = DateTime.Now; PlayerPrefs.SetInt("Month", dt.Month); PlayerPrefs.SetInt("Day", dt.Day); PlayerPrefs.SetInt("Hour",dt.Hour); PlayerPrefs.SetInt("Minute", dt.Minute); sentenceEnd = true; }
+            if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "FlagName:"){ separateText = scenarioText[i].Substring(9).Split(','); PlayerPrefs.SetInt(separateText[1].Replace("\r", "").Replace("\n", ""), PlayerPrefs.GetInt(separateText[0], 0)); sentenceEnd = true; }//フラグを別名で保存する
+                if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "Difference:")
+            {
+                separate3Text = scenarioText[i].Substring(11).Split(',');
+                if (int.TryParse(separate3Text[0], out x1))
+                {
+                    if (int.TryParse(separate3Text[1], out x2))
+                    {
+                        if (x1 >= x2 + int.Parse(separate3Text[2].Replace("\r", "").Replace("\n", ""))) { i++; }
+                    }
+                    else
+                    {
+                        if (x1 >= PlayerPrefs.GetInt(separate3Text[1], 0) + int.Parse(separate3Text[2].Replace("\r", "").Replace("\n", ""))) { i++; }
+                    }
+                }
+                else
+                {
+                    if (int.TryParse(separate3Text[1], out x2))
+                    {
+                        if (PlayerPrefs.GetInt(separate3Text[0], 0) >= x2 + int.Parse(separate3Text[2].Replace("\r", "").Replace("\n", ""))) { i++; }
+                    }
+                    else
+                    {
+                        if (PlayerPrefs.GetInt(separate3Text[0], 0) >= PlayerPrefs.GetInt(separate3Text[1], 0) + int.Parse(separate3Text[2].Replace("\r", "").Replace("\n", ""))) { i++; }
+                    }
+                }
+                sentenceEnd = true;
+            }
+
+
+
             while (sentenceEnd == false) { yield return null; }
             objBackText.gameObject.SetActive(false);//背景テキストは出っ放しにならない
             for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
