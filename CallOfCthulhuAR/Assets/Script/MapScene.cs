@@ -21,9 +21,10 @@ public class MapScene : MonoBehaviour
     GameObject mapImageObj;
     GameObject obj;
     GameObject objTarget;
+    GameObject objBGM;
     const string _FILE_HEADER = "C:\\Users\\hoto\\Documents\\GitHub\\CoCAR\\CallOfCthulhuAR\\Assets\\Scenario\\";                      //ファイル場所の頭
 
-    //★緯度経度を６０進法にする関数を組む
+
 
 
     void Start()
@@ -35,7 +36,8 @@ public class MapScene : MonoBehaviour
         obj = GameObject.Find("error").gameObject as GameObject;
         objTarget = GameObject.Find("Target").gameObject as GameObject;
         mapImageObj = GameObject.Find("mapImage").gameObject as GameObject;
-
+        objBGM= GameObject.Find("BGMManager").gameObject as GameObject;
+        StartCoroutine(LoadMapData("mapdata.txt"));
         GetPos();
         GetMap();
     }
@@ -49,7 +51,8 @@ public class MapScene : MonoBehaviour
             GetPos();
             intervalTime = 0.0f;
         }
-        IventCheck();
+        if (intervalTime2 > 2.0f) { IventCheck(); }
+        objBGM.GetComponent<Text>().text = longitude.ToString() + "," + latitude.ToString();
         //地図の更新は、マップ範囲から出た時かつ時間が相当経過している時に。（時間変数入れないと、場所によってはGPS誤差でマップ連続読込になりかねない）
             if (((longitude>longitudeMap+0.003) ||
             (longitude < longitudeMap - 0.003) ||
@@ -71,9 +74,10 @@ public class MapScene : MonoBehaviour
         string[] data;
         for (int i = 0; i < mapData.Length; i++)
         {
-            data=mapData[i].Split(',');
-            if ((data[0] == "" || double.Parse(data[0]) > longitude - 0.0001 && double.Parse(data[0]) < longitude + 0.0001) &&
-                (data[1] == "" || double.Parse(data[1]) > latitude - 0.0001 && double.Parse(data[1]) < latitude + 0.0001) &&
+            if (mapData[i] == "[END]") { break; }
+            data =mapData[i].Split(',');
+            if ((data[0] == "" || double.Parse(data[0]) > latitude - 0.0001 && double.Parse(data[0]) < latitude + 0.001) &&
+                (data[1] == "" || double.Parse(data[1]) > longitude - 0.0001 && double.Parse(data[1]) < longitude + 0.001) &&
                 (data[2] == "" || (int.Parse(data[2]) >= dt.Month)) &&
                 (data[3] == "" || (int.Parse(data[3]) >= dt.Day) || (int.Parse(data[2]) > dt.Month)) &&
                 (data[4] == "" || (int.Parse(data[4]) >= dt.Hour) || (int.Parse(data[3]) > dt.Day) || (int.Parse(data[2]) > dt.Month)) &&
@@ -82,9 +86,11 @@ public class MapScene : MonoBehaviour
                 (data[7] == "" || (int.Parse(data[7]) <= dt.Day) || (int.Parse(data[6]) < dt.Month)) &&
                 (data[8] == "" || (int.Parse(data[8]) <= dt.Hour) || (int.Parse(data[7]) < dt.Day) || (int.Parse(data[6]) < dt.Month)) &&
                 (data[9] == "" || (int.Parse(data[9]) <= dt.Minute) || (int.Parse(data[8]) < dt.Hour) || (int.Parse(data[7]) < dt.Day) || (int.Parse(data[6]) < dt.Month)) &&
-                (data[10] == "" || PlayerPrefs.GetInt(data[10].Replace("\r", "").Replace("\n", ""), 0) > 0))
+                (data[10] == "" || PlayerPrefs.GetInt(data[10], 0) > 0))
             {
-                GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "StoryScene");
+                BGMManager b1 = objBGM.GetComponent<BGMManager>();
+                b1.scenarioName = data[11].Replace("\r", "").Replace("\n", "");
+                GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "NovelScene");
             }
         }
     }
@@ -171,7 +177,7 @@ public class MapScene : MonoBehaviour
     }
 
     //目次ファイルを読み込み、進行度に合わせてファイルを拾ってくる。
-    private IEnumerator LoadMapData(string path, int chapter)
+    private IEnumerator LoadMapData(string path)
     {
         // 目次ファイルが無かったら終わる
         if (!System.IO.File.Exists(_FILE_HEADER + path))

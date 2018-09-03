@@ -25,6 +25,7 @@ public class ScenariosceneManager : MonoBehaviour
     GameObject objCanvas;
     GameObject objRollText;
     GameObject objName;
+    GameObject objBGM;
     GameObject[] objDice = new GameObject[2];
     GameObject[] objBox=new GameObject[4];
     public AudioClip[] systemAudio = new AudioClip[10];
@@ -56,6 +57,7 @@ public class ScenariosceneManager : MonoBehaviour
         objBackText = GameObject.Find("BackText").gameObject as GameObject; objBackText.gameObject.SetActive(false);
         objItem = GameObject.Find("Item").gameObject as GameObject; objItem.gameObject.SetActive(false);
         objCanvas = GameObject.Find("CanvasDraw").gameObject as GameObject;
+        objBGM = GameObject.Find("BGMManager").gameObject as GameObject;
         for (int i = 0; i < 4; i++) { objBox[i] = GameObject.Find("select" + (i + 1).ToString()).gameObject as GameObject; objBox[i].gameObject.SetActive(false); }
         for (int i = 0; i < 2; i++) { objDice[i] = GameObject.Find("Dice" + (i + 1).ToString()).gameObject as GameObject; objDice[i].gameObject.SetActive(false); }
         StartCoroutine(MainCoroutine());
@@ -889,8 +891,9 @@ public class ScenariosceneManager : MonoBehaviour
 
     private IEnumerator MainCoroutine()
     {
+        BGMManager b1 = objBGM.GetComponent<BGMManager>();
         //シナリオデータ読込
-        yield return StartCoroutine(LoadScenario("loadfile.txt", PlayerPrefs.GetInt("Chapter", 0)));
+        yield return StartCoroutine(LoadScenario(b1.scenarioName));
         //シナリオ処理
         yield return StartCoroutine(NovelGame());
     }
@@ -898,7 +901,7 @@ public class ScenariosceneManager : MonoBehaviour
 
 
     //目次ファイルを読み込み、進行度に合わせてファイルを拾ってくる。
-    private IEnumerator LoadScenario(string path, int chapter)
+    private IEnumerator LoadScenario(string path)
     {
         // 目次ファイルが無かったら終わる
         if (!System.IO.File.Exists(_FILE_HEADER + path))
@@ -921,8 +924,8 @@ public class ScenariosceneManager : MonoBehaviour
         // 読み込んだ目次テキストファイルからstring配列を作成する
         scenarioFilePath = text.Split('\n');
 
-        //chapterに対応する場所から取り出したアドレスから各ファイルをロード※１チャプター１００行
-        for (int i = chapter * 100; i < (chapter + 1) * 100; i++)
+        //アドレスから各ファイルをロード※１チャプター１００行
+        for (int i = 0; i < scenarioFilePath.Length; i++)
         {
             if (scenarioFilePath[i] == "[END]") { break; }
             yield return StartCoroutine(LoadFile(scenarioFilePath[i].Replace("\r", "").Replace("\n", "")));

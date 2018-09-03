@@ -28,7 +28,7 @@ public class TitleManager : MonoBehaviour {
 
     public void PushStartButton()
     {
-        GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "ScenarioScene");
+        GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "MapScene");
     }
 
     public void PushCharacterButton()
