@@ -22,6 +22,7 @@ public class MapScene : MonoBehaviour
     GameObject obj;
     GameObject objTarget;
     GameObject objBGM;
+    GameObject objTime;
     const string _FILE_HEADER = "C:\\Users\\hoto\\Documents\\GitHub\\CoCAR\\CallOfCthulhuAR\\Assets\\Scenario\\";                      //ファイル場所の頭
 
 
@@ -37,6 +38,7 @@ public class MapScene : MonoBehaviour
         objTarget = GameObject.Find("Target").gameObject as GameObject;
         mapImageObj = GameObject.Find("mapImage").gameObject as GameObject;
         objBGM= GameObject.Find("BGMManager").gameObject as GameObject;
+        objTime = GameObject.Find("TimeText").gameObject as GameObject;
         StartCoroutine(LoadMapData("mapdata.txt"));
         GetPos();
         GetMap();
@@ -93,6 +95,7 @@ public class MapScene : MonoBehaviour
                 GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "NovelScene");
             }
         }
+        objTime.GetComponent<Text>().text= dt.ToString("MM/dd  HH:mm") + "\n" + "<size=48>緯度：" + Math.Round(latitude, 4).ToString() + "　,　経度：" + Math.Round(longitude,4).ToString().ToString() + "</size>";
     }
 
     void GetPos()

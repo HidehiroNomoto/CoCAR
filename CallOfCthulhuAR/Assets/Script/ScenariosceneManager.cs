@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 
-//マップとシナリオシーンの連携(残テストのみ)、マップで時間表示、ステータス変更処理（シナリオ部）、文字入力（シナリオ部）、呪文（戦闘用）
+//文字入力（シナリオ部）、呪文（戦闘用）、アーカイブ読込（作成は別プログラム）
 
 
 public class ScenariosceneManager : MonoBehaviour
@@ -103,7 +103,7 @@ public class ScenariosceneManager : MonoBehaviour
             if (scenarioText[i].Length > 8 && scenarioText[i].Substring(0, 8) == "GetTime:"){ dt = DateTime.Now; PlayerPrefs.SetInt("Month", dt.Month); PlayerPrefs.SetInt("Day", dt.Day); PlayerPrefs.SetInt("Hour",dt.Hour); PlayerPrefs.SetInt("Minute", dt.Minute); sentenceEnd = true; }
             if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "FlagName:"){ separateText = scenarioText[i].Substring(9).Split(','); PlayerPrefs.SetInt(separateText[1].Replace("\r", "").Replace("\n", ""), PlayerPrefs.GetInt(separateText[0], 0)); sentenceEnd = true; }//フラグを別名で保存する
             if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "Difference:"){separate3Text = scenarioText[i].Substring(11).Split(',');i+=Difference(separate3Text);sentenceEnd = true; }
-            if (scenarioText[i].Length > 13 && scenarioText[i].Substring(0, 13) == "StatusChange:"){separateText = scenarioText[i].Substring(13).Split(',');StatusChange(separateText);sentenceEnd = true;}//「StatusChange:正気度,-2D6」のように①変動ステータス、②変動値（○D○または固定値どちらでもプログラム側で適切な解釈をしてくれる）
+            if (scenarioText[i].Length > 13 && scenarioText[i].Substring(0, 13) == "StatusChange:"){separateText = scenarioText[i].Substring(13).Split(',');StartCoroutine(StatusChange(separateText));while (sentenceEnd == false) { yield return null; }; sentenceEnd = false; StartCoroutine(PushWait()); }//「StatusChange:正気度,-2D6」のように①変動ステータス、②変動値（○D○または固定値どちらでもプログラム側で適切な解釈をしてくれる）
 
 
             while (sentenceEnd == false) { yield return null; }
@@ -116,36 +116,76 @@ public class ScenariosceneManager : MonoBehaviour
     private IEnumerator StatusChange(string[] separateText)
     {
         int changeValue = 0;
+        int changeValue2 = 0;
         int x1, y1, y2;
+        string targetStr;
         Utility u1 = GetComponent<Utility>();
         string[] separate3Text;
+        targetStr=SkillList(separateText[0]);
         if (int.TryParse(separateText[1].Replace("\r", "").Replace("\n", ""), out x1))
         {
-            PlayerPrefs.SetInt(separateText[0], x1);
-            TextDraw("", separateText[0] + "のステータスが" + x1.ToString() + "点変動した。");
+            PlayerPrefs.SetInt(targetStr, PlayerPrefs.GetInt(targetStr, 0) + x1);
+            if (x1 >= 0)
+            {
+                TextDraw("", separateText[0] + "の能力が" + x1.ToString() + "点上昇した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）");
+            }
+            else
+            {
+                TextDraw("", separateText[0] + "の能力が" + x1.ToString() + "点減少した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）");
+            }
             for (int v = 0; v < 60; v++) { yield return null; }
         }
         else
         {
             separate3Text = separateText[1].Split('D');
             if (int.Parse(separate3Text[0]) >= 0) { y2 = 1; } else { y2 = -1; }
-            for (y1 = 0; y1 < int.Parse(separate3Text[0]) * y2; y1++)
+            if (int.Parse(separate3Text[0]) * y2 == 2 && int.Parse(separate3Text[1])!=100)
             {
                 changeValue = u1.DiceRoll(1, int.Parse(separate3Text[1]));
-                if (int.Parse(separate3Text[1]) != 100)
+                changeValue2 = u1.DiceRoll(1, int.Parse(separate3Text[1]));
+                StartCoroutine(DiceEffect(0, int.Parse(separate3Text[1]), changeValue));
+                StartCoroutine(DiceEffect(1, int.Parse(separate3Text[1]), changeValue2));
+                for (int v = 0; v < 60; v++) { yield return null; }
+                PlayerPrefs.SetInt(targetStr, PlayerPrefs.GetInt(targetStr, 0) + changeValue * y2);
+                if (y2 > 0)
                 {
-                    StartCoroutine(DiceEffect(1, int.Parse(separate3Text[1]), changeValue));
+                    TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "+" + changeValue2.ToString() + "=" + (changeValue + changeValue2).ToString() + "点上昇した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）");
                 }
                 else
                 {
-                    if (changeValue != 100) { StartCoroutine(DiceEffect(0, 10, changeValue / 10)); } else { StartCoroutine(DiceEffect(0, 10, 0)); }
-                    StartCoroutine(DiceEffect(1, 10, changeValue % 10));
+                    TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "+" + changeValue2.ToString() + "=" + (changeValue + changeValue2).ToString() + "点減少した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）");
                 }
-                PlayerPrefs.SetInt(separateText[0], PlayerPrefs.GetInt(separateText[0], 0) + changeValue * y2);
-                TextDraw("", separateText[0] + "のステータスが" + changeValue.ToString() + "点変動した。");
                 for (int v = 0; v < 60; v++) { yield return null; }
             }
+            else
+            {
+                for (y1 = 0; y1 < int.Parse(separate3Text[0]) * y2; y1++)
+                {
+                    changeValue = u1.DiceRoll(1, int.Parse(separate3Text[1]));
+                    if (int.Parse(separate3Text[1]) != 100)
+                    {
+                        StartCoroutine(DiceEffect(1, int.Parse(separate3Text[1]), changeValue));
+                    }
+                    else
+                    {
+                        if (changeValue != 100) { StartCoroutine(DiceEffect(0, 10, changeValue / 10)); } else { StartCoroutine(DiceEffect(0, 10, 0)); }
+                        StartCoroutine(DiceEffect(1, 10, changeValue % 10));
+                    }
+                    for (int v = 0; v < 60; v++) { yield return null; }
+                    PlayerPrefs.SetInt(targetStr, PlayerPrefs.GetInt(targetStr, 0) + changeValue * y2);
+                    if (y2 > 0)
+                    {
+                        TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "点上昇した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）");
+                    }
+                    else
+                    {
+                        TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "点減少した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）");
+                    }
+                    for (int v = 0; v < 60; v++) { yield return null; }
+                }
+            }
         }
+        sentenceEnd = true;
     }
 
     private int Difference(string[] separate3Text)
@@ -621,74 +661,114 @@ public class ScenariosceneManager : MonoBehaviour
         u1.SEPlay(audio);
     }
 
+    private int SkillCheck(string targetStr)
+    {
+        int target = 0;
+        int num = 0;
+        string[] separate = new string[2];
+        separate[0] = "";
+        separate[1] = "";
+        if (targetStr.Contains("*"))
+        {
+            separate = targetStr.Split('*');
+        }
+        else if (targetStr.Contains("/"))
+        {
+            separate = targetStr.Split('/');
+        }
+        else
+        {
+            separate[0] = targetStr;
+        }
+        target = PlayerPrefs.GetInt(SkillList(separate[0]), target); 
+        int.TryParse(separate[1], out num);
+        if (targetStr.Contains("*"))
+        {
+            target = target * num;
+        }
+        if (targetStr.Contains("/"))
+        {
+            target = target / num;
+        }
+        return target;
+    }
+
+    private string SkillList(string targetStr)
+    {
+        string target = "";
+        if (targetStr == "言いくるめ") { target = "Skill0"; }
+        if (targetStr == "医学") { target = "Skill1"; }
+        if (targetStr == "運転") { target = "Skill2"; }
+        if (targetStr == "応急手当") { target = "Skill3"; }
+        if (targetStr == "オカルト") { target = "Skill4"; }
+        if (targetStr == "回避") { target = "Skill5"; }
+        if (targetStr == "化学") { target = "Skill6"; }
+        if (targetStr == "鍵開け") { target = "Skill7"; }
+        if (targetStr == "隠す") { target = "Skill8"; }
+        if (targetStr == "隠れる") { target = "Skill9"; }
+        if (targetStr == "機械修理") { target = "Skill10"; }
+        if (targetStr == "聞き耳") { target = "Skill11"; }
+        if (targetStr == "芸術") { target = "Skill12"; }
+        if (targetStr == "経理") { target = "Skill13"; }
+        if (targetStr == "考古学") { target = "Skill14"; }
+        if (targetStr == "コンピューター") { target = "Skill15"; }
+        if (targetStr == "忍び歩き") { target = "Skill16"; }
+        if (targetStr == "写真術") { target = "Skill17"; }
+        if (targetStr == "重機械操作") { target = "Skill18"; }
+        if (targetStr == "乗馬") { target = "Skill19"; }
+        if (targetStr == "信用") { target = "Skill20"; }
+        if (targetStr == "心理学") { target = "Skill21"; }
+        if (targetStr == "人類学") { target = "Skill22"; }
+        if (targetStr == "水泳") { target = "Skill23"; }
+        if (targetStr == "製作") { target = "Skill24"; }
+        if (targetStr == "精神分析") { target = "Skill25"; }
+        if (targetStr == "生物学") { target = "Skill26"; }
+        if (targetStr == "説得") { target = "Skill27"; }
+        if (targetStr == "操縦") { target = "Skill28"; }
+        if (targetStr == "地質学") { target = "Skill29"; }
+        if (targetStr == "跳躍") { target = "Skill30"; }
+        if (targetStr == "追跡") { target = "Skill31"; }
+        if (targetStr == "電気修理") { target = "Skill32"; }
+        if (targetStr == "電子工学") { target = "Skill33"; }
+        if (targetStr == "天文学") { target = "Skill34"; }
+        if (targetStr == "投擲") { target = "Skill35"; }
+        if (targetStr == "登攀") { target = "Skill36"; }
+        if (targetStr == "図書館") { target = "Skill37"; }
+        if (targetStr == "ナビゲート") { target = "Skill38"; }
+        if (targetStr == "値切り") { target = "Skill39"; }
+        if (targetStr == "博物学") { target = "Skill40"; }
+        if (targetStr == "物理学") { target = "Skill41"; }
+        if (targetStr == "変装") { target = "Skill42"; }
+        if (targetStr == "法律") { target = "Skill43"; }
+        if (targetStr == "ほかの言語") { target = "Skill44"; }
+        if (targetStr == "母国語") { target = "Skill45"; }
+        if (targetStr == "マーシャルアーツ") { target = "Skill46"; }
+        if (targetStr == "目星") { target = "Skill47"; }
+        if (targetStr == "薬学") { target = "Skill48"; }
+        if (targetStr == "歴史") { target = "Skill49"; }
+        if (targetStr == "火器") { target = "Skill50"; }
+        if (targetStr == "格闘") { target = "Skill51"; }
+        if (targetStr == "武器術") { target = "Skill52"; }
+        if (targetStr == "クトゥルフ神話") { target = "Skill53"; }
+        if (targetStr == "STR") { target = "Status0"; }
+        if (targetStr == "DEX") { target = "Status2"; }
+        if (targetStr == "CON") { target = "Status1"; }
+        if (targetStr == "POW") { target = "Status5"; }
+        if (targetStr == "INT") { target = "Status3"; }
+        if (targetStr == "EDU") { target = "Status7"; }
+        if (targetStr == "SIZ") { target = "Status6"; }
+        if (targetStr == "APP") { target = "Status4"; }
+        if (targetStr == "MP") { target = "Status10"; }
+        if (targetStr == "HP") { target = "Status9"; }
+        return target;
+    }
+
     private int Hantei(string targetStr,int bonus)
     {
         int dice;
         int target=0;
         string bonusStr="";
-        if (targetStr == "言いくるめ") { target=PlayerPrefs.GetInt("Skill0",target); }
-        if (targetStr == "医学") { target=PlayerPrefs.GetInt("Skill1", target); }
-        if (targetStr == "運転") { target=PlayerPrefs.GetInt("Skill2", target); }
-        if (targetStr == "応急手当") { target=PlayerPrefs.GetInt("Skill3", target); }
-        if (targetStr == "オカルト") { target=PlayerPrefs.GetInt("Skill4", target); }
-        if (targetStr == "回避") { target=PlayerPrefs.GetInt("Skill5", target); }
-        if (targetStr == "化学") { target=PlayerPrefs.GetInt("Skill6", target); }
-        if (targetStr == "鍵開け") { target=PlayerPrefs.GetInt("Skill7", target); }
-        if (targetStr == "隠す") { target=PlayerPrefs.GetInt("Skill8", target); }
-        if (targetStr == "隠れる") { target=PlayerPrefs.GetInt("Skill9", target); }
-        if (targetStr == "機械修理") { target=PlayerPrefs.GetInt("Skill10", target); }
-        if (targetStr == "聞き耳") { target=PlayerPrefs.GetInt("Skill11", target); }
-        if (targetStr == "芸術") { target=PlayerPrefs.GetInt("Skill12", target); }
-        if (targetStr == "経理") { target=PlayerPrefs.GetInt("Skill13", target); }
-        if (targetStr == "考古学") { target=PlayerPrefs.GetInt("Skill14", target); }
-        if (targetStr == "コンピューター") { target=PlayerPrefs.GetInt("Skill15", target); }
-        if (targetStr == "忍び歩き") { target=PlayerPrefs.GetInt("Skill16", target); }
-        if (targetStr == "写真術") { target=PlayerPrefs.GetInt("Skill17", target); }
-        if (targetStr == "重機械操作") { target=PlayerPrefs.GetInt("Skill18", target); }
-        if (targetStr == "乗馬") { target=PlayerPrefs.GetInt("Skill19", target); }
-        if (targetStr == "信用") { target=PlayerPrefs.GetInt("Skill20", target); }
-        if (targetStr == "心理学") { target=PlayerPrefs.GetInt("Skill21", target); }
-        if (targetStr == "人類学") { target=PlayerPrefs.GetInt("Skill22", target); }
-        if (targetStr == "水泳") { target=PlayerPrefs.GetInt("Skill23", target); }
-        if (targetStr == "製作") { target=PlayerPrefs.GetInt("Skill24", target); }
-        if (targetStr == "精神分析") { target=PlayerPrefs.GetInt("Skill25", target); }
-        if (targetStr == "生物学") { target=PlayerPrefs.GetInt("Skill26", target); }
-        if (targetStr == "説得") { target=PlayerPrefs.GetInt("Skill27", target); }
-        if (targetStr == "操縦") { target=PlayerPrefs.GetInt("Skill28", target); }
-        if (targetStr == "地質学") { target=PlayerPrefs.GetInt("Skill29", target); }
-        if (targetStr == "跳躍") { target=PlayerPrefs.GetInt("Skill30", target); }
-        if (targetStr == "追跡") { target=PlayerPrefs.GetInt("Skill31", target); }
-        if (targetStr == "電気修理") { target=PlayerPrefs.GetInt("Skill32", target); }
-        if (targetStr == "電子工学") { target=PlayerPrefs.GetInt("Skill33", target); }
-        if (targetStr == "天文学") { target=PlayerPrefs.GetInt("Skill34", target); }
-        if (targetStr == "投擲") { target=PlayerPrefs.GetInt("Skill35", target); }
-        if (targetStr == "登攀") { target=PlayerPrefs.GetInt("Skill36", target); }
-        if (targetStr == "図書館") { target=PlayerPrefs.GetInt("Skill37", target); }
-        if (targetStr == "ナビゲート") { target=PlayerPrefs.GetInt("Skill38", target); }
-        if (targetStr == "値切り") { target=PlayerPrefs.GetInt("Skill39", target); }
-        if (targetStr == "博物学") { target=PlayerPrefs.GetInt("Skill40", target); }
-        if (targetStr == "物理学") { target=PlayerPrefs.GetInt("Skill41", target); }
-        if (targetStr == "変装") { target=PlayerPrefs.GetInt("Skill42", target); }
-        if (targetStr == "法律") { target=PlayerPrefs.GetInt("Skill43", target); }
-        if (targetStr == "ほかの言語") { target=PlayerPrefs.GetInt("Skill44", target); }
-        if (targetStr == "母国語") { target=PlayerPrefs.GetInt("Skill45", target); }
-        if (targetStr == "マーシャルアーツ") { target=PlayerPrefs.GetInt("Skill46", target); }
-        if (targetStr == "目星") { target=PlayerPrefs.GetInt("Skill47", target); }
-        if (targetStr == "薬学") { target=PlayerPrefs.GetInt("Skill48", target); }
-        if (targetStr == "歴史") { target=PlayerPrefs.GetInt("Skill49", target); }
-        if (targetStr == "火器") { target=PlayerPrefs.GetInt("Skill50", target); }
-        if (targetStr == "格闘") { target=PlayerPrefs.GetInt("Skill51", target); }
-        if (targetStr == "武器術") { target=PlayerPrefs.GetInt("Skill52", target); }
-        if (targetStr == "クトゥルフ神話") { target=PlayerPrefs.GetInt("Skill53", target); }
-        if (targetStr == "STR*5") { target = 5*PlayerPrefs.GetInt("Status0", target); }
-        if (targetStr == "DEX*5") { target = 5*PlayerPrefs.GetInt("Status2", target); }
-        if (targetStr == "CON*5") { target = 5*PlayerPrefs.GetInt("Status1", target); }
-        if (targetStr == "POW*5") { target = 5*PlayerPrefs.GetInt("Status5", target); }
-        if (targetStr == "INT*5") { target = 5*PlayerPrefs.GetInt("Status3", target); }
-        if (targetStr == "EDU*5") { target = 5*PlayerPrefs.GetInt("Status7", target); }
-        if (targetStr == "SIZ*5") { target = 5*PlayerPrefs.GetInt("Status6", target); }
-        if (targetStr == "APP*5") { target = 5 * PlayerPrefs.GetInt("Status4", target); }
-        if (targetStr == "MP*5") { target = 5 * PlayerPrefs.GetInt("Status10", target); }
+        target=SkillCheck(targetStr);
         if (bonus > 0) { bonusStr = " + " + bonus.ToString(); }
         if (bonus < 0) { bonusStr = " - " + (-1*bonus).ToString(); }
         objRollText.gameObject.SetActive(true);
