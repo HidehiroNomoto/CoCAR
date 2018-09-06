@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 
-//文字入力（シナリオ部）、呪文（戦闘用）、アーカイブ読込（作成は別プログラム）
+//スキップ、バックログ、キャラシ参照、呪文（戦闘用）、アーカイブ読込（作成は別プログラム）
 
 
 public class ScenariosceneManager : MonoBehaviour
@@ -28,6 +28,7 @@ public class ScenariosceneManager : MonoBehaviour
     GameObject objBGM;
     GameObject[] objDice = new GameObject[2];
     GameObject[] objBox=new GameObject[4];
+    GameObject objInput;
     public AudioClip[] systemAudio = new AudioClip[10];
     public Sprite[] moveDice10Graphic = new Sprite[7];
     public Sprite[] dice10Graphic = new Sprite[10];
@@ -51,6 +52,7 @@ public class ScenariosceneManager : MonoBehaviour
         objRollText = GameObject.Find("Rolltext").gameObject as GameObject; objRollText.gameObject.SetActive(false);
         obj = GameObject.Find("error").gameObject as GameObject;
         for (int i = 0; i < 5; i++) { objCharacter[i] = GameObject.Find("Chara" + (i + 1).ToString()).gameObject as GameObject; objCharacter[i].gameObject.SetActive(false); }
+        objInput= GameObject.Find("Input").gameObject as GameObject; objInput.gameObject.SetActive(false);
         objText = GameObject.Find("MainText").gameObject as GameObject;
         objTextBox = GameObject.Find("TextBox").gameObject as GameObject;
         objBackImage = GameObject.Find("BackImage").gameObject as GameObject;
@@ -104,13 +106,32 @@ public class ScenariosceneManager : MonoBehaviour
             if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "FlagName:"){ separateText = scenarioText[i].Substring(9).Split(','); PlayerPrefs.SetInt(separateText[1].Replace("\r", "").Replace("\n", ""), PlayerPrefs.GetInt(separateText[0], 0)); sentenceEnd = true; }//フラグを別名で保存する
             if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "Difference:"){separate3Text = scenarioText[i].Substring(11).Split(',');i+=Difference(separate3Text);sentenceEnd = true; }
             if (scenarioText[i].Length > 13 && scenarioText[i].Substring(0, 13) == "StatusChange:"){separateText = scenarioText[i].Substring(13).Split(',');StartCoroutine(StatusChange(separateText));while (sentenceEnd == false) { yield return null; }; sentenceEnd = false; StartCoroutine(PushWait()); }//「StatusChange:正気度,-2D6」のように①変動ステータス、②変動値（○D○または固定値どちらでもプログラム側で適切な解釈をしてくれる）
-
-
-            while (sentenceEnd == false) { yield return null; }
+            if (scenarioText[i].Length > 6 && scenarioText[i].Substring(0, 6) == "Input:") { StartCoroutine(InputText(scenarioText[i].Substring(6).Replace("\r", "").Replace("\n", ""))); }
+            if (scenarioText[i].Length > 6 && scenarioText[i].Substring(0, 6) == "Equal:"){separateText = scenarioText[i].Substring(6).Split(',');if (PlayerPrefs.GetString(separateText[0],"").Contains(separateText[1].Replace("\r", "").Replace("\n", ""))) {i++; } sentenceEnd = true; }
+                while (sentenceEnd == false) { yield return null; }
             objBackText.gameObject.SetActive(false);//背景テキストは出っ放しにならない
             for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
             objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
         }
+    }
+
+
+
+    private IEnumerator InputText(string str)
+    {
+        selectNum = -1;
+        objInput.gameObject.SetActive(true);
+        InputField inputField = objInput.GetComponent<InputField>();
+        inputField.text = "";
+        inputField.ActivateInputField();
+        objBox[3].gameObject.SetActive(true);
+        objBox[3].GetComponentInChildren<Text>().text = "決定";
+        SelectBoxMake(0, 0, 0, 2, false);
+        while (selectNum==-1) { yield return null; }
+        PlayerPrefs.SetString(str,inputField.text);
+        objInput.gameObject.SetActive(false);
+        objBox[3].gameObject.SetActive(false);
+        sentenceEnd = true;
     }
 
     private IEnumerator StatusChange(string[] separateText)
