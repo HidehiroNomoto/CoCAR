@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 
-//スキップ、バックログ、キャラシ参照、呪文（戦闘用）、アーカイブ読込（作成は別プログラム）
+//キャラシ参照、呪文（戦闘用）、アーカイブ読込（作成は別プログラム）
 
 
 public class ScenariosceneManager : MonoBehaviour
@@ -13,8 +13,8 @@ public class ScenariosceneManager : MonoBehaviour
     public Sprite[] scenarioGraphic = new Sprite[100];       //シナリオ画像保存変数
     public string[] scenarioFilePath = new string[100];      //シナリオ用ファイルのアドレス
     public bool sentenceEnd=false;                           //文の処理が終了したか否か
-    public bool pushObjectFlag = false;
-    public int battleFlag=-10; 
+    public int battleFlag=-10;
+    private string sectionName = "";
     GameObject obj;
     GameObject objText;
     GameObject objTextBox;
@@ -29,6 +29,7 @@ public class ScenariosceneManager : MonoBehaviour
     GameObject[] objDice = new GameObject[2];
     GameObject[] objBox=new GameObject[4];
     GameObject objInput;
+    GameObject objSkip;
     public AudioClip[] systemAudio = new AudioClip[10];
     public Sprite[] moveDice10Graphic = new Sprite[7];
     public Sprite[] dice10Graphic = new Sprite[10];
@@ -36,13 +37,20 @@ public class ScenariosceneManager : MonoBehaviour
     public Sprite[] dice6Graphic = new Sprite[6];
     public Sprite[] moveDice4Graphic = new Sprite[7];
     public Sprite[] dice4Graphic = new Sprite[4];
+    public bool skipFlag = false;
+    public bool skipFlag2 = false;
+    public bool backLogFlag = false;
     public int selectNum=1;
+    private int logNum=0;
     const string _FILE_HEADER = "C:\\Users\\hoto\\Documents\\GitHub\\CoCAR\\CallOfCthulhuAR\\Assets\\Scenario\\";                      //ファイル場所の頭
     const int CHARACTER_Y = -300;
 
     // Use this for initialization
     void Start()
     {
+        logNum = PlayerPrefs.GetInt("最新ログ番号", 0);
+        objSkip = GameObject.Find("SkipText").gameObject as GameObject;
+        if (PlayerPrefs.GetInt("skipFlag", 0) == 1) { skipFlag = true; objSkip.GetComponent<Text>().text = "<color=red>既読Skip\n<ON></color>"; }
         systemAudio[0] = Resources.Load<AudioClip>("kan"); systemAudio[1] = Resources.Load<AudioClip>("correct1");
         systemAudio[2] = Resources.Load<AudioClip>("incorrect1"); systemAudio[3] = Resources.Load<AudioClip>("switch1");
         systemAudio[4] = Resources.Load<AudioClip>("gun1"); systemAudio[5] = Resources.Load<AudioClip>("punch-high1");
@@ -86,8 +94,8 @@ public class ScenariosceneManager : MonoBehaviour
             for (int j = 0; j < 4; j++) { buttonText[j] = null; }
             sentenceEnd = false;
             if (scenarioText[i] == "[END]") { break; }
-            if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Text:") { separateText = scenarioText[i].Substring(5).Split(','); TextDraw(separateText[0], separateText[1]); StartCoroutine(PushWait()); }
-            if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "BackText:") { BackTextDraw(scenarioText[i].Substring(9)); StartCoroutine(PushWait()); }
+            if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Text:") { separateText = scenarioText[i].Substring(5).Split(','); TextDraw(separateText[0], separateText[1]);if (PlayerPrefs.GetInt(sectionName + i.ToString(), 0)==1) { skipFlag2 = true; } StartCoroutine(PushWait());PlayerPrefs.SetInt(sectionName + i.ToString(),1);if (skipFlag2 == false) {  PlayerPrefs.SetInt("最新ログ番号", logNum); PlayerPrefs.SetString("バックログ" + logNum.ToString(), scenarioText[i].Substring(5).Replace(',', ':')); logNum++; if (logNum >= 10000) { logNum = 0; } } skipFlag2 = false; }
+            if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "BackText:") { BackTextDraw(scenarioText[i].Substring(9)); if (PlayerPrefs.GetInt(sectionName + i.ToString(), 0) == 1) { skipFlag2 = true; } StartCoroutine(PushWait());  PlayerPrefs.SetInt(sectionName + i.ToString(), 1);if (skipFlag2 == false) { PlayerPrefs.SetInt("最新ログ番号", logNum); PlayerPrefs.SetString("バックログ" + logNum.ToString(), scenarioText[i].Substring(9).Replace(',', ':')); logNum++; if (logNum >= 10000) { logNum = 0; } } skipFlag2 = false; }
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Back:") { BackDraw(int.Parse(scenarioText[i].Substring(5))); sentenceEnd = true; }
             if (scenarioText[i].Length > 4 && scenarioText[i].Substring(0, 4) == "BGM:") { BGMIn(int.Parse(scenarioText[i].Substring(4, 4))); BGMPlay(int.Parse(scenarioText[i].Substring(9))); sentenceEnd = true; }
             if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "BGMStop") { BGMOut(int.Parse(scenarioText[i].Substring(8, 4))); sentenceEnd = true; }
@@ -115,7 +123,21 @@ public class ScenariosceneManager : MonoBehaviour
         }
     }
 
-
+    public void SkipButton()
+    {
+        if (skipFlag == false)
+        {
+            skipFlag = true;
+            PlayerPrefs.SetInt("skipFlag", 1);
+            objSkip.GetComponent<Text>().text = "<color=red>既読Skip\n<ON></color>";
+        }
+        else
+        {
+            skipFlag = false;
+            PlayerPrefs.SetInt("skipFlag", 0);
+            objSkip.GetComponent<Text>().text = "既読Skip\n<OFF>";
+        }
+    }
 
     private IEnumerator InputText(string str)
     {
@@ -994,14 +1016,14 @@ public class ScenariosceneManager : MonoBehaviour
     {
         BGMManager b1 = objBGM.GetComponent<BGMManager>();
         //シナリオデータ読込
-        yield return StartCoroutine(LoadScenario(b1.scenarioName));
+        yield return StartCoroutine(LoadScenario(b1.chapterName));
         //シナリオ処理
         yield return StartCoroutine(NovelGame());
     }
 
 
 
-    //目次ファイルを読み込み、進行度に合わせてファイルを拾ってくる。
+    //目次ファイルを読み込み、ファイルを拾ってくる。
     private IEnumerator LoadScenario(string path)
     {
         // 目次ファイルが無かったら終わる
@@ -1025,7 +1047,7 @@ public class ScenariosceneManager : MonoBehaviour
         // 読み込んだ目次テキストファイルからstring配列を作成する
         scenarioFilePath = text.Split('\n');
 
-        //アドレスから各ファイルをロード※１チャプター１００行
+        //アドレスから各ファイルをロード
         for (int i = 0; i < scenarioFilePath.Length; i++)
         {
             if (scenarioFilePath[i] == "[END]") { break; }
@@ -1056,7 +1078,7 @@ public class ScenariosceneManager : MonoBehaviour
         {
             // テキストを取り出す
             string text = request.text;
-
+            sectionName=path;
             // 読み込んだテキストファイルからstring配列を作成する
             scenarioText = text.Split('\n');
         }
@@ -1103,17 +1125,17 @@ public class ScenariosceneManager : MonoBehaviour
     {
         while (true)//ブレークするまでループを続ける。
         {
-            if (Input.GetMouseButtonDown(0) == true)
+            if ((Camera.main.ScreenToWorldPoint(Input.mousePosition).y> -4.2f) && (Input.GetMouseButtonDown(0) == true || (skipFlag == true && skipFlag2 == true)))
             {
-                yield return null;//本体に処理を返して他のオブジェクトのイベントトリガーを確認。
-                if (pushObjectFlag == false)//フラグが立っていたらオブジェクト処理のためのタップだったと判定。
+                yield return null;
+                if (backLogFlag == false)
                 {
                     sentenceEnd = true;
                     yield break;//falseならコルーチン脱出
                 }
                 else
                 {
-                    yield return null;//trueならコルーチン継続
+                    yield return null;
                 }
             }
             else

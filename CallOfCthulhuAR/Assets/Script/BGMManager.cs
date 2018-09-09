@@ -5,7 +5,7 @@ public class BGMManager : MonoBehaviour {
     //BGM再生に伴うフラグを管理するスクリプト（BGMManager本体がdontdestroyオブジェクトなのでシーンをまたぐ際に使うフラグがある）
     public bgmFlag b1;
     //
-    public string scenarioName="";
+    public string chapterName="";
     //マルチプレイのフラグ
     public int multiPlay = 0;
 

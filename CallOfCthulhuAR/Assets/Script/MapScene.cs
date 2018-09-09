@@ -25,9 +25,6 @@ public class MapScene : MonoBehaviour
     GameObject objTime;
     const string _FILE_HEADER = "C:\\Users\\hoto\\Documents\\GitHub\\CoCAR\\CallOfCthulhuAR\\Assets\\Scenario\\";                      //ファイル場所の頭
 
-
-
-
     void Start()
     {
         //シナリオ進度読込。
@@ -91,7 +88,7 @@ public class MapScene : MonoBehaviour
                 (data[10] == "" || PlayerPrefs.GetInt(data[10], 0) > 0))
             {
                 BGMManager b1 = objBGM.GetComponent<BGMManager>();
-                b1.scenarioName = data[11].Replace("\r", "").Replace("\n", "");
+                b1.chapterName = data[11].Replace("\r", "").Replace("\n", "");
                 GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "NovelScene");
             }
         }
