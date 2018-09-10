@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class CSManager : MonoBehaviour {
     private int[] status=new int[STATUSNUM];
@@ -16,14 +17,20 @@ public class CSManager : MonoBehaviour {
     private GameObject[] objSkill = new GameObject[SKILLNUM];
     private bool skill;
     private int[] skillDefault = new int[SKILLNUM];
+    private int nowHP;
+    private int nowMP;
+    private int nowSAN;
     const int STATUSNUM = 12;
     const int SKILLNUM = 54;
 	// Use this for initialization
 	void Start () {
+
         DefaultMake();
-        MakeCharacter();
-
-
+        SeeCharacter();
+        if (SceneManager.GetActiveScene().name != "CharacterSheet")
+        {
+            transform.GetChild(0).gameObject.SetActive(false);
+        }
     }
 
 
@@ -32,9 +39,12 @@ public class CSManager : MonoBehaviour {
         skill = false;
         objSkillSheet1 = GameObject.Find("SkillSheet1/2").gameObject as GameObject;
         objSkillSheet2 = GameObject.Find("SkillSheet2/2").gameObject as GameObject;
-        objSkillButton = GameObject.Find("Button (2)").gameObject as GameObject;
         objChara = GameObject.Find("CharacterImage").gameObject as GameObject;
-        objBuyPoint = GameObject.Find("BuyPoint").gameObject as GameObject;
+        objSkillButton = GameObject.Find("SkillButton").gameObject as GameObject;
+        if (SceneManager.GetActiveScene().name == "CharacterSheet")
+        {
+            objBuyPoint = GameObject.Find("BuyPoint").gameObject as GameObject;
+        }
         for (int i = 0; i < STATUSNUM; i++)
         {
             statusObj[i] = GameObject.Find("statusObj" + i.ToString()).gameObject as GameObject;
@@ -68,12 +78,52 @@ public class CSManager : MonoBehaviour {
     }
 
 
+    public void SeeCharacter()
+    {
+        string[][] str = new string[STATUSNUM][];
+        string[] str2;
+        string str3="";
+        for (int i = 0; i < STATUSNUM; i++)
+        {
+            status[i]=PlayerPrefs.GetInt("Status" + i.ToString(), 0);
+        }
+        for (int i = 0; i < SKILLNUM; i++)
+        {
+            skills[i]=PlayerPrefs.GetInt("Skill" + i.ToString(), 0);
+        }
+        nowHP= PlayerPrefs.GetInt("耐久力", 0);
+        nowMP = PlayerPrefs.GetInt("マジック・ポイント", 0);
+        nowSAN = PlayerPrefs.GetInt("正気度ポイント", 0);
+        for (int i = 0; i < STATUSNUM; i++)
+        {
+            str[i] = statusObj[i].GetComponent<Text>().text.Split(':');
+            if (i == 8)
+            {
+                if (status[8] > 0) { str3 = "+1D"; }
+                if (status[8] < 0) { str3 = "-1D"; }
+            }
+            if (i == 9){ str3 = nowHP.ToString() + "/"; }
+            if (i == 10) { str3 = nowMP.ToString() + "/"; }
+            if (i == 11) { str3 = nowSAN.ToString() + "/"; }
+            statusObj[i].GetComponent<Text>().text = str[i][0] + ':' + str3 + Mathf.Abs(status[i]);
+            if (i == 11) { statusObj[i].GetComponent<Text>().text = str[i][0] + ':' + str3 + (99 -skills[53]).ToString(); }
+            str3 = "";
+        }
+        for (int i = 0; i < SKILLNUM; i++)
+        {
+            str2 = objSkill[i].GetComponent<Text>().text.Split('：');
+            objSkill[i].GetComponent<Text>().text = str2[0] + '：' + skills[i].ToString();
+        }
+        //キャラがいなければ作成
+        if (status[0] == 0) { MakeCharacter(); }
+    }
 
 
     //キャラのステータス決定
     public void MakeCharacter()
     {
         Utility u1 = GetComponent<Utility>();
+        string str3="";
         string[][] str=new string[STATUSNUM][];
         status[0] = u1.DiceRoll(3, 6);
         status[1] = u1.DiceRoll(3, 6);
@@ -91,15 +141,23 @@ public class CSManager : MonoBehaviour {
         status[9] = (status[1] + status[6]) / 2 + (status[1] + status[6]) % 2;
         status[10] = status[5];
         status[11] = status[5] * 5;
+        nowHP = status[9];
+        nowMP = status[10];
+        nowSAN = status[11];
         for (int i = 0; i < STATUSNUM; i++)
         {
             str[i]= statusObj[i].GetComponent<Text>().text.Split(':');
             if (i == 8)
             {
-                if (status[8] > 0) { statusObj[i].GetComponent<Text>().text += "+1D"; }
-                if (status[8] < 0) { statusObj[i].GetComponent<Text>().text += "-1D"; }
+                if (status[8] > 0) { str3 = "+1D"; }
+                if (status[8] < 0) { str3 = "-1D"; }
             }
-            statusObj[i].GetComponent<Text>().text =str[i][0] + ':' + Mathf.Abs(status[i]);
+            if (i == 9) { str3 = nowHP.ToString() + "/"; }
+            if (i == 10) { str3 = nowMP.ToString() + "/"; }
+            if (i == 11) { str3 = nowSAN.ToString() + "/"; }
+            statusObj[i].GetComponent<Text>().text = str[i][0] + ':' + str3 + Mathf.Abs(status[i]);
+            if (i == 11) { statusObj[i].GetComponent<Text>().text = str[i][0] + ':' + str3 + (99 - skills[53]).ToString(); }
+            str3 = "";
         }
 
         //技能初期値の入力
@@ -123,15 +181,23 @@ public class CSManager : MonoBehaviour {
 
     private IEnumerator SkillMove()
     {
-        if (skill == false)
+        int localchange = 0;
+        if (SceneManager.GetActiveScene().name != "CharacterSheet")
+        {
+            localchange = 600;
+        }
+            if (skill == false)
         {
             skill = true;
             for (int i = 0; i <= 20; i++)
             {
-                objSkillSheet2.GetComponent<RectTransform>().localPosition = new Vector3(800 - i * 40, 80, 0);
+                objSkillSheet2.GetComponent<RectTransform>().localPosition = new Vector3(800 - i * 40, localchange + 80, 0);
                 yield return null;
             }
-            objBuyPoint.GetComponent<Text>().text = "残：" + buyPoint.ToString() + "P";
+            if (SceneManager.GetActiveScene().name == "CharacterSheet")
+            {
+                objBuyPoint.GetComponent<Text>().text = "残：" + buyPoint.ToString() + "P";
+            }
             yield break;
         }
         
@@ -140,7 +206,7 @@ public class CSManager : MonoBehaviour {
             skill = false;
             for (int i = 0; i <= 20; i++)
             {
-                objSkillSheet2.GetComponent<RectTransform>().localPosition = new Vector3(i * 40, 80, 0);
+                objSkillSheet2.GetComponent<RectTransform>().localPosition = new Vector3(i * 40, localchange + 80, 0);
                 yield return null;
             }
             yield break;
@@ -248,7 +314,9 @@ public class CSManager : MonoBehaviour {
         {
             PlayerPrefs.SetInt("Skill" + i.ToString(), skills[i]);
         }
-
+        PlayerPrefs.SetInt("耐久力",nowHP);
+        PlayerPrefs.SetInt("マジック・ポイント", nowMP);
+        PlayerPrefs.SetInt("正気度ポイント", nowSAN);
         GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
     }
 
@@ -261,8 +329,27 @@ public class CSManager : MonoBehaviour {
         MakeCharacter();
     }
 
-
-
+    public void CSButton()
+    {
+        if (transform.GetChild(0).gameObject.activeSelf==false)
+        {
+            if (SceneManager.GetActiveScene().name == "NovelScene")
+            {
+                GameObject.Find("NovelManager").gameObject.GetComponent<ScenariosceneManager>().backLogCSFlag = true;
+            }
+            transform.GetChild(0).gameObject.SetActive(true);
+            transform.GetChild(1).gameObject.GetComponent<Text>().text = "戻る";
+        }
+        else if(Camera.main.ScreenToWorldPoint(Input.mousePosition).y < -4.2f)//ボタン部以外の背景等も子オブジェクトなのでタップでボタン押された判定になって終了してしまう。それを避けるためにボタン部の位置をifで判定
+        {
+            if (SceneManager.GetActiveScene().name == "NovelScene")
+            {
+                GameObject.Find("NovelManager").gameObject.GetComponent<ScenariosceneManager>().backLogCSFlag = false ;
+            }
+            transform.GetChild(0).gameObject.SetActive(false);
+            transform.GetChild(1).gameObject.GetComponent<Text>().text = "Character\nsheet";
+        }
+    }
 
     // Update is called once per frame
     void Update () {

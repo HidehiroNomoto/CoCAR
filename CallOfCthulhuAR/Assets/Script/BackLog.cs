@@ -16,10 +16,6 @@ public class BackLog : MonoBehaviour {
         obj = transform.GetChild(0).gameObject;
         obj2 = transform.GetChild(1).gameObject;
         obj3 = transform.GetChild(2).gameObject;
-        if (SceneManager.GetActiveScene().name=="NovelScene")
-        {
-            objGame = GameObject.Find("NovelManager").gameObject as GameObject;
-        }
         obj.gameObject.SetActive(false);
         obj2.gameObject.SetActive(false);
         //PlayerPrefs.DeleteAll();
@@ -73,20 +69,19 @@ public class BackLog : MonoBehaviour {
         }
         if (SceneManager.GetActiveScene().name=="NovelScene")
         {
-            objGame.GetComponent<ScenariosceneManager>().backLogFlag = false;
+            GameObject.Find("NovelManager").gameObject.GetComponent<ScenariosceneManager>().backLogCSFlag = false;
         }
     }
-
-    //ボタン押した時に文章進行が反応してしまう
+    
     public void BackLogButton()
     {
         int logNum = 0;
         int logNum2 = 0;
-        string[] logText=new string[10000];
+        string[] logText=new string[1000];
         int startLog2 = 0;
         if (SceneManager.GetActiveScene().name=="NovelScene")
         {
-            objGame.GetComponent<ScenariosceneManager>().backLogFlag  = true;
+            GameObject.Find("NovelManager").gameObject.GetComponent<ScenariosceneManager>().backLogCSFlag  = true;
         }
         if (backLog == false)
         {
@@ -95,19 +90,19 @@ public class BackLog : MonoBehaviour {
             obj2.GetComponent<Text>().text = "";
             logNum2 = PlayerPrefs.GetInt("最新ログ番号", 0);
             obj3.GetComponent<Text>().text = "戻る";
-            if (PlayerPrefs.GetString("バックログ" + (logNum2 + 1).ToString(), "[NoLog!]") == "[NoLog!]") { logNum = 0; } else { logNum = logNum2 + 1; if (logNum >= 10000) { logNum = 0; } }
-            for(int i=0;i<10000;i++)
+            if (PlayerPrefs.GetString("バックログ" + (logNum2 + 1).ToString(), "[NoLog!]") == "[NoLog!]") { logNum = 0; } else { logNum = logNum2 + 1; if (logNum >= 1000) { logNum = 0; } }
+            for(int i=0;i<1000;i++)
             {
                 logText[i] = PlayerPrefs.GetString("バックログ" + logNum.ToString(), "") + "\n";
                 logNum++;
-                if (logNum >= 10000) { logNum = 0; }
+                if (logNum >= 1000) { logNum = 0; }
             }
-            if (logNum2 >= 3) { startLog = logNum2 - 3; } else { startLog = 0; }
+            if (logNum2 >= 4) { startLog = logNum2 - 4; } else { startLog = 0; }
             startLog2 = startLog+4;
             backLog = true;
             StartCoroutine(BackLogScroll(logText,startLog2));
         }
-        else
+        else if(Camera.main.ScreenToWorldPoint(Input.mousePosition).y < -4.2f)//ボタン部以外の背景等も子オブジェクトなのでタップでボタン押された判定になってバックログが終了してしまう。それを避けるためにボタン部の位置をifで判定
         {
             obj.gameObject.SetActive(false);
             obj2.gameObject.SetActive(false);

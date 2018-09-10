@@ -18,6 +18,7 @@ public class TitleManager : MonoBehaviour {
         GameObject.Find("BGMManager").GetComponent<AudioSource>().volume = PlayerPrefs.GetFloat("BGMVolume", 0.8f);
         GetComponent<Utility>().BGMPlay(Resources.Load<AudioClip>("TitleBGM"));
         GameObject.Find("BGMManager").GetComponent<BGMManager>().bgmChange(true, 0);//BGMManager内部変数の初期化
+        if (PlayerPrefs.GetInt("Status0", 0) ==0) { GameObject.Find("StartButton").SetActive(false); }
     }
 
     // Update is called once per frame
