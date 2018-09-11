@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+
 public class TitleManager : MonoBehaviour {
 
     private int timeCount;                                           //シーン開始からのフレーム数
+    public GameObject FileBrowserPrefab;
+
 
     // Use this for initialization
     void Start()
@@ -35,6 +38,16 @@ public class TitleManager : MonoBehaviour {
     public void PushCharacterButton()
     {
         GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "CharacterSheet");
+    }
+
+    public void PushScenarioButton()
+    {
+        GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "ScenarioMake");
+    }
+
+    public void PushSelectButton()
+    {
+        GetComponent<GracesGames.SimpleFileBrowser.Scripts.FileOpenManager>().OpenFileBrowser(true);
     }
 
     public void PushMaskButton()
