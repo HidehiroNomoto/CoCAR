@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
-
+using System.IO;
 //アーカイブ読込（作成は別プログラム）
 
 
@@ -44,12 +44,14 @@ public class ScenariosceneManager : MonoBehaviour
     public bool backLogCSFlag = false;
     public int selectNum=1;
     private int logNum=0;
-    const string _FILE_HEADER = "C:\\Users\\hoto\\Documents\\GitHub\\CoCAR\\CallOfCthulhuAR\\Assets\\Scenario\\";                      //ファイル場所の頭
+    string _FILE_HEADER;
     const int CHARACTER_Y = -300;
 
     // Use this for initialization
     void Start()
     {
+        _FILE_HEADER = PlayerPrefs.GetString("進行中シナリオ", "");                      //ファイル場所の頭
+        if (_FILE_HEADER == null || _FILE_HEADER == "") {  GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene"); }
         logNum = PlayerPrefs.GetInt("最新ログ番号", 0);
         objSkip = GameObject.Find("SkipText").gameObject as GameObject;
         if (PlayerPrefs.GetInt("skipFlag", 0) == 1) { skipFlag = true; objSkip.GetComponent<Text>().text = "<color=red>既読Skip\n<ON></color>"; }
@@ -107,7 +109,7 @@ public class ScenariosceneManager : MonoBehaviour
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Shake") { StartCoroutine(ShakeScreen()); }
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Jump:") { StartCoroutine(CharacterJump(int.Parse(scenarioText[i].Substring(5, 1)))); }
             if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Select:") { buttonText = scenarioText[i].Substring(7).Split(','); StartCoroutine(Select(buttonText[0], buttonText[1], buttonText[2], buttonText[3].Replace("\r", "").Replace("\n", ""),false)); while (sentenceEnd == false) { yield return null; }; SystemSEPlay(systemAudio[3]); i += selectNum; continue; }
-            if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "NextFile:") { yield return StartCoroutine(LoadFile(scenarioText[i].Substring(9).Replace("\r", "").Replace("\n", ""))); i = 0; sentenceEnd = true; }
+            if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "NextFile:") { LoadFile(scenarioText[i].Substring(9).Replace("\r", "").Replace("\n", "")); i = 0; sentenceEnd = true; }
             if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Hantei:") { separateText = scenarioText[i].Substring(7).Split(','); i += Hantei(separateText[0], int.Parse(separateText[1].Replace("\r", "").Replace("\n", ""))); while (sentenceEnd == false) { yield return null; }; sentenceEnd = false; StartCoroutine(PushWait()); }
             if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Battle:") { battleText = scenarioText[i].Substring(7).Split(','); battleFlag = -1; StartCoroutine(Battle(int.Parse(battleText[0]), int.Parse(battleText[1]), int.Parse(battleText[2]), int.Parse(battleText[3]), int.Parse(battleText[4]), int.Parse(battleText[5]), int.Parse(battleText[6]),bool.Parse(battleText[7]), battleText[8], battleText[9], int.Parse(battleText[10]), int.Parse(battleText[11]), bool.Parse(battleText[12].Replace("\r", "").Replace("\n", "")))); while (battleFlag == -1) { yield return null; }; i += battleFlag;for (int k = 0; k < 100; k++) { yield return null; }sentenceEnd = true; }
             if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "FlagBranch:") { i+=PlayerPrefs.GetInt(scenarioText[i].Substring(11).Replace("\r", "").Replace("\n", ""),0);sentenceEnd = true; }
@@ -121,7 +123,8 @@ public class ScenariosceneManager : MonoBehaviour
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Lost:") { StartCoroutine(CharaLost()); }
             if (scenarioText[i].Length > 10 && scenarioText[i].Substring(0, 10) == "FlagReset:") { FlagReset(); sentenceEnd = true; }
             if (scenarioText[i].Length > 6 && scenarioText[i].Substring(0, 6) == "Title:") { GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene"); }
-                while (sentenceEnd == false) { yield return null; }
+            if (scenarioText[i].Length > 4 && scenarioText[i].Substring(0, 4) == "Map:") { GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "MapScene"); }
+            while (sentenceEnd == false) { yield return null; }
             objBackText.gameObject.SetActive(false);//背景テキストは出っ放しにならない
             for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
             objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
@@ -1113,7 +1116,7 @@ public class ScenariosceneManager : MonoBehaviour
     {
         BGMManager b1 = objBGM.GetComponent<BGMManager>();
         //シナリオデータ読込
-        yield return StartCoroutine(LoadScenario(b1.chapterName));
+        LoadScenario(b1.chapterName);
         //シナリオ処理
         yield return StartCoroutine(NovelGame());
     }
@@ -1121,102 +1124,196 @@ public class ScenariosceneManager : MonoBehaviour
 
 
     //目次ファイルを読み込み、ファイルを拾ってくる。
-    private IEnumerator LoadScenario(string path)
+    private void LoadScenario(string path)
     {
         // 目次ファイルが無かったら終わる
-        if (!System.IO.File.Exists(_FILE_HEADER + path))
+        if (!File.Exists(_FILE_HEADER))
         {
-            obj.GetComponent<Text>().text = ("エラー。シナリオファイルが見当たりません。" + _FILE_HEADER + path);
-            yield break;
+            obj.GetComponent<Text>().text = ("エラー。シナリオファイルが見当たりません。" + _FILE_HEADER + "\\" + path);
+            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
         }
 
-        // 目次ファイルをロードする
-        WWW request = new WWW(_FILE_HEADER + path);
+        //閲覧するエントリ
+        string extractFile = path;
 
-        while (!request.isDone)
+        //ZipFileオブジェクトの作成
+        ICSharpCode.SharpZipLib.Zip.ZipFile zf =
+            new ICSharpCode.SharpZipLib.Zip.ZipFile(PlayerPrefs.GetString("進行中シナリオ", ""));
+        zf.Password = "I_change_the_world";
+        //展開するエントリを探す
+        ICSharpCode.SharpZipLib.Zip.ZipEntry ze = zf.GetEntry(extractFile);
+
+        if (ze != null)
         {
-            yield return new WaitForEndOfFrame();
-        }
-
-        // テキストを取り出す
-        string text = request.text;
-
-        // 読み込んだ目次テキストファイルからstring配列を作成する
-        scenarioFilePath = text.Split('\n');
-
-        //アドレスから各ファイルをロード
-        for (int i = 0; i < scenarioFilePath.Length; i++)
-        {
-            if (scenarioFilePath[i] == "[END]") { break; }
-            yield return StartCoroutine(LoadFile(scenarioFilePath[i].Replace("\r", "").Replace("\n", "")));
-        }
-    }
-
-
-    private IEnumerator LoadFile(string path)
-    {
-        int i;
-        // ファイルが無かったら終わる
-        if (!System.IO.File.Exists(_FILE_HEADER + path))
-        {
-            obj.GetComponent<Text>().text = ("エラー。シナリオファイルに問題があります。" + _FILE_HEADER + path);
-        }
-
-        // 指定したファイルをロードする
-        WWW request = new WWW(_FILE_HEADER + path);
-
-        while (!request.isDone)
-        {
-            yield return new WaitForEndOfFrame();
-        }
-
-        //txtファイルの場合
-        if (path.Substring(path.Length - 4) == ".txt")
-        {
+            //閲覧するZIPエントリのStreamを取得
+            Stream reader = zf.GetInputStream(ze);
+            //文字コードを指定してStreamReaderを作成
+            StreamReader sr = new StreamReader(
+                reader, System.Text.Encoding.GetEncoding("UTF-8"));
             // テキストを取り出す
-            string text = request.text;
-            sectionName=path;
-            // 読み込んだテキストファイルからstring配列を作成する
-            scenarioText = text.Split('\n');
-        }
+            string text = sr.ReadToEnd();
 
-        //pngファイルの場合
-        if (path.Substring(path.Length - 4) == ".png")
+            // 読み込んだ目次テキストファイルからstring配列を作成する
+            scenarioFilePath = text.Split('\n');
+
+            //アドレスから各ファイルをロード
+            for (int i = 0; i < scenarioFilePath.Length; i++)
+            {
+                if (scenarioFilePath[i] == "[END]") { break; }
+                LoadFile(scenarioFilePath[i].Replace("\r", "").Replace("\n", ""),zf);
+            }
+
+            //閉じる
+            sr.Close();
+            reader.Close();
+        }
+        else
         {
-            // 画像を取り出す
-            Texture2D texture = request.texture;
-
-            // 読み込んだ画像からSpriteを作成する
-            for (i = 0; i < 100; i++) { if (scenarioGraphic[i] == null) { break; } }
-            scenarioGraphic[i] = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
         }
+        //閉じる
+        zf.Close();
 
-        //mp3ファイルの場合
-        if (path.Substring(path.Length - 4) == ".mp3" || path.Substring(path.Length - 4) == ".ogg")
-        {
-            yield return StartCoroutine(LoadBGM(request));
-        }
-        yield return null;
     }
 
-    private IEnumerator LoadBGM(WWW request)
+    //引数pathのみのバージョン。テキストデータの読み込みのみ対応。（スクリプトからの直呼び出し『NextFile:』用）
+    private void LoadFile(string path)
     {
-        int i;
-        for (i = 0; i < 10; i++) { if (scenarioAudio[i] == null) { break; } }
-        scenarioAudio[i] = request.GetAudioClip(false, true);
-        while (scenarioAudio[i].loadState == AudioDataLoadState.Loading)
+        // 目次ファイルが無かったら終わる
+        if (!File.Exists(_FILE_HEADER))
         {
-            // ロードが終わるまで待つ
-            yield return new WaitForEndOfFrame();
+            obj.GetComponent<Text>().text = ("エラー。シナリオファイルが見当たりません。" + _FILE_HEADER + "\\" + path);
+            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
         }
 
-        if (scenarioAudio[i].loadState != AudioDataLoadState.Loaded)
+        //閲覧するエントリ
+        string extractFile = path;
+
+        //ZipFileオブジェクトの作成
+        ICSharpCode.SharpZipLib.Zip.ZipFile zf =
+            new ICSharpCode.SharpZipLib.Zip.ZipFile(PlayerPrefs.GetString("進行中シナリオ", ""));
+        zf.Password = "I_change_the_world";
+        //展開するエントリを探す
+        ICSharpCode.SharpZipLib.Zip.ZipEntry ze = zf.GetEntry(extractFile);
+
+        if (ze != null)
         {
-            // 読み込み失敗
-            Debug.Log("Failed to Load!");
-            yield break;
+            //閲覧するZIPエントリのStreamを取得
+            Stream reader = zf.GetInputStream(ze);
+            //文字コードを指定してStreamReaderを作成
+            StreamReader sr = new StreamReader(
+                reader, System.Text.Encoding.GetEncoding("UTF-8"));
+            // テキストを取り出す
+            string text = sr.ReadToEnd();
+
+            // 読み込んだ目次テキストファイルからstring配列を作成する
+            scenarioText = text.Split('\n');
+
+            //閉じる
+            sr.Close();
+            reader.Close();
+        }
+        else
+        {
+            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
+        }
+        //閉じる
+        zf.Close();
+    }
+
+    private void LoadFile(string path, ICSharpCode.SharpZipLib.Zip.ZipFile zf)
+    {
+        int j;
+        byte[] buffer;
+
+        //閲覧するエントリ
+        string extractFile = path;
+        //展開するエントリを探す
+        ICSharpCode.SharpZipLib.Zip.ZipEntry ze = zf.GetEntry(extractFile);
+
+        if (ze != null)
+        {
+            //txtファイルの場合
+            if (path.Substring(path.Length - 4) == ".txt")
+            {
+                //閲覧するZIPエントリのStreamを取得
+                Stream reader = zf.GetInputStream(ze);
+                //文字コードを指定してStreamReaderを作成
+                StreamReader sr = new StreamReader(
+                    reader, System.Text.Encoding.GetEncoding("UTF-8"));
+                // テキストを取り出す
+                string text = sr.ReadToEnd();
+
+                // 読み込んだ目次テキストファイルからstring配列を作成する
+                scenarioText = text.Split('\n');
+
+                //閉じる
+                sr.Close();
+                reader.Close();
+            }
+
+            //pngファイルの場合
+            if (path.Substring(path.Length - 4) == ".png")
+            {
+                //閲覧するZIPエントリのStreamを取得
+                Stream fs = zf.GetInputStream(ze);
+                buffer = ReadBinaryData(fs);//bufferにbyte[]になったファイルを読み込み
+
+                // 画像を取り出す
+                //横サイズ
+                int pos = 16;
+                int width = 0;
+                for (int i = 0; i < 4; i++)
+                {
+                    width = width * 256 + buffer[pos++];
+                }
+                //縦サイズ
+                int height = 0;
+                for (int i = 0; i < 4; i++)
+                {
+                    height = height * 256 + buffer[pos++];
+                }
+                //byteからTexture2D作成
+               Texture2D texture = new Texture2D(width, height);
+                texture.LoadImage(buffer);
+
+                // 読み込んだ画像からSpriteを作成する
+                for (j = 0; j < 100; j++) { if (scenarioGraphic[j] == null) { break; } }
+                scenarioGraphic[j] = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+
+                //閉じる
+                fs.Close();
+            }
+
+            //wavファイルの場合
+            if (path.Substring(path.Length - 4) == ".wav")
+            {
+                //閲覧するZIPエントリのStreamを取得
+                Stream fs = zf.GetInputStream(ze);
+                buffer = ReadBinaryData(fs);//bufferにbyte[]になったファイルを読み込み
+                for (j = 0; j < 10; j++) { if (scenarioAudio[j] == null) { break; } }
+                scenarioAudio[j] = WavUtility.ToAudioClip(buffer);
+                //閉じる
+                fs.Close();
+            }
+        }
+        else
+        {
+            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
+        }
+
+    }
+
+    // ストリームからデータを読み込み、バイト配列に格納
+    static public byte[] ReadBinaryData(Stream st)
+    {
+        using (MemoryStream ms = new MemoryStream())
+        {
+            st.CopyTo(ms);
+            return ms.ToArray();
         }
     }
+
     //画面が押されたかチェックするコルーチン
     public IEnumerator PushWait()
     {

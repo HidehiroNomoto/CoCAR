@@ -23,12 +23,12 @@ public class MapScene : MonoBehaviour
     GameObject objTarget;
     GameObject objBGM;
     GameObject objTime;
-    const string _FILE_HEADER = "C:\\Users\\hoto\\Documents\\GitHub\\CoCAR\\CallOfCthulhuAR\\Assets\\Scenario\\";                      //ファイル場所の頭
+    string _FILE_HEADER; 
 
     void Start()
     {
-        //シナリオ進度読込。
-        //シナリオ進度情報からイベント地点読込。
+        _FILE_HEADER = PlayerPrefs.GetString("進行中シナリオ","");                      //ファイル場所の頭
+        if (_FILE_HEADER==null || _FILE_HEADER == "") { GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene"); }
         longitude = 135.768738;
         latitude = 35.010348;
         obj = GameObject.Find("error").gameObject as GameObject;
@@ -36,7 +36,7 @@ public class MapScene : MonoBehaviour
         mapImageObj = GameObject.Find("mapImage").gameObject as GameObject;
         objBGM= GameObject.Find("BGMManager").gameObject as GameObject;
         objTime = GameObject.Find("TimeText").gameObject as GameObject;
-        StartCoroutine(LoadMapData("mapdata.txt"));
+        LoadMapData("mapdata.txt");
         GetPos();
         GetMap();
     }
@@ -87,8 +87,8 @@ public class MapScene : MonoBehaviour
                 (data[9] == "" || (int.Parse(data[9]) <= dt.Minute) || (int.Parse(data[8]) < dt.Hour) || (int.Parse(data[7]) < dt.Day) || (int.Parse(data[6]) < dt.Month)) &&
                 (data[10] == "" || PlayerPrefs.GetInt(data[10], 0) > 0))
             {
-                BGMManager b1 = objBGM.GetComponent<BGMManager>();
-                b1.chapterName = data[11].Replace("\r", "").Replace("\n", "");
+                objBGM.GetComponent<BGMManager>().chapterName = data[11].Replace("\r", "").Replace("\n", "");
+                objTime.GetComponent<Text>().text = "[★イベント発生]";
                 GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "NovelScene");
             }
         }
@@ -97,21 +97,22 @@ public class MapScene : MonoBehaviour
 
     void GetPos()
     {
-        /*★①スマートフォン版（ＧＰＳから位置情報を拾う）
-        //ココカラ
+        //★①スマートフォン版（ＧＰＳから位置情報を拾う）
+        if(Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer)
+        {
         //GPSで取得した緯度経度を変数に代入
         StartCoroutine(GetGPS());
         longitude = Input.location.lastData.longitude;
         latitude = Input.location.lastData.latitude;
-        //ココマデ
-        */
+        }
         //★②PC版（キー入力で動かす）
-        //ココカラ
-        if (Input.GetKey(KeyCode.DownArrow)) { latitude -= 0.00001;   }
-        if (Input.GetKey(KeyCode.UpArrow)) { latitude += 0.00001; }
-        if (Input.GetKey(KeyCode.LeftArrow)) { longitude -= 0.00001;  }
-        if (Input.GetKey(KeyCode.RightArrow)) { longitude += 0.00001;  }
-        //ココマデ
+        if (Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer)
+        {
+            if (Input.GetKey(KeyCode.DownArrow)) { latitude -= 0.00001; }
+            if (Input.GetKey(KeyCode.UpArrow)) { latitude += 0.00001; }
+            if (Input.GetKey(KeyCode.LeftArrow)) { longitude -= 0.00001; }
+            if (Input.GetKey(KeyCode.RightArrow)) { longitude += 0.00001; }
+        }
         objTarget.GetComponent<RectTransform>().localPosition = new Vector3(targetX, targetY, 0);
         targetX = (float)((longitude - longitudeMap) * 80000);
         targetY= (float)((latitude - latitudeMap) * (100000 + ((latitude - 27) / 80)*100000));
@@ -177,8 +178,43 @@ public class MapScene : MonoBehaviour
     }
 
     //目次ファイルを読み込み、進行度に合わせてファイルを拾ってくる。
-    private IEnumerator LoadMapData(string path)
+    private void LoadMapData(string path)
     {
+        //閲覧するエントリ
+        string extractFile = path;
+
+        //ZipFileオブジェクトの作成
+        ICSharpCode.SharpZipLib.Zip.ZipFile zf =
+            new ICSharpCode.SharpZipLib.Zip.ZipFile(PlayerPrefs.GetString("進行中シナリオ",""));
+        zf.Password = "I_change_the_world";
+        //展開するエントリを探す
+        ICSharpCode.SharpZipLib.Zip.ZipEntry ze = zf.GetEntry(extractFile);
+
+        if (ze != null)
+        {
+            //閲覧するZIPエントリのStreamを取得
+            System.IO.Stream reader = zf.GetInputStream(ze);
+            //文字コードを指定してStreamReaderを作成
+            System.IO.StreamReader sr = new System.IO.StreamReader(
+                reader, System.Text.Encoding.GetEncoding("UTF-8"));
+            // テキストを取り出す
+            string text = sr.ReadToEnd();
+
+            // 読み込んだ目次テキストファイルからstring配列を作成する
+            mapData = text.Split('\n');
+
+
+            //閉じる
+            sr.Close();
+            reader.Close();
+        }
+        else
+        {
+            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
+        }
+        //閉じる
+        zf.Close();
+        /*ファイルをそのまま展開する時のバージョン
         // 目次ファイルが無かったら終わる
         if (!System.IO.File.Exists(_FILE_HEADER + path))
         {
@@ -199,9 +235,8 @@ public class MapScene : MonoBehaviour
 
         // 読み込んだ目次テキストファイルからstring配列を作成する
         mapData = text.Split('\n');
+        */
     }
-
-
 }
 
 
