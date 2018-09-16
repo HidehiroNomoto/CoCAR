@@ -23,8 +23,7 @@ public class CSManager : MonoBehaviour {
     const int STATUSNUM = 12;
     const int SKILLNUM = 54;
 	// Use this for initialization
-	void Start () {
-
+	void Start () {       
         DefaultMake();
         SeeCharacter();
         if (SceneManager.GetActiveScene().name != "CharacterSheet")
@@ -57,7 +56,7 @@ public class CSManager : MonoBehaviour {
         {
             objSkill[i] = GameObject.Find("2Skill" + (i - SKILLNUM / 2 + 1).ToString()).gameObject as GameObject;
         }
-        StartCoroutine(LoadChara("C:\\Users\\hoto\\Documents\\GitHub\\CoCAR\\CallOfCthulhuAR\\Assets\\Scenario\\shicho.png"));
+        StartCoroutine(LoadChara(PlayerPrefs.GetString("CharacterIllustPath","")));
 
         //技能初期値設定
         skillDefault[0] = 5; skillDefault[1] = 5; skillDefault[2] = 20; skillDefault[3] = 30;
@@ -74,7 +73,6 @@ public class CSManager : MonoBehaviour {
         skillDefault[44] = 1; skillDefault[45] = 0; skillDefault[46] = 1; skillDefault[47] = 25;
         skillDefault[48] = 1; skillDefault[49] = 20; skillDefault[50] = 30; skillDefault[51] = 50;
         skillDefault[52] = 50; skillDefault[53] = 0;
-
     }
 
 
@@ -221,7 +219,7 @@ public class CSManager : MonoBehaviour {
         StartCoroutine(SkillMove());
     }
 
-    private IEnumerator LoadChara(string path)
+    public IEnumerator LoadChara(string path)
     {
         // 指定したファイルをロードする
         WWW request = new WWW(path);
@@ -230,13 +228,15 @@ public class CSManager : MonoBehaviour {
         {
             yield return new WaitForEndOfFrame();
         }
-
+        if (request.texture != null)
+        {
             // 画像を取り出す
             Texture2D texture = request.texture;
 
             // 読み込んだ画像からSpriteを作成する
+            objChara.GetComponent<RectTransform>().sizeDelta= new Vector2(texture.width,texture.height);
             objChara.GetComponent<Image>().sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
-        
+        }
     }
 
     public void SkillChangeButton1()
@@ -349,6 +349,12 @@ public class CSManager : MonoBehaviour {
             transform.GetChild(0).gameObject.SetActive(false);
             transform.GetChild(1).gameObject.GetComponent<Text>().text = "Character\nsheet";
         }
+    }
+
+    public void CharacterIllustButton()
+    {
+        GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey = "CharacterIllustPath";
+        GetComponent<GracesGames.SimpleFileBrowser.Scripts.FileOpenManager>().OpenFileBrowser(false);
     }
 
     // Update is called once per frame

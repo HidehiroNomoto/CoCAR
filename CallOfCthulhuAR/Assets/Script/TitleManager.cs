@@ -59,6 +59,7 @@ public class TitleManager : MonoBehaviour {
 
     public void PushSelectButton()
     {
+        GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey = "進行中シナリオ";
         GetComponent<GracesGames.SimpleFileBrowser.Scripts.FileOpenManager>().OpenFileBrowser(false);
     }
 

@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 using System.IO;
-//アーカイブ読込（作成は別プログラム）
+//PCをシナリオ立ち絵で出す関数
 
 
 public class ScenariosceneManager : MonoBehaviour
@@ -333,6 +333,21 @@ public class ScenariosceneManager : MonoBehaviour
         return 0;
     }
 
+    private void BattleBegin(int enemyGraph,int enemyNum,int HP,int playerHP,ref int[] enemyHP)
+    {
+        for (int i = 0; i < enemyNum; i++)
+        {
+            objCharacter[i].gameObject.SetActive(true);
+            objCharacter[i].GetComponent<Image>().sprite = scenarioGraphic[enemyGraph];
+            enemyHP[i] = HP;
+            ObjSizeChangeToGraph(i, scenarioGraphic[enemyGraph]);
+        }
+        if (enemyNum == 1) { objCharacter[0].GetComponent<RectTransform>().localPosition =new Vector3(0, CHARACTER_Y, 1); }
+        if (enemyNum == 2) { objCharacter[0].GetComponent<RectTransform>().localPosition = new Vector3(1 * 150 - 300, CHARACTER_Y, 1); objCharacter[1].GetComponent<RectTransform>().localPosition = new Vector3(3 * 150 - 300, CHARACTER_Y, 1); }
+        if (enemyNum == 3) { objCharacter[1].GetComponent<RectTransform>().localPosition = new Vector3(2 * 150 - 300, CHARACTER_Y, 1); objCharacter[2].GetComponent<RectTransform>().localPosition = new Vector3(4 * 150 - 300, CHARACTER_Y, 1); }
+        StartCoroutine(Status(playerHP, 0));
+    }
+
     //戦闘処理
     private IEnumerator Battle(int enemyGraph, int enemyNum, int HP, int DEX, int AttackPercent, int ATDiceNum, int ATDice,bool humanFlag,string tokusyu,string tokusyuSkill,int tokusyuSkillBonus,int maxTurn,bool maxTurnWin)
     {
@@ -345,13 +360,9 @@ public class ScenariosceneManager : MonoBehaviour
         int avoid = 2;
         int detailAct = 0;
         bool cutFlag = false;
-        for (int i = 0; i < enemyNum; i++)
-        {
-            objCharacter[i].gameObject.SetActive(true);
-            objCharacter[i].GetComponent<Image>().sprite = scenarioGraphic[enemyGraph];
-            enemyHP[i] = HP;
-            StartCoroutine(Status(playerHP,0));
-        }
+
+        BattleBegin(enemyGraph,enemyNum,HP,playerHP,ref enemyHP);
+
         Utility u1 = GetComponent<Utility>();
         for (int x=0;x<maxTurn;x++)
         {
@@ -402,7 +413,7 @@ public class ScenariosceneManager : MonoBehaviour
                             if (avoid <=1 )
                             {
                                 sentenceEnd = false;
-                                StartCoroutine(Cut(i));
+                                StartCoroutine(Cut(i,enemyNum));
                                 for (int v = 0; v < 100; v++) { yield return null; }
                                 continue;
                             }
@@ -415,13 +426,13 @@ public class ScenariosceneManager : MonoBehaviour
                             for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                             objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
                             if (avoid >= 2) { selectNum = -1; }         
-                            if (avoid <= 1) { sentenceEnd = false; StartCoroutine(Avoid(i)); }
+                            if (avoid <= 1) { sentenceEnd = false; StartCoroutine(Avoid(i,enemyNum)); }
                         }
                         if (selectNum !=1 )
                         {
                             damage = u1.DiceRoll(ATDiceNum, ATDice);
                             sentenceEnd = false;
-                            StartCoroutine(EnemyHit(i, damage));
+                            StartCoroutine(EnemyHit(i,enemyNum, damage));
                             StartCoroutine(Status(playerHP, damage));
                             playerHP -= damage;
                             if (playerHP <= 2) { break; }
@@ -431,7 +442,7 @@ public class ScenariosceneManager : MonoBehaviour
                     else
                     {
                         sentenceEnd = false;
-                        StartCoroutine(EnemyMiss(i));
+                        StartCoroutine(EnemyMiss(i,enemyNum));
                     }
                     for (int v = 0; v < 100; v++) { yield return null; }
                 }
@@ -503,6 +514,7 @@ public class ScenariosceneManager : MonoBehaviour
         objTextBox.GetComponent<Text>().text = "";
         for (int i = 0; i < 5; i++)
         {
+            objCharacter[i].GetComponent<RectTransform>().localPosition = new Vector3(i * 150 - 300, CHARACTER_Y, 1);
             objCharacter[i].gameObject.SetActive(false);
         }
     }
@@ -527,7 +539,7 @@ public class ScenariosceneManager : MonoBehaviour
                 {
                     sentenceEnd = false;
                     for (y = 0; y < enemyNum-1; y++) { if (enemyHP[y] >= 3 || (enemyHP[y] > 0 && humanFlag == false)) { break; } }
-                    StartCoroutine(PlayerMiss(y));
+                    StartCoroutine(PlayerMiss(y,enemyNum));
                 }
                 else
                 {
@@ -535,7 +547,7 @@ public class ScenariosceneManager : MonoBehaviour
                     sentenceEnd = false;
                     for (y = 0; y < enemyNum-1; y++) { if (enemyHP[y] >= 3 || (enemyHP[y] > 0 && humanFlag == false)) { break; } }
                     enemyHP[y] -= damage;
-                    StartCoroutine(PlayerHit(y, damage, 0, 0));
+                    StartCoroutine(PlayerHit(y,enemyNum, damage, 0, 0));
                     for (int v = 0; v < 60; v++) { yield return null; }
                     if (attack == 0){x--;}
                     for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
@@ -559,7 +571,7 @@ public class ScenariosceneManager : MonoBehaviour
                 {
                     sentenceEnd = false;
                     for (y = 0; y < enemyNum - 1; y++) { if (enemyHP[y] >= 3 || (enemyHP[y] > 0 && humanFlag == false)) { break; } }
-                    StartCoroutine(PlayerMiss(y));
+                    StartCoroutine(PlayerMiss(y,enemyNum));
                 }
                 else
                 {
@@ -574,7 +586,7 @@ public class ScenariosceneManager : MonoBehaviour
                     sentenceEnd = false;
                     for (y = 0; y < enemyNum - 1; y++) { if (enemyHP[y] >= 3 || (enemyHP[y] > 0 && humanFlag == false)) { break; } }
                     if (damage + playerDB > 0) { enemyHP[y] -= damage + playerDB; }
-                    StartCoroutine(PlayerHit(y, damage, playerDB, detailAct));
+                    StartCoroutine(PlayerHit(y,enemyNum, damage, playerDB, detailAct));
                     for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                     objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
                     if (enemyHP[y] <= 0 || (enemyHP[y] <= 2 && humanFlag == true)) { objCharacter[y].gameObject.SetActive(false); }
@@ -596,7 +608,7 @@ public class ScenariosceneManager : MonoBehaviour
                 {
                     sentenceEnd = false;
                     for (y = 0; y < enemyNum - 1; y++) { if (enemyHP[y] >= 3 || (enemyHP[y] > 0 && humanFlag == false)) { break; } }
-                    StartCoroutine(PlayerMiss(y));
+                    StartCoroutine(PlayerMiss(y,enemyNum));
                 }
                 else
                 {
@@ -611,7 +623,7 @@ public class ScenariosceneManager : MonoBehaviour
                     sentenceEnd = false;
                     for (y = 0; y < enemyNum - 1; y++) { if (enemyHP[y] >= 3 || (enemyHP[y] > 0 && humanFlag == false)) { break; } }
                     if (damage + playerDB > 0) { enemyHP[y] -= damage + playerDB; }
-                    StartCoroutine(PlayerHit(y, damage, playerDB, detailAct));
+                    StartCoroutine(PlayerHit(y,enemyNum, damage, playerDB, detailAct));
                     for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                     objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
                     if (enemyHP[y] <= 0 || (enemyHP[y] <= 2 && humanFlag == true)) { objCharacter[y].gameObject.SetActive(false); }
@@ -674,24 +686,33 @@ public class ScenariosceneManager : MonoBehaviour
         selectNum = -1;
     }
 
-    private IEnumerator PlayerMiss(int target)
+    private IEnumerator PlayerMiss(int target,int enemyNum)
     {
         SystemSEPlay(systemAudio[7]);
         TextDraw("", "攻撃を外した！");
         for (int v = 0; v < 100; v++) { yield return null; }
     }
 
-    private IEnumerator EnemyMiss(int target)
+    private IEnumerator EnemyMiss(int target,int enemyNum)
     {
+        int targetGra=target;
+        if (enemyNum == 1 && target == 0) { targetGra = 2; }
+        if (enemyNum == 2) { if (target == 0) { targetGra = 1; } else { targetGra = 3; } }
+        if (enemyNum == 3) { if (target == 0) { targetGra = 0; } else if (target==1) { targetGra = 2; } else { targetGra = 4; } }
         SystemSEPlay(systemAudio[7]);
-        objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(target * 150 - 300, CHARACTER_Y - 100, 0);
+        objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(targetGra * 150 - 300, CHARACTER_Y - 100, 0);
         TextDraw("", "相手の攻撃は当たらなかった。");
         for (int v = 0; v < 100; v++) { yield return null; }
-        objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(target * 150 - 300, CHARACTER_Y, 0);
+        objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(targetGra * 150 - 300, CHARACTER_Y, 0);
     }
 
-    private IEnumerator PlayerHit(int target,int damage,int db,int detailAct)
+    private IEnumerator PlayerHit(int target,int enemyNum,int damage,int db,int detailAct)
     {
+        int targetGra = target;
+        if (enemyNum == 1 && target == 0) { targetGra = 2; }
+        if (enemyNum == 2) { if (target == 0) { targetGra = 1; } else { targetGra = 3; } }
+        if (enemyNum == 3) { if (target == 0) { targetGra = 0; } else if (target == 1) { targetGra = 2; } else { targetGra = 4; } }
+
         SystemSEPlay(systemAudio[4+detailAct]);
         objCharacter[target].GetComponent<Image>().color = new Color(0.5f,0.5f,0.5f);
         if (damage + db > 0)
@@ -728,10 +749,15 @@ public class ScenariosceneManager : MonoBehaviour
         objCharacter[target].GetComponent<Image>().color = new Color(1, 1, 1);
     }
 
-    private IEnumerator EnemyHit(int target, int damage)
+    private IEnumerator EnemyHit(int target,int enemyNum, int damage)
     {
+        int targetGra = target;
+        if (enemyNum == 1 && target == 0) { targetGra = 2; }
+        if (enemyNum == 2) { if (target == 0) { targetGra = 1; } else { targetGra = 3; } }
+        if (enemyNum == 3) { if (target == 0) { targetGra = 0; } else if (target == 1) { targetGra = 2; } else { targetGra = 4; } }
+
         SystemSEPlay(systemAudio[5]);
-        objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(target * 150 - 300, CHARACTER_Y - 100, 0);
+        objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(targetGra * 150 - 300, CHARACTER_Y - 100, 0);
         TextDraw("", damage.ToString() + "点のダメージを受けた。");
         for (int v = 0; v < 100; v++)
         {
@@ -739,25 +765,35 @@ public class ScenariosceneManager : MonoBehaviour
             yield return null;
         }
         objCanvas.GetComponent<RectTransform>().localPosition = new Vector3(0, 0, 0);
-        objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(target * 150 - 300, CHARACTER_Y, 0);
+        objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(targetGra * 150 - 300, CHARACTER_Y, 0);
     }
 
-    private IEnumerator Cut(int target)
+    private IEnumerator Cut(int target,int enemyNum)
     {
+        int targetGra = target;
+        if (enemyNum == 1 && target == 0) { targetGra = 2; }
+        if (enemyNum == 2) { if (target == 0) { targetGra = 1; } else { targetGra = 3; } }
+        if (enemyNum == 3) { if (target == 0) { targetGra = 0; } else if (target == 1) { targetGra = 2; } else { targetGra = 4; } }
+
         SystemSEPlay(systemAudio[9]);
-        objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(target * 150 - 300, CHARACTER_Y - 100, 0);
+        objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(targetGra * 150 - 300, CHARACTER_Y - 100, 0);
         TextDraw("", "攻撃を受け流した。");
         for (int v = 0; v < 100; v++) { yield return null; }
-        objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(target * 150 - 300, CHARACTER_Y, 0);
+        objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(targetGra * 150 - 300, CHARACTER_Y, 0);
     }
 
-    private IEnumerator Avoid(int target)
+    private IEnumerator Avoid(int target,int enemyNum)
     {
+        int targetGra = target;
+        if (enemyNum == 1 && target == 0) { targetGra = 2; }
+        if (enemyNum == 2) { if (target == 0) { targetGra = 1; } else { targetGra = 3; } }
+        if (enemyNum == 3) { if (target == 0) { targetGra = 0; } else if (target == 1) { targetGra = 2; } else { targetGra = 4; } }
+
         SystemSEPlay(systemAudio[8]);
-        objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(target * 150 - 300, CHARACTER_Y - 100, 0);
+        objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(targetGra * 150 - 300, CHARACTER_Y - 100, 0);
         TextDraw("", "攻撃を回避した。");
         for (int v = 0; v < 100; v++) { yield return null; }
-        objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(target * 150 - 300, CHARACTER_Y, 0);
+        objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(targetGra * 150 - 300, CHARACTER_Y, 0);
     }
 
     private void SelectBoxMake(int choiceA, int choiceB, int choiceC, int choiceD,bool inBattleFlag)
@@ -1022,6 +1058,7 @@ public class ScenariosceneManager : MonoBehaviour
         if (character == -1) { objCharacter[position - 1].gameObject.SetActive(false); return; }
         objCharacter[position - 1].gameObject.SetActive(true);
         objCharacter[position - 1].GetComponent<Image>().sprite = scenarioGraphic[character];
+        ObjSizeChangeToGraph(position-1,scenarioGraphic[character]);
     }
 
     private void ItemDraw(int item)
@@ -1312,6 +1349,12 @@ public class ScenariosceneManager : MonoBehaviour
             st.CopyTo(ms);
             return ms.ToArray();
         }
+    }
+
+    //画像サイズに合わせて立ち絵サイズを変更
+    private void ObjSizeChangeToGraph(int position,Sprite sprite)
+    {
+        objCharacter[position].GetComponent<RectTransform>().sizeDelta=new Vector2(sprite.pixelsPerUnit * sprite.bounds.size.x, sprite.pixelsPerUnit * sprite.bounds.size.y);
     }
 
     //画面が押されたかチェックするコルーチン

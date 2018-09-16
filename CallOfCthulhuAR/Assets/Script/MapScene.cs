@@ -7,7 +7,6 @@ public class MapScene : MonoBehaviour
 {
     Sprite mapImage;
     private float intervalTime = 0.0f;
-    private float intervalTime2 = 0.0f;
     private int width = 640;
     private int height = 640;
     private double longitude;
@@ -29,39 +28,34 @@ public class MapScene : MonoBehaviour
     {
         _FILE_HEADER = PlayerPrefs.GetString("進行中シナリオ","");                      //ファイル場所の頭
         if (_FILE_HEADER==null || _FILE_HEADER == "") { GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene"); }
-        longitude = 135.768738;
-        latitude = 35.010348;
+        longitude=PlayerPrefs.GetFloat("longitude",135.768738f); latitude = PlayerPrefs.GetFloat("latitude", 35.010348f);
         obj = GameObject.Find("error").gameObject as GameObject;
         objTarget = GameObject.Find("Target").gameObject as GameObject;
         mapImageObj = GameObject.Find("mapImage").gameObject as GameObject;
         objBGM= GameObject.Find("BGMManager").gameObject as GameObject;
         objTime = GameObject.Find("TimeText").gameObject as GameObject;
         LoadMapData("mapdata.txt");
+        if ((Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer) && (!Input.location.isEnabledByUser)) { Input.location.Start(); }
         GetPos();
         GetMap();
     }
 
     void Update()
     {
-        //毎フレーム読んでると処理が重くなるので、3秒毎にGPS読込
-        intervalTime += Time.deltaTime; intervalTime2 += Time.deltaTime;
-        if (intervalTime >= 0.03f)//★スマホ版は3.0f
-        {
-            GetPos();
-            intervalTime = 0.0f;
-        }
-        if (intervalTime2 > 2.0f) { IventCheck(); }
+        intervalTime += Time.deltaTime; 
+        GetPos();
+        if ((Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer) || Input.location.status == LocationServiceStatus.Running) { IventCheck(); }
         objBGM.GetComponent<Text>().text = longitude.ToString() + "," + latitude.ToString();
         //地図の更新は、マップ範囲から出た時かつ時間が相当経過している時に。（時間変数入れないと、場所によってはGPS誤差でマップ連続読込になりかねない）
             if (((longitude>longitudeMap+0.003) ||
             (longitude < longitudeMap - 0.003) ||
             (latitude < latitudeMap - 0.005) ||
             (latitude > latitudeMap + 0.005)) &&
-            (intervalTime2 >= 5.0f)
+            (intervalTime >= 5.0f)
             )
         {
             GetMap();
-            intervalTime2 = 0.0f;
+            intervalTime = 0.0f;
         }
     }
 
@@ -89,7 +83,9 @@ public class MapScene : MonoBehaviour
             {
                 objBGM.GetComponent<BGMManager>().chapterName = data[11].Replace("\r", "").Replace("\n", "");
                 objTime.GetComponent<Text>().text = "[★イベント発生]";
-                GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "NovelScene");
+                Input.location.Stop();
+                PlayerPrefs.SetFloat("longitude",(float)longitude); PlayerPrefs.SetFloat("latitude", (float)latitude);
+                GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "NovelScene");                
             }
         }
         objTime.GetComponent<Text>().text= dt.ToString("MM/dd  HH:mm") + "\n" + "<size=48>緯度：" + Math.Round(latitude, 4).ToString() + "　,　経度：" + Math.Round(longitude,4).ToString().ToString() + "</size>";
@@ -102,8 +98,6 @@ public class MapScene : MonoBehaviour
         {
         //GPSで取得した緯度経度を変数に代入
         StartCoroutine(GetGPS());
-        longitude = Input.location.lastData.longitude;
-        latitude = Input.location.lastData.latitude;
         }
         //★②PC版（キー入力で動かす）
         if (Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer)
@@ -128,10 +122,10 @@ public class MapScene : MonoBehaviour
     {
         if (!Input.location.isEnabledByUser)
         {
+            obj.GetComponent<Text>().text = ("エラー。位置情報の使用が許可されていません。スマホの「設定」にて位置情報機能の使用を許可してください。");
             yield break;
         }
-        Input.location.Start();
-        int maxWait = 120;
+            int maxWait = 120;
         while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
         {
             yield return new WaitForSeconds(1);
@@ -144,19 +138,14 @@ public class MapScene : MonoBehaviour
         }
         if (Input.location.status == LocationServiceStatus.Failed)
         {
-            obj.GetComponent<Text>().text = ("エラー。位置情報が使用できません。");
+            obj.GetComponent<Text>().text = ("エラー。何らかの理由で位置情報が使用できません。");
             yield break;
         }
         else
         {
-                  print("現在座標: " +
-                  Input.location.lastData.latitude + " " +
-                  Input.location.lastData.longitude + " " +
-                  Input.location.lastData.altitude + " " +
-                  Input.location.lastData.horizontalAccuracy + " " +
-                  Input.location.lastData.timestamp);
+            longitude = Input.location.lastData.longitude;
+            latitude = Input.location.lastData.latitude;
         }
-        Input.location.Stop();
     }
 
 
@@ -214,28 +203,6 @@ public class MapScene : MonoBehaviour
         }
         //閉じる
         zf.Close();
-        /*ファイルをそのまま展開する時のバージョン
-        // 目次ファイルが無かったら終わる
-        if (!System.IO.File.Exists(_FILE_HEADER + path))
-        {
-            obj.GetComponent<Text>().text = ("エラー。シナリオファイルが見当たりません。" + _FILE_HEADER + path);
-            yield break;
-        }
-
-        // 目次ファイルをロードする
-        WWW request = new WWW(_FILE_HEADER + path);
-
-        while (!request.isDone)
-        {
-            yield return new WaitForEndOfFrame();
-        }
-
-        // テキストを取り出す
-        string text = request.text;
-
-        // 読み込んだ目次テキストファイルからstring配列を作成する
-        mapData = text.Split('\n');
-        */
     }
 }
 
