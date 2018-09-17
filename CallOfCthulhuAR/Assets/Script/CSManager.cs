@@ -23,11 +23,16 @@ public class CSManager : MonoBehaviour {
     const int STATUSNUM = 12;
     const int SKILLNUM = 54;
 	// Use this for initialization
-	void Start () {       
+	void Start () {
         DefaultMake();
         SeeCharacter();
-        if (SceneManager.GetActiveScene().name != "CharacterSheet")
+        if (SceneManager.GetActiveScene().name == "CharacterSheet")
         {
+            GameObject.Find("InputField").GetComponent<InputField>().text = PlayerPrefs.GetString("PlayerCharacterName", "");
+        }
+        else
+        {
+            GameObject.Find("PlayerCharacterName").GetComponent<Text>().text = PlayerPrefs.GetString("PlayerCharacterName", "――");
             transform.GetChild(0).gameObject.SetActive(false);
         }
     }
@@ -317,6 +322,7 @@ public class CSManager : MonoBehaviour {
         PlayerPrefs.SetInt("耐久力",nowHP);
         PlayerPrefs.SetInt("マジック・ポイント", nowMP);
         PlayerPrefs.SetInt("正気度ポイント", nowSAN);
+        PlayerPrefs.SetString("PlayerCharacterName", GameObject.Find("PlayerCharacterName").GetComponent<Text>().text);
         GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
     }
 

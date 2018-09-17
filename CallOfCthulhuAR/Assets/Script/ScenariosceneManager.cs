@@ -3,7 +3,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 using System.IO;
-//PCをシナリオ立ち絵で出す関数
 
 
 public class ScenariosceneManager : MonoBehaviour
@@ -74,6 +73,7 @@ public class ScenariosceneManager : MonoBehaviour
         objBGM = GameObject.Find("BGMManager").gameObject as GameObject;
         for (int i = 0; i < 4; i++) { objBox[i] = GameObject.Find("select" + (i + 1).ToString()).gameObject as GameObject; objBox[i].gameObject.SetActive(false); }
         for (int i = 0; i < 2; i++) { objDice[i] = GameObject.Find("Dice" + (i + 1).ToString()).gameObject as GameObject; objDice[i].gameObject.SetActive(false); }
+        StartCoroutine(LoadPlayerChara(PlayerPrefs.GetString("CharacterIllustPath", "")));
         StartCoroutine(MainCoroutine());
     }
 
@@ -1037,7 +1037,14 @@ public class ScenariosceneManager : MonoBehaviour
     {
         objTextBox.gameObject.SetActive(true);
         objText.GetComponent<Text>().text = text;
-        objName.GetComponent<Text>().text = "　" + name;
+        if (name == "[PC]")
+        {
+            objName.GetComponent<Text>().text = "　" + PlayerPrefs.GetString("PlayerCharacterName","あなた");
+        }
+        else
+        {
+            objName.GetComponent<Text>().text = "　" + name;
+        }
     }
 
     private void BackTextDraw(string text)
@@ -1356,6 +1363,27 @@ public class ScenariosceneManager : MonoBehaviour
     {
         objCharacter[position].GetComponent<RectTransform>().sizeDelta=new Vector2(sprite.pixelsPerUnit * sprite.bounds.size.x, sprite.pixelsPerUnit * sprite.bounds.size.y);
     }
+
+    //画像の100番にはPC立ち絵を。
+    public IEnumerator LoadPlayerChara(string path)
+    {
+        // 指定したファイルをロードする
+        WWW request = new WWW(path);
+
+        while (!request.isDone)
+        {
+            yield return new WaitForEndOfFrame();
+        }
+        if (request.texture != null)
+        {
+            // 画像を取り出す
+            Texture2D texture = request.texture;
+
+            // 読み込んだ画像からSpriteを作成する
+            scenarioGraphic[99] = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+        }
+    }
+
 
     //画面が押されたかチェックするコルーチン
     public IEnumerator PushWait()
