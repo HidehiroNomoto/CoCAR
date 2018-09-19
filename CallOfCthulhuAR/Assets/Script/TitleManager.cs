@@ -52,11 +52,6 @@ public class TitleManager : MonoBehaviour {
         GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "CharacterSheet");
     }
 
-    public void PushScenarioButton()
-    {
-        GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "ScenarioMake");
-    }
-
     public void PushSelectButton()
     {
         GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey = "進行中シナリオ";
