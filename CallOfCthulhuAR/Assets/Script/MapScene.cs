@@ -169,6 +169,8 @@ public class MapScene : MonoBehaviour
     //目次ファイルを読み込み、進行度に合わせてファイルを拾ってくる。
     private void LoadMapData(string path)
     {
+        try
+        {
         //閲覧するエントリ
         string extractFile = path;
 
@@ -203,6 +205,12 @@ public class MapScene : MonoBehaviour
         }
         //閉じる
         zf.Close();
+        }
+        catch
+        {
+            obj.GetComponent<Text>().text = ("エラー。シナリオファイルの形式が不適合です。" + _FILE_HEADER + "\\" + path);
+            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
+        }
     }
 }
 

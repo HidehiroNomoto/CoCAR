@@ -5,10 +5,10 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public class CSManager : MonoBehaviour {
-    private int[] status=new int[STATUSNUM];
+    private int[] status = new int[STATUSNUM];
     private int[] skills = new int[SKILLNUM];
     private int buyPoint;
-    private GameObject[] statusObj=new GameObject[STATUSNUM];
+    private GameObject[] statusObj = new GameObject[STATUSNUM];
     private GameObject objSkillSheet1;
     private GameObject objSkillSheet2;
     private GameObject objSkillButton;
@@ -20,10 +20,11 @@ public class CSManager : MonoBehaviour {
     private int nowHP;
     private int nowMP;
     private int nowSAN;
+    private bool loadedChara = false;
     const int STATUSNUM = 12;
     const int SKILLNUM = 54;
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start() {
         DefaultMake();
         SeeCharacter();
         if (SceneManager.GetActiveScene().name == "CharacterSheet")
@@ -61,11 +62,11 @@ public class CSManager : MonoBehaviour {
         {
             objSkill[i] = GameObject.Find("2Skill" + (i - SKILLNUM / 2 + 1).ToString()).gameObject as GameObject;
         }
-        StartCoroutine(LoadChara(PlayerPrefs.GetString("CharacterIllustPath","")));
+        StartCoroutine(LoadChara(PlayerPrefs.GetString("CharacterIllustPath", "")));
 
         //技能初期値設定
         skillDefault[0] = 5; skillDefault[1] = 5; skillDefault[2] = 20; skillDefault[3] = 30;
-        skillDefault[4] = 5; skillDefault[5] = 0; skillDefault[6] = 1; skillDefault[7] = 1;
+        skillDefault[4] = 5; skillDefault[5] = status[2] * 2; skillDefault[6] = 1; skillDefault[7] = 1;
         skillDefault[8] = 15; skillDefault[9] = 10; skillDefault[10] = 20; skillDefault[11] = 25;
         skillDefault[12] = 5; skillDefault[13] = 10; skillDefault[14] = 1; skillDefault[15] = 1;
         skillDefault[16] = 10; skillDefault[17] = 10; skillDefault[18] = 1; skillDefault[19] = 5;
@@ -75,7 +76,7 @@ public class CSManager : MonoBehaviour {
         skillDefault[32] = 10; skillDefault[33] = 1; skillDefault[34] = 1; skillDefault[35] = 25;
         skillDefault[36] = 40; skillDefault[37] = 25; skillDefault[38] = 10; skillDefault[39] = 5;
         skillDefault[40] = 10; skillDefault[41] = 1; skillDefault[42] = 1; skillDefault[43] = 5;
-        skillDefault[44] = 1; skillDefault[45] = 0; skillDefault[46] = 1; skillDefault[47] = 25;
+        skillDefault[44] = 1; skillDefault[45] = status[7] * 5; skillDefault[46] = 1; skillDefault[47] = 25;
         skillDefault[48] = 1; skillDefault[49] = 20; skillDefault[50] = 30; skillDefault[51] = 50;
         skillDefault[52] = 50; skillDefault[53] = 0;
     }
@@ -85,16 +86,16 @@ public class CSManager : MonoBehaviour {
     {
         string[][] str = new string[STATUSNUM][];
         string[] str2;
-        string str3="";
+        string str3 = "";
         for (int i = 0; i < STATUSNUM; i++)
         {
-            status[i]=PlayerPrefs.GetInt("Status" + i.ToString(), 0);
+            status[i] = PlayerPrefs.GetInt("Status" + i.ToString(), 0);
         }
         for (int i = 0; i < SKILLNUM; i++)
         {
-            skills[i]=PlayerPrefs.GetInt("Skill" + i.ToString(), 0);
+            skills[i] = PlayerPrefs.GetInt("Skill" + i.ToString(), 0);
         }
-        nowHP= PlayerPrefs.GetInt("耐久力", 0);
+        nowHP = PlayerPrefs.GetInt("耐久力", 0);
         nowMP = PlayerPrefs.GetInt("マジック・ポイント", 0);
         nowSAN = PlayerPrefs.GetInt("正気度ポイント", 0);
         for (int i = 0; i < STATUSNUM; i++)
@@ -105,11 +106,11 @@ public class CSManager : MonoBehaviour {
                 if (status[8] > 0) { str3 = "+1D"; }
                 if (status[8] < 0) { str3 = "-1D"; }
             }
-            if (i == 9){ str3 = nowHP.ToString() + "/"; }
+            if (i == 9) { str3 = nowHP.ToString() + "/"; }
             if (i == 10) { str3 = nowMP.ToString() + "/"; }
             if (i == 11) { str3 = nowSAN.ToString() + "/"; }
             statusObj[i].GetComponent<Text>().text = str[i][0] + ':' + str3 + Mathf.Abs(status[i]);
-            if (i == 11) { statusObj[i].GetComponent<Text>().text = str[i][0] + ':' + str3 + (99 -skills[53]).ToString(); }
+            if (i == 11) { statusObj[i].GetComponent<Text>().text = str[i][0] + ':' + str3 + (99 - skills[53]).ToString(); }
             str3 = "";
         }
         for (int i = 0; i < SKILLNUM; i++)
@@ -118,16 +119,17 @@ public class CSManager : MonoBehaviour {
             objSkill[i].GetComponent<Text>().text = str2[0] + '：' + skills[i].ToString();
         }
         //キャラがいなければ作成
-        if (status[0] == 0) { MakeCharacter(); }
+        if (status[0] == 0) { MakeCharacter(); } else { loadedChara = true; }
     }
 
 
     //キャラのステータス決定
     public void MakeCharacter()
     {
+        loadedChara = false;
         Utility u1 = GetComponent<Utility>();
-        string str3="";
-        string[][] str=new string[STATUSNUM][];
+        string str3 = "";
+        string[][] str = new string[STATUSNUM][];
         status[0] = u1.DiceRoll(3, 6);
         status[1] = u1.DiceRoll(3, 6);
         status[2] = u1.DiceRoll(3, 6);
@@ -149,7 +151,7 @@ public class CSManager : MonoBehaviour {
         nowSAN = status[11];
         for (int i = 0; i < STATUSNUM; i++)
         {
-            str[i]= statusObj[i].GetComponent<Text>().text.Split(':');
+            str[i] = statusObj[i].GetComponent<Text>().text.Split(':');
             if (i == 8)
             {
                 if (status[8] > 0) { str3 = "+1D"; }
@@ -166,20 +168,26 @@ public class CSManager : MonoBehaviour {
         //技能初期値の入力
         skillDefault[5] = status[2] * 2; skillDefault[45] = status[7] * 5;
         SkillReset();
-
     }
 
     public void SkillReset()
     {
         string[] str;
-        for (int i = 0; i < SKILLNUM; i++)
+        if (loadedChara == false)
         {
-            skills[i] = skillDefault[i];
-            str = objSkill[i].GetComponent<Text>().text.Split('：');
-            objSkill[i].GetComponent<Text>().text = str[0] + '：' + skills[i].ToString();
+            for (int i = 0; i < SKILLNUM; i++)
+            {
+                skills[i] = skillDefault[i];
+                str = objSkill[i].GetComponent<Text>().text.Split('：');
+                objSkill[i].GetComponent<Text>().text = str[0] + '：' + skills[i].ToString();
+            }
+            buyPoint = status[3] * 10 + status[7] * 20;
+            objBuyPoint.GetComponent<Text>().text = "残：" + buyPoint.ToString() + "P";
         }
-        buyPoint = status[3] * 10 + status[7] * 20;
-        objBuyPoint.GetComponent<Text>().text = "残：" + buyPoint.ToString() + "P";
+        else
+        {
+            objBuyPoint.GetComponent<Text>().text = "決定済";
+        }
     }
 
     private IEnumerator SkillMove()
@@ -189,7 +197,7 @@ public class CSManager : MonoBehaviour {
         {
             localchange = 600;
         }
-            if (skill == false)
+        if (skill == false)
         {
             skill = true;
             for (int i = 0; i <= 20; i++)
@@ -203,7 +211,7 @@ public class CSManager : MonoBehaviour {
             }
             yield break;
         }
-        
+
         if (skill == true)
         {
             skill = false;
@@ -214,13 +222,18 @@ public class CSManager : MonoBehaviour {
             }
             yield break;
         }
-        
+
     }
 
     public void SkillButton()
     {
-        if (skill == false) { objSkillButton.GetComponent<Image>().color = new Color(0.8f,0.8f,0.8f);   }
-        if (skill == true) { objSkillButton.GetComponent<Image>().color = new Color(1.0f, 1.0f, 1.0f);  }
+        SkillButtonIn();
+    }
+
+    private void SkillButtonIn()
+    {
+        if (skill == false) { objSkillButton.GetComponent<Image>().color = new Color(0.8f, 0.8f, 0.8f); }
+        if (skill == true) { objSkillButton.GetComponent<Image>().color = new Color(1.0f, 1.0f, 1.0f); }
         StartCoroutine(SkillMove());
     }
 
@@ -229,7 +242,7 @@ public class CSManager : MonoBehaviour {
         // 指定したファイルをロードする
         WWW request = new WWW(path);
 
-        while (!request.isDone)
+        while ((!request.isDone) || (!string.IsNullOrEmpty(request.error)))
         {
             yield return new WaitForEndOfFrame();
         }
@@ -239,7 +252,7 @@ public class CSManager : MonoBehaviour {
             Texture2D texture = request.texture;
 
             // 読み込んだ画像からSpriteを作成する
-            objChara.GetComponent<RectTransform>().sizeDelta= new Vector2(texture.width,texture.height);
+            objChara.GetComponent<RectTransform>().sizeDelta = new Vector2(texture.width, texture.height);
             objChara.GetComponent<Image>().sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
         }
     }
@@ -266,7 +279,7 @@ public class CSManager : MonoBehaviour {
             yield break;
         }
 
-        if (number==1)
+        if (number == 1)
         {
             for (int i = 0; i <= 20; i++)
             {
@@ -279,7 +292,7 @@ public class CSManager : MonoBehaviour {
 
     public void SkillAdd(int number)
     {
-        StartCoroutine("SkillAddCor",number);
+        StartCoroutine("SkillAddCor", number);
     }
 
     public void SkillAddEnd(int number)
@@ -290,26 +303,38 @@ public class CSManager : MonoBehaviour {
     public IEnumerator SkillAddCor(int number)
     {
         string[] str;
-        str = objSkill[number].GetComponent<Text>().text.Split('：');
-        for (int i = 0; i < 2;i++)
+        if (loadedChara == false)
         {
-            skills[number]++;buyPoint--;
-            if (skills[number] == 100 || buyPoint<0) { buyPoint+=(skills[number]-skillDefault[number]); skills[number] = skillDefault[number]; }
-            objSkill[number].GetComponent<Text>().text = str[0] + '：' + skills[number].ToString();
-            objBuyPoint.GetComponent<Text>().text = "残：" + buyPoint.ToString() + "P";
-            yield return new WaitForSeconds(1.0f);
+            str = objSkill[number].GetComponent<Text>().text.Split('：');
+            for (int i = 0; i < 2; i++)
+            {
+                skills[number]++; buyPoint--;
+                if (skills[number] == 100 || buyPoint < 0) { buyPoint += (skills[number] - skillDefault[number]); skills[number] = skillDefault[number]; }
+                objSkill[number].GetComponent<Text>().text = str[0] + '：' + skills[number].ToString();
+                objBuyPoint.GetComponent<Text>().text = "残：" + buyPoint.ToString() + "P";
+                yield return new WaitForSeconds(1.0f);
+            }
+            while (true)
+            {
+                skills[number]++; buyPoint--;
+                if (skills[number] == 100 || buyPoint < 0) { buyPoint += (skills[number] - skillDefault[number]); skills[number] = skillDefault[number]; }
+                objSkill[number].GetComponent<Text>().text = str[0] + '：' + skills[number].ToString();
+                objBuyPoint.GetComponent<Text>().text = "残：" + buyPoint.ToString() + "P";
+                yield return null; yield return null;
+            }
         }
-        while (true)
+        else
         {
-            skills[number]++; buyPoint--;
-            if (skills[number] == 100 || buyPoint < 0) { buyPoint += (skills[number] - skillDefault[number]); skills[number] = skillDefault[number]; }
-            objSkill[number].GetComponent<Text>().text = str[0] + '：' + skills[number].ToString();
-            objBuyPoint.GetComponent<Text>().text = "残：" + buyPoint.ToString() + "P";
-            yield return null; yield return null;
+            objBuyPoint.GetComponent<Text>().text = "決定済";
         }
     }
 
     public void PushDecideButton()
+    {
+        PushDecideButtonIn();
+    }
+
+    private void PushDecideButtonIn()
     {
         for (int i = 0; i < STATUSNUM; i++)
         {
@@ -319,7 +344,7 @@ public class CSManager : MonoBehaviour {
         {
             PlayerPrefs.SetInt("Skill" + i.ToString(), skills[i]);
         }
-        PlayerPrefs.SetInt("耐久力",nowHP);
+        PlayerPrefs.SetInt("耐久力", nowHP);
         PlayerPrefs.SetInt("マジック・ポイント", nowMP);
         PlayerPrefs.SetInt("正気度ポイント", nowSAN);
         PlayerPrefs.SetString("PlayerCharacterName", GameObject.Find("PlayerCharacterName").GetComponent<Text>().text);
@@ -327,6 +352,11 @@ public class CSManager : MonoBehaviour {
     }
 
     public void PushRediceButton()
+    {
+        PushDecideButtonIn();
+    }
+
+    private void PushRediceButtonIn()
     {
         for (int i = 0; i < SKILLNUM; i++)
         {
@@ -337,7 +367,12 @@ public class CSManager : MonoBehaviour {
 
     public void CSButton()
     {
-        if (transform.GetChild(0).gameObject.activeSelf==false)
+        CSButtonIn();
+    }
+
+    private void CSButtonIn()
+    {
+        if (transform.GetChild(0).gameObject.activeSelf == false)
         {
             if (SceneManager.GetActiveScene().name == "NovelScene")
             {
@@ -346,11 +381,11 @@ public class CSManager : MonoBehaviour {
             transform.GetChild(0).gameObject.SetActive(true);
             transform.GetChild(1).gameObject.GetComponent<Text>().text = "戻る";
         }
-        else if(Camera.main.ScreenToWorldPoint(Input.mousePosition).y < -4.2f)//ボタン部以外の背景等も子オブジェクトなのでタップでボタン押された判定になって終了してしまう。それを避けるためにボタン部の位置をifで判定
+        else if (Camera.main.ScreenToWorldPoint(Input.mousePosition).y < -4.2f)//ボタン部以外の背景等も子オブジェクトなのでタップでボタン押された判定になって終了してしまう。それを避けるためにボタン部の位置をifで判定
         {
             if (SceneManager.GetActiveScene().name == "NovelScene")
             {
-                GameObject.Find("NovelManager").gameObject.GetComponent<ScenariosceneManager>().backLogCSFlag = false ;
+                GameObject.Find("NovelManager").gameObject.GetComponent<ScenariosceneManager>().backLogCSFlag = false;
             }
             transform.GetChild(0).gameObject.SetActive(false);
             transform.GetChild(1).gameObject.GetComponent<Text>().text = "Character\nsheet";
@@ -359,8 +394,7 @@ public class CSManager : MonoBehaviour {
 
     public void CharacterIllustButton()
     {
-        GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey = "CharacterIllustPath";
-        GetComponent<GracesGames.SimpleFileBrowser.Scripts.FileOpenManager>().OpenFileBrowser(false);
+        GetComponent<GracesGames.SimpleFileBrowser.Scripts.FileOpenManager>().GetFilePathWithKey("CharacterIllustPath");
     }
 
     // Update is called once per frame

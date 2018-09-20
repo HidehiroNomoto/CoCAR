@@ -122,5 +122,10 @@ namespace GracesGames.SimpleFileBrowser.Scripts
             }
         }
 
+        public void GetFilePathWithKey(string key)
+        {
+            GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey = key;
+            OpenFileBrowser(false);
+        }
     }
 }

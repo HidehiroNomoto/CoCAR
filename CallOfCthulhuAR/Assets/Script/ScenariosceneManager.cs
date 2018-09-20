@@ -183,6 +183,11 @@ public class ScenariosceneManager : MonoBehaviour
 
     public void SkipButton()
     {
+        SkipButtonIn();
+    }
+
+    private void SkipButtonIn()
+    {
         if (skipFlag == false)
         {
             skipFlag = true;
@@ -1176,48 +1181,55 @@ public class ScenariosceneManager : MonoBehaviour
             obj.GetComponent<Text>().text = ("エラー。シナリオファイルが見当たりません。" + _FILE_HEADER + "\\" + path);
             GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
         }
-
-        //閲覧するエントリ
-        string extractFile = path;
-
-        //ZipFileオブジェクトの作成
-        ICSharpCode.SharpZipLib.Zip.ZipFile zf =
-            new ICSharpCode.SharpZipLib.Zip.ZipFile(PlayerPrefs.GetString("進行中シナリオ", ""));
-        zf.Password = "I_change_the_world";
-        //展開するエントリを探す
-        ICSharpCode.SharpZipLib.Zip.ZipEntry ze = zf.GetEntry(extractFile);
-
-        if (ze != null)
+        try
         {
-            //閲覧するZIPエントリのStreamを取得
-            Stream reader = zf.GetInputStream(ze);
-            //文字コードを指定してStreamReaderを作成
-            StreamReader sr = new StreamReader(
-                reader, System.Text.Encoding.GetEncoding("UTF-8"));
-            // テキストを取り出す
-            string text = sr.ReadToEnd();
+            //閲覧するエントリ
+            string extractFile = path;
+            ICSharpCode.SharpZipLib.Zip.ZipFile zf;
+                //ZipFileオブジェクトの作成
+                zf = new ICSharpCode.SharpZipLib.Zip.ZipFile(PlayerPrefs.GetString("進行中シナリオ", ""));
 
-            // 読み込んだ目次テキストファイルからstring配列を作成する
-            scenarioFilePath = text.Split('\n');
+            zf.Password = "I_change_the_world";
+            //展開するエントリを探す
+            ICSharpCode.SharpZipLib.Zip.ZipEntry ze;
+                ze = zf.GetEntry(extractFile);
 
-            //アドレスから各ファイルをロード
-            for (int i = 0; i < scenarioFilePath.Length; i++)
+
+            if (ze != null)
             {
-                if (scenarioFilePath[i] == "[END]") { break; }
-                LoadFile(scenarioFilePath[i].Replace("\r", "").Replace("\n", ""),zf);
-            }
+                //閲覧するZIPエントリのStreamを取得
+                Stream reader = zf.GetInputStream(ze);
+                //文字コードを指定してStreamReaderを作成
+                StreamReader sr = new StreamReader(
+                    reader, System.Text.Encoding.GetEncoding("UTF-8"));
+                // テキストを取り出す
+                string text = sr.ReadToEnd();
 
+                // 読み込んだ目次テキストファイルからstring配列を作成する
+                scenarioFilePath = text.Split('\n');
+
+                //アドレスから各ファイルをロード
+                for (int i = 0; i < scenarioFilePath.Length; i++)
+                {
+                    if (scenarioFilePath[i] == "[END]") { break; }
+                    LoadFile(scenarioFilePath[i].Replace("\r", "").Replace("\n", ""), zf);
+                }
+                //閉じる
+                sr.Close();
+                reader.Close();
+            }
+            else
+            {
+                GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
+            }
             //閉じる
-            sr.Close();
-            reader.Close();
+            zf.Close();
         }
-        else
+        catch
         {
+            obj.GetComponent<Text>().text = ("エラーZIP。シナリオファイルの形式が不適合です。" + PlayerPrefs.GetString("進行中シナリオ", "") + "\\" + path);
             GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
         }
-        //閉じる
-        zf.Close();
-
     }
 
     //引数pathのみのバージョン。テキストデータの読み込みのみ対応。（スクリプトからの直呼び出し『NextFile:』用）
@@ -1226,59 +1238,22 @@ public class ScenariosceneManager : MonoBehaviour
         // 目次ファイルが無かったら終わる
         if (!File.Exists(_FILE_HEADER))
         {
-            obj.GetComponent<Text>().text = ("エラー。シナリオファイルが見当たりません。" + _FILE_HEADER + "\\" + path);
+            obj.GetComponent<Text>().text = ("エラー。シナリオファイルが見当たりません。" + PlayerPrefs.GetString("進行中シナリオ", "") + "\\" + path);
             GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
         }
-
-        //閲覧するエントリ
-        string extractFile = path;
-
-        //ZipFileオブジェクトの作成
-        ICSharpCode.SharpZipLib.Zip.ZipFile zf =
-            new ICSharpCode.SharpZipLib.Zip.ZipFile(PlayerPrefs.GetString("進行中シナリオ", ""));
-        zf.Password = "I_change_the_world";
-        //展開するエントリを探す
-        ICSharpCode.SharpZipLib.Zip.ZipEntry ze = zf.GetEntry(extractFile);
-
-        if (ze != null)
+        try
         {
-            //閲覧するZIPエントリのStreamを取得
-            Stream reader = zf.GetInputStream(ze);
-            //文字コードを指定してStreamReaderを作成
-            StreamReader sr = new StreamReader(
-                reader, System.Text.Encoding.GetEncoding("UTF-8"));
-            // テキストを取り出す
-            string text = sr.ReadToEnd();
+            //閲覧するエントリ
+            string extractFile = path;
 
-            // 読み込んだ目次テキストファイルからstring配列を作成する
-            scenarioText = text.Split('\n');
+            //ZipFileオブジェクトの作成
+            ICSharpCode.SharpZipLib.Zip.ZipFile zf =
+                new ICSharpCode.SharpZipLib.Zip.ZipFile(PlayerPrefs.GetString("進行中シナリオ", ""));
+            zf.Password = "I_change_the_world";
+            //展開するエントリを探す
+            ICSharpCode.SharpZipLib.Zip.ZipEntry ze = zf.GetEntry(extractFile);
 
-            //閉じる
-            sr.Close();
-            reader.Close();
-        }
-        else
-        {
-            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
-        }
-        //閉じる
-        zf.Close();
-    }
-
-    private void LoadFile(string path, ICSharpCode.SharpZipLib.Zip.ZipFile zf)
-    {
-        int j;
-        byte[] buffer;
-
-        //閲覧するエントリ
-        string extractFile = path;
-        //展開するエントリを探す
-        ICSharpCode.SharpZipLib.Zip.ZipEntry ze = zf.GetEntry(extractFile);
-
-        if (ze != null)
-        {
-            //txtファイルの場合
-            if (path.Substring(path.Length - 4) == ".txt")
+            if (ze != null)
             {
                 //閲覧するZIPエントリのStreamを取得
                 Stream reader = zf.GetInputStream(ze);
@@ -1295,57 +1270,108 @@ public class ScenariosceneManager : MonoBehaviour
                 sr.Close();
                 reader.Close();
             }
-
-            //pngファイルの場合
-            if (path.Substring(path.Length - 4) == ".png")
+            else
             {
-                //閲覧するZIPエントリのStreamを取得
-                Stream fs = zf.GetInputStream(ze);
-                buffer = ReadBinaryData(fs);//bufferにbyte[]になったファイルを読み込み
-
-                // 画像を取り出す
-                //横サイズ
-                int pos = 16;
-                int width = 0;
-                for (int i = 0; i < 4; i++)
-                {
-                    width = width * 256 + buffer[pos++];
-                }
-                //縦サイズ
-                int height = 0;
-                for (int i = 0; i < 4; i++)
-                {
-                    height = height * 256 + buffer[pos++];
-                }
-                //byteからTexture2D作成
-               Texture2D texture = new Texture2D(width, height);
-                texture.LoadImage(buffer);
-
-                // 読み込んだ画像からSpriteを作成する
-                for (j = 0; j < 100; j++) { if (scenarioGraphic[j] == null) { break; } }
-                scenarioGraphic[j] = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
-
-                //閉じる
-                fs.Close();
+                GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
             }
-
-            //wavファイルの場合
-            if (path.Substring(path.Length - 4) == ".wav")
-            {
-                //閲覧するZIPエントリのStreamを取得
-                Stream fs = zf.GetInputStream(ze);
-                buffer = ReadBinaryData(fs);//bufferにbyte[]になったファイルを読み込み
-                for (j = 0; j < 10; j++) { if (scenarioAudio[j] == null) { break; } }
-                scenarioAudio[j] = WavUtility.ToAudioClip(buffer);
-                //閉じる
-                fs.Close();
-            }
+            //閉じる
+            zf.Close();
         }
-        else
+        catch
         {
+            obj.GetComponent<Text>().text = ("エラー。シナリオファイルの形式が不適合です。" + _FILE_HEADER + "\\" + path);
             GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
         }
 
+    }
+
+    private void LoadFile(string path, ICSharpCode.SharpZipLib.Zip.ZipFile zf)
+    {
+        int j;
+        byte[] buffer;
+        try
+        {
+            //閲覧するエントリ
+            string extractFile = path;
+            //展開するエントリを探す
+            ICSharpCode.SharpZipLib.Zip.ZipEntry ze = zf.GetEntry(extractFile);
+
+            if (ze != null)
+            {
+                //txtファイルの場合
+                if (path.Substring(path.Length - 4) == ".txt")
+                {
+                    //閲覧するZIPエントリのStreamを取得
+                    Stream reader = zf.GetInputStream(ze);
+                    //文字コードを指定してStreamReaderを作成
+                    StreamReader sr = new StreamReader(
+                        reader, System.Text.Encoding.GetEncoding("UTF-8"));
+                    // テキストを取り出す
+                    string text = sr.ReadToEnd();
+
+                    // 読み込んだ目次テキストファイルからstring配列を作成する
+                    scenarioText = text.Split('\n');
+
+                    //閉じる
+                    sr.Close();
+                    reader.Close();
+                }
+
+                //pngファイルの場合
+                if (path.Substring(path.Length - 4) == ".png")
+                {
+                    //閲覧するZIPエントリのStreamを取得
+                    Stream fs = zf.GetInputStream(ze);
+                    buffer = ReadBinaryData(fs);//bufferにbyte[]になったファイルを読み込み
+
+                    // 画像を取り出す
+                    //横サイズ
+                    int pos = 16;
+                    int width = 0;
+                    for (int i = 0; i < 4; i++)
+                    {
+                        width = width * 256 + buffer[pos++];
+                    }
+                    //縦サイズ
+                    int height = 0;
+                    for (int i = 0; i < 4; i++)
+                    {
+                        height = height * 256 + buffer[pos++];
+                    }
+                    //byteからTexture2D作成
+                    Texture2D texture = new Texture2D(width, height);
+                    texture.LoadImage(buffer);
+
+                    // 読み込んだ画像からSpriteを作成する
+                    for (j = 0; j < 100; j++) { if (scenarioGraphic[j] == null) { break; } }
+                    scenarioGraphic[j] = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+
+                    //閉じる
+                    fs.Close();
+                }
+
+                //wavファイルの場合
+                if (path.Substring(path.Length - 4) == ".wav")
+                {
+                    //閲覧するZIPエントリのStreamを取得
+                    Stream fs = zf.GetInputStream(ze);
+                    buffer = ReadBinaryData(fs);//bufferにbyte[]になったファイルを読み込み
+                    for (j = 0; j < 10; j++) { if (scenarioAudio[j] == null) { break; } }
+                    scenarioAudio[j] = WavUtility.ToAudioClip(buffer);
+                    //閉じる
+                    fs.Close();
+                }
+            }
+            else
+            {
+                GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
+            }
+        }
+        catch
+        {
+            obj.GetComponent<Text>().text = ("エラー。シナリオファイルの形式が不適合です。" + _FILE_HEADER + "\\" + path);
+            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
+        }
     }
 
     // ストリームからデータを読み込み、バイト配列に格納
@@ -1370,7 +1396,7 @@ public class ScenariosceneManager : MonoBehaviour
         // 指定したファイルをロードする
         WWW request = new WWW(path);
 
-        while (!request.isDone)
+        while ((!request.isDone) || (!string.IsNullOrEmpty(request.error)))
         {
             yield return new WaitForEndOfFrame();
         }
@@ -1409,7 +1435,4 @@ public class ScenariosceneManager : MonoBehaviour
             }
         }
     }
-
-
-
 }

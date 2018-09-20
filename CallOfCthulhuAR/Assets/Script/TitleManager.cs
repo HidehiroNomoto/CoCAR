@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-
 public class TitleManager : MonoBehaviour {
 
     private int timeCount;                                           //シーン開始からのフレーム数
@@ -13,6 +12,7 @@ public class TitleManager : MonoBehaviour {
     // Use this for initialization
     void Start()
     {
+        //PlayerPrefs.DeleteAll();
         scenarionamePath=PlayerPrefs.GetString("進行中シナリオ","").Split(new char[] {'\\' ,'.'});
         if (scenarionamePath.Length >= 2) { GameObject.Find("ScenarioName").GetComponent<Text>().text = "[シナリオ名]\n" + scenarionamePath[scenarionamePath.Length - 2]; }//アドレスからフォルダ名と拡張子を排除。.と\を区切り文字にすると拡張子が最後(Length-1)にあるので、その手前の(Length-2)が欲しい文字列。
         if (PlayerPrefs.GetString("進行中シナリオ", "") != "") { GameObject.Find("SelectText").GetComponent<Text>().text = "シナリオ選択<size=28>\n(DLしたファイルから選ぶ)</size>"; }
@@ -38,7 +38,6 @@ public class TitleManager : MonoBehaviour {
     {
         if (PlayerPrefs.GetInt("開始フラグ", 0) == 0)
         {
-            GameObject.Find("BGMManager").GetComponent<BGMManager>().chapterName = "start.txt";
             GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "NovelScene");
         }
         else
@@ -54,8 +53,7 @@ public class TitleManager : MonoBehaviour {
 
     public void PushSelectButton()
     {
-        GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey = "進行中シナリオ";
-        GetComponent<GracesGames.SimpleFileBrowser.Scripts.FileOpenManager>().OpenFileBrowser(false);
+        GetComponent<GracesGames.SimpleFileBrowser.Scripts.FileOpenManager>().GetFilePathWithKey("進行中シナリオ");
     }
 
     public void PushMaskButton()
