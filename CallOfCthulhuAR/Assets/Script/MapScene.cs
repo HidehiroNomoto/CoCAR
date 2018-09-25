@@ -68,7 +68,7 @@ public class MapScene : MonoBehaviour
         for (int i = 0; i < mapData.Length; i++)
         {
             if (mapData[i] == "[END]") { break; }
-            data =mapData[i].Split(',');
+            data =mapData[i].Split(',').Replace("\r", "").Replace("\n", "");
             if ((data[0] == "" || double.Parse(data[0]) > latitude - 0.0001 && double.Parse(data[0]) < latitude + 0.001) &&
                 (data[1] == "" || double.Parse(data[1]) > longitude - 0.0001 && double.Parse(data[1]) < longitude + 0.001) &&
                 (data[2] == "" || (int.Parse(data[2]) >= dt.Month)) &&
@@ -79,9 +79,10 @@ public class MapScene : MonoBehaviour
                 (data[7] == "" || (int.Parse(data[7]) <= dt.Day) || (int.Parse(data[6]) < dt.Month)) &&
                 (data[8] == "" || (int.Parse(data[8]) <= dt.Hour) || (int.Parse(data[7]) < dt.Day) || (int.Parse(data[6]) < dt.Month)) &&
                 (data[9] == "" || (int.Parse(data[9]) <= dt.Minute) || (int.Parse(data[8]) < dt.Hour) || (int.Parse(data[7]) < dt.Day) || (int.Parse(data[6]) < dt.Month)) &&
-                (data[10] == "" || PlayerPrefs.GetInt(data[10], 0) > 0))
+                (data[10] == "" || PlayerPrefs.GetInt(data[10], 0) > 0) &&
+                (PlayerPrefs.GetInt(data[11].Substring(0, data[11].Length - 4) + "Flag", 0)==0))
             {
-                objBGM.GetComponent<BGMManager>().chapterName = data[11].Replace("\r", "").Replace("\n", "");
+                objBGM.GetComponent<BGMManager>().chapterName = data[11];
                 objTime.GetComponent<Text>().text = "[★イベント発生]";
                 Input.location.Stop();
                 PlayerPrefs.SetFloat("longitude",(float)longitude); PlayerPrefs.SetFloat("latitude", (float)latitude);

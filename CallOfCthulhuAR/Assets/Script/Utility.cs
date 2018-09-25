@@ -26,7 +26,6 @@ public class Utility : MonoBehaviour {
 
     public IEnumerator LoadSceneCoroutine(string scene)
     {
-        if (PlayerPrefs.GetInt("開始フラグ", 0) == 0) { GameObject.Find("BGMManager").GetComponent<BGMManager>().chapterName = "start.txt"; }
         SceneManager.LoadScene(scene);
         yield return null;
     }

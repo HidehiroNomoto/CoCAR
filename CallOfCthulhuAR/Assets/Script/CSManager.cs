@@ -240,7 +240,7 @@ public class CSManager : MonoBehaviour {
     public IEnumerator LoadChara(string path)
     {
         // 指定したファイルをロードする
-        WWW request = new WWW(path);
+        WWW request = new WWW("file://" + path);
 
         while ((!request.isDone) || (!string.IsNullOrEmpty(request.error)))
         {

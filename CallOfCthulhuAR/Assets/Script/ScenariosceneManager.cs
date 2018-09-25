@@ -123,7 +123,7 @@ public class ScenariosceneManager : MonoBehaviour
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Lost:") { StartCoroutine(CharaLost()); }
             if (scenarioText[i].Length > 10 && scenarioText[i].Substring(0, 10) == "FlagReset:") { FlagReset(); sentenceEnd = true; }
             if (scenarioText[i].Length > 6 && scenarioText[i].Substring(0, 6) == "Title:") { GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene"); }
-            if (scenarioText[i].Length > 4 && scenarioText[i].Substring(0, 4) == "Map:") { GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "MapScene"); }
+            if (scenarioText[i].Length > 4 && scenarioText[i].Substring(0, 4) == "Map:") { if (scenarioText[i].Substring(4, 4) == "Once") { PlayerPrefs.SetInt(objBGM.GetComponent<BGMManager>().chapterName.Substring(0, objBGM.GetComponent<BGMManager>().chapterName.Length - 4) + "Flag", 1); } GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "MapScene"); }
             while (sentenceEnd == false) { yield return null; }
             objBackText.gameObject.SetActive(false);//背景テキストは出っ放しにならない
             for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
@@ -1181,19 +1181,19 @@ public class ScenariosceneManager : MonoBehaviour
             obj.GetComponent<Text>().text = ("エラー。シナリオファイルが見当たりません。" + _FILE_HEADER + "\\" + path);
             GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
         }
+
         try
         {
             //閲覧するエントリ
             string extractFile = path;
             ICSharpCode.SharpZipLib.Zip.ZipFile zf;
-                //ZipFileオブジェクトの作成
-                zf = new ICSharpCode.SharpZipLib.Zip.ZipFile(PlayerPrefs.GetString("進行中シナリオ", ""));
+            //ZipFileオブジェクトの作成
+            zf = new ICSharpCode.SharpZipLib.Zip.ZipFile(PlayerPrefs.GetString("進行中シナリオ", ""));//説明に書かれてる以外のエラーが出てる。
 
             zf.Password = "I_change_the_world";
             //展開するエントリを探す
             ICSharpCode.SharpZipLib.Zip.ZipEntry ze;
-                ze = zf.GetEntry(extractFile);
-
+            ze = zf.GetEntry(extractFile);
 
             if (ze != null)
             {
@@ -1225,9 +1225,39 @@ public class ScenariosceneManager : MonoBehaviour
             //閉じる
             zf.Close();
         }
+        catch(PathTooLongException)
+        {
+            obj.GetComponent<Text>().text = ("エラーZIP1。シナリオファイルの形式が不適合です。" + PlayerPrefs.GetString("進行中シナリオ", "") + "\\" + path);
+            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
+        }
+        catch (UnauthorizedAccessException)
+        {
+            obj.GetComponent<Text>().text = ("エラーZIP2。シナリオファイルの形式が不適合です。" + PlayerPrefs.GetString("進行中シナリオ", "") + "\\" + path);
+            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
+        }
+        catch (DirectoryNotFoundException)
+        {
+            obj.GetComponent<Text>().text = ("エラーZIP3。シナリオファイルの形式が不適合です。" + PlayerPrefs.GetString("進行中シナリオ", "") + "\\" + path);
+            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            obj.GetComponent<Text>().text = ("エラーZIP4。シナリオファイルの形式が不適合です。" + PlayerPrefs.GetString("進行中シナリオ", "") + "\\" + path);
+            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
+        }
+        catch (FileNotFoundException)
+        {
+            obj.GetComponent<Text>().text = ("エラーZIP5。シナリオファイルの形式が不適合です。" + PlayerPrefs.GetString("進行中シナリオ", "") + "\\" + path);
+            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
+        }
+        catch (NotSupportedException)
+        {
+            obj.GetComponent<Text>().text = ("エラーZIP6。シナリオファイルの形式が不適合です。" + PlayerPrefs.GetString("進行中シナリオ", "") + "\\" + path);
+            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
+        }
         catch
         {
-            obj.GetComponent<Text>().text = ("エラーZIP。シナリオファイルの形式が不適合です。" + PlayerPrefs.GetString("進行中シナリオ", "") + "\\" + path);
+            obj.GetComponent<Text>().text = ("エラーZIP7。シナリオファイルの形式が不適合です。" + PlayerPrefs.GetString("進行中シナリオ", "") + "\\" + path);
             GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
         }
     }
@@ -1394,7 +1424,7 @@ public class ScenariosceneManager : MonoBehaviour
     public IEnumerator LoadPlayerChara(string path)
     {
         // 指定したファイルをロードする
-        WWW request = new WWW(path);
+        WWW request = new WWW("file://" + path);
 
         while ((!request.isDone) || (!string.IsNullOrEmpty(request.error)))
         {

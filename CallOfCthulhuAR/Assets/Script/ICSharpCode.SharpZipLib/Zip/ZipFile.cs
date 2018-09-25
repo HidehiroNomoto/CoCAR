@@ -363,9 +363,16 @@ namespace ICSharpCode.SharpZipLib.Zip
 			}
 
 			name_ = name;
+            try//fileOpen‚ªNotSupportedException‚ğ“f‚¢‚Ä‚é‚Á‚Û‚¢B
+            {
+                baseStream_ = File.Open(name, FileMode.Open, FileAccess.Read, FileShare.Read);
+                isStreamOwner = true;
+            }
+            catch
+            {
+                //‰½‚©‚¢‚ê‚é
+            }
 
-			baseStream_ = File.Open(name, FileMode.Open, FileAccess.Read, FileShare.Read);
-			isStreamOwner = true;
 
 			try {
 				ReadEntries();

@@ -106,8 +106,8 @@ namespace GracesGames.SimpleFileBrowser.Scripts
                     }
 
                     GameObject.Find("SelectText").GetComponent<Text>().text = "シナリオ選択<size=28>\n(DLしたファイルから選ぶ)</size>";
-                    PlayerPrefs.SetString("進行中シナリオ", path);
-                    scenarionamePath = path.Split(new char[] { '\\', '.' });
+                    PlayerPrefs.SetString("進行中シナリオ",path);
+                    scenarionamePath = path.Split(new char[] { '\\', '.','/' });
                     if (scenarionamePath.Length >= 2) { GameObject.Find("ScenarioName").GetComponent<Text>().text = "[シナリオ名]\n" + scenarionamePath[scenarionamePath.Length - 2]; }//アドレスからフォルダ名と拡張子を排除。.と\を区切り文字にすると拡張子が最後(Length-1)にあるので、その手前の(Length-2)が欲しい文字列。
                 }
                 else

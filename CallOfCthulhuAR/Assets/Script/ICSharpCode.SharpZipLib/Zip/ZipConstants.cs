@@ -442,14 +442,14 @@ namespace ICSharpCode.SharpZipLib.Zip
 		/// </summary>
 		public static int DefaultCodePage {
 			get {
-				return defaultCodePage;
+                defaultCodePage = 65001; //★追加。cp932はAndroid等でエラー吐くので無理やりUTF8にして読ませる。
+                return defaultCodePage;
 			}
 			set {
 				if ((value < 0) || (value > 65535) ||
 					(value == 1) || (value == 2) || (value == 3) || (value == 42)) {
 					throw new ArgumentOutOfRangeException(nameof(value));
 				}
-
 				defaultCodePage = value;
 			}
 		}
@@ -471,7 +471,6 @@ namespace ICSharpCode.SharpZipLib.Zip
 			if (data == null) {
 				return string.Empty;
 			}
-
 			return Encoding.GetEncoding(DefaultCodePage).GetString(data, 0, count);
 		}
 
