@@ -324,8 +324,8 @@ namespace GracesGames.SimpleFileBrowser.Scripts {
 				files = ApplyFileSearchFilter(files);
 			}
 
-            // Apply Alphanumeric sort to files
-            Array.Sort(files, new AlphanumComparatorFast());
+            // Apply Alphanumeric sort to files(オーバーフロー対策のためソート機能除去)
+            //Array.Sort(files, new AlphanumComparatorFast());
 
             // For each file in the current directory, create a FileButton and hook up the FileClick method
             foreach (string file in files) {

@@ -17,6 +17,7 @@ public class MapScene : MonoBehaviour
     private float targetX=0;
     private float targetY=0;
     private string[] mapData;
+    private bool sceneChange = false;
     GameObject mapImageObj;
     GameObject obj;
     GameObject objTarget;
@@ -68,7 +69,7 @@ public class MapScene : MonoBehaviour
         for (int i = 0; i < mapData.Length; i++)
         {
             if (mapData[i] == "[END]") { break; }
-            data =mapData[i].Split(',').Replace("\r", "").Replace("\n", "");
+            data =mapData[i].Replace("\r", "").Replace("\n", "").Split(',');
             if ((data[0] == "" || double.Parse(data[0]) > latitude - 0.0001 && double.Parse(data[0]) < latitude + 0.001) &&
                 (data[1] == "" || double.Parse(data[1]) > longitude - 0.0001 && double.Parse(data[1]) < longitude + 0.001) &&
                 (data[2] == "" || (int.Parse(data[2]) >= dt.Month)) &&
@@ -83,13 +84,14 @@ public class MapScene : MonoBehaviour
                 (PlayerPrefs.GetInt(data[11].Substring(0, data[11].Length - 4) + "Flag", 0)==0))
             {
                 objBGM.GetComponent<BGMManager>().chapterName = data[11];
-                objTime.GetComponent<Text>().text = "[★イベント発生]";
-                Input.location.Stop();
+                objTime.GetComponent<Text>().text = "<color=red>[★イベント発生]</color>";
+                sceneChange = true;
+                if ((Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer) && (!Input.location.isEnabledByUser)){ Input.location.Stop(); }
                 PlayerPrefs.SetFloat("longitude",(float)longitude); PlayerPrefs.SetFloat("latitude", (float)latitude);
                 GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "NovelScene");                
             }
         }
-        objTime.GetComponent<Text>().text= dt.ToString("MM/dd  HH:mm") + "\n" + "<size=48>緯度：" + Math.Round(latitude, 4).ToString() + "　,　経度：" + Math.Round(longitude,4).ToString().ToString() + "</size>";
+        if (sceneChange == false) { objTime.GetComponent<Text>().text = dt.ToString("MM/dd  HH:mm") + "\n" + "<size=48>緯度：" + Math.Round(latitude, 4).ToString() + "　,　経度：" + Math.Round(longitude, 4).ToString().ToString() + "</size>"; }
     }
 
     void GetPos()
@@ -194,8 +196,6 @@ public class MapScene : MonoBehaviour
 
             // 読み込んだ目次テキストファイルからstring配列を作成する
             mapData = text.Split('\n');
-
-
             //閉じる
             sr.Close();
             reader.Close();
