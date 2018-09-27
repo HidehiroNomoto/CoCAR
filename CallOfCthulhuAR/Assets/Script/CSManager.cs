@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.Advertisements;
 
 public class CSManager : MonoBehaviour {
     private int[] status = new int[STATUSNUM];
@@ -353,11 +354,17 @@ public class CSManager : MonoBehaviour {
 
     public void PushRediceButton()
     {
-        PushDecideButtonIn();
+        PushRediceButtonIn();
     }
 
     private void PushRediceButtonIn()
     {
+        //スタンドアロン用は広告機能使えないのでコメントアウトする
+        if (Advertisement.IsReady())
+        {
+            Advertisement.Show();
+        }
+        
         for (int i = 0; i < SKILLNUM; i++)
         {
             skills[i] = 0;

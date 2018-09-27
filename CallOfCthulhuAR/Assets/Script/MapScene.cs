@@ -36,7 +36,7 @@ public class MapScene : MonoBehaviour
         objBGM= GameObject.Find("BGMManager").gameObject as GameObject;
         objTime = GameObject.Find("TimeText").gameObject as GameObject;
         LoadMapData("mapdata.txt");
-        if ((Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer) && (!Input.location.isEnabledByUser)) { Input.location.Start(); }
+        if ((Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer)) { Input.location.Start(); }
         GetPos();
         GetMap();
     }
@@ -58,13 +58,15 @@ public class MapScene : MonoBehaviour
             GetMap();
             intervalTime = 0.0f;
         }
+
     }
 
     //マップデータテキストを読み込んで、現在位置と時刻が一致するイベントがあれば読込。
     void IventCheck()
     {
         DateTime dt;
-        dt = DateTime.Now;
+        dt = DateTime.UtcNow;
+        dt=dt.AddHours(9);//アンドロイドがローカル時間周りで妙な動きをするので、UTCで出してからJSTに変換してやる。
         string[] data;
         for (int i = 0; i < mapData.Length; i++)
         {
@@ -154,7 +156,10 @@ public class MapScene : MonoBehaviour
 
     private IEnumerator GetStreetViewImage(double latitude, double longitude, double zoom)
     {
-        string url = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&zoom=" + zoom + "&size=" + width + "x" + height;
+        string url="";
+        if (Application.platform == RuntimePlatform.IPhonePlayer) { url = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&zoom=" + zoom + "&size=" + width + "x" + height + "&key=AIzaSyAYMJ3RQumT__-kp8hwUKxvQDaGv_tXEIo"; }
+        if (Application.platform == RuntimePlatform.Android) { url = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&zoom=" + zoom + "&size=" + width + "x" + height + "&key=AIzaSyAyIuOwJVUvkOJqh6jfWICcunbtOXVOKwY"; }
+        if(Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer) { url = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&zoom=" + zoom + "&size=" + width + "x" + height + "&key=AIzaSyAyIuOwJVUvkOJqh6jfWICcunbtOXVOKwY"; }
         WWW www = new WWW(url);
         yield return www;
         //マップの画像をTextureからspriteに変換して貼り付ける
