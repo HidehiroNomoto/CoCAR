@@ -157,9 +157,9 @@ public class MapScene : MonoBehaviour
     private IEnumerator GetStreetViewImage(double latitude, double longitude, double zoom)
     {
         string url="";
-        if (Application.platform == RuntimePlatform.IPhonePlayer) { url = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&zoom=" + zoom + "&size=" + width + "x" + height + "&key=AIzaSyAYMJ3RQumT__-kp8hwUKxvQDaGv_tXEIo"; }
-        if (Application.platform == RuntimePlatform.Android) { url = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&zoom=" + zoom + "&size=" + width + "x" + height + "&key=AIzaSyAyIuOwJVUvkOJqh6jfWICcunbtOXVOKwY"; }
-        if(Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer) { url = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&zoom=" + zoom + "&size=" + width + "x" + height + "&key=AIzaSyAyIuOwJVUvkOJqh6jfWICcunbtOXVOKwY"; }
+        if (Application.platform == RuntimePlatform.IPhonePlayer) { url = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&zoom=" + zoom + "&size=" + width + "x" + height + Secret.SecretString.iPhoneKey; }
+        if (Application.platform == RuntimePlatform.Android) { url = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&zoom=" + zoom + "&size=" + width + "x" + height + Secret.SecretString.androidKey; }
+        if(Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer) { url = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&zoom=" + zoom + "&size=" + width + "x" + height + Secret.SecretString.androidKey; ; }
         WWW www = new WWW(url);
         yield return www;
         //マップの画像をTextureからspriteに変換して貼り付ける
@@ -185,7 +185,7 @@ public class MapScene : MonoBehaviour
         //ZipFileオブジェクトの作成
         ICSharpCode.SharpZipLib.Zip.ZipFile zf =
             new ICSharpCode.SharpZipLib.Zip.ZipFile(PlayerPrefs.GetString("進行中シナリオ",""));
-        zf.Password = "I_change_the_world";
+        zf.Password = Secret.SecretString.zipPass;
         //展開するエントリを探す
         ICSharpCode.SharpZipLib.Zip.ZipEntry ze = zf.GetEntry(extractFile);
 

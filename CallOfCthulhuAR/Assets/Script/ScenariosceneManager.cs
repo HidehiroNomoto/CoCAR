@@ -1190,7 +1190,7 @@ public class ScenariosceneManager : MonoBehaviour
             //ZipFileオブジェクトの作成
             zf = new ICSharpCode.SharpZipLib.Zip.ZipFile(PlayerPrefs.GetString("進行中シナリオ", ""));//説明に書かれてる以外のエラーが出てる。
 
-            zf.Password = "I_change_the_world";
+            zf.Password = Secret.SecretString.zipPass;
             //展開するエントリを探す
             ICSharpCode.SharpZipLib.Zip.ZipEntry ze;
             ze = zf.GetEntry(extractFile);
@@ -1279,7 +1279,7 @@ public class ScenariosceneManager : MonoBehaviour
             //ZipFileオブジェクトの作成
             ICSharpCode.SharpZipLib.Zip.ZipFile zf =
                 new ICSharpCode.SharpZipLib.Zip.ZipFile(PlayerPrefs.GetString("進行中シナリオ", ""));
-            zf.Password = "I_change_the_world";
+            zf.Password = Secret.SecretString.zipPass;
             //展開するエントリを探す
             ICSharpCode.SharpZipLib.Zip.ZipEntry ze = zf.GetEntry(extractFile);
 
