@@ -13,7 +13,13 @@ public class TitleManager : MonoBehaviour {
     void Start()
     {
         //PlayerPrefs.DeleteAll();
-        scenarionamePath=PlayerPrefs.GetString("進行中シナリオ","").Split(new char[] {'\\' ,'.', '/'});
+        if (Application.platform == RuntimePlatform.WindowsPlayer ||
+Application.platform == RuntimePlatform.OSXPlayer ||
+Application.platform == RuntimePlatform.LinuxPlayer)
+        {
+            Screen.SetResolution(400, 800, false);
+        }
+        scenarionamePath =PlayerPrefs.GetString("進行中シナリオ","").Split(new char[] {'\\' ,'.', '/'});
         if (scenarionamePath.Length >= 2) { GameObject.Find("ScenarioName").GetComponent<Text>().text = "[シナリオ名]\n" + scenarionamePath[scenarionamePath.Length - 2]; }//アドレスからフォルダ名と拡張子を排除。.と\を区切り文字にすると拡張子が最後(Length-1)にあるので、その手前の(Length-2)が欲しい文字列。
         if (PlayerPrefs.GetString("進行中シナリオ", "") != "") { GameObject.Find("SelectText").GetComponent<Text>().text = "シナリオ選択<size=28>\n(DLしたファイルから選ぶ)</size>"; }
         if (PlayerPrefs.GetInt("Status0") > 0) { GameObject.Find("CharaText").GetComponent<Text>().text = "探索者作成"; }

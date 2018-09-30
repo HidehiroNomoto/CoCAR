@@ -360,10 +360,12 @@ public class CSManager : MonoBehaviour {
     private void PushRediceButtonIn()
     {
         //スタンドアロン用は広告機能使えないのでコメントアウトする
+        /*
         if (Advertisement.IsReady())
         {
             Advertisement.Show();
         }
+        */
         
         for (int i = 0; i < SKILLNUM; i++)
         {
