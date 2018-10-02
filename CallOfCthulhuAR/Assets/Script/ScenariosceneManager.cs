@@ -4,7 +4,6 @@ using UnityEngine.UI;
 using System;
 using System.IO;
 
-
 public class ScenariosceneManager : MonoBehaviour
 {
     const int STATUSNUM = 12;
@@ -12,6 +11,7 @@ public class ScenariosceneManager : MonoBehaviour
     public string[] scenarioText = new string[100];          //シナリオテキスト保存変数
     public AudioClip[] scenarioAudio = new AudioClip[40];    //シナリオＢＧＭ・ＳＥ保存変数
     public Sprite[] scenarioGraphic = new Sprite[100];       //シナリオ画像保存変数
+    private string[] scenarioGraphicToPath = new string[100];//シナリオ画像番号と画像パスを連携させるための変数（Item関連に使う）
     public string[] scenarioFilePath = new string[100];      //シナリオ用ファイルのアドレス
     public bool sentenceEnd=false;                           //文の処理が終了したか否か
     public int battleFlag=-1;
@@ -22,7 +22,6 @@ public class ScenariosceneManager : MonoBehaviour
     GameObject[] objCharacter = new GameObject[5];
     GameObject objBackImage;
     GameObject objBackText;
-    GameObject objItem;
     GameObject objCanvas;
     GameObject objRollText;
     GameObject objName;
@@ -49,11 +48,11 @@ public class ScenariosceneManager : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        _FILE_HEADER = PlayerPrefs.GetString("進行中シナリオ", "");                      //ファイル場所の頭
+        _FILE_HEADER = PlayerPrefs.GetString("[system]進行中シナリオ", "");                      //ファイル場所の頭
         if (_FILE_HEADER == null || _FILE_HEADER == "") {  GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene"); }
-        logNum = PlayerPrefs.GetInt("最新ログ番号", 0);
+        logNum = PlayerPrefs.GetInt("[system]最新ログ番号", 0);
         objSkip = GameObject.Find("SkipText").gameObject as GameObject;
-        if (PlayerPrefs.GetInt("skipFlag", 0) == 1) { skipFlag = true; objSkip.GetComponent<Text>().text = "<color=red>既読Skip\n<ON></color>"; }
+        if (PlayerPrefs.GetInt("[system]skipFlag", 0) == 1) { skipFlag = true; objSkip.GetComponent<Text>().text = "<color=red>既読Skip\n<ON></color>"; }
         systemAudio[0] = Resources.Load<AudioClip>("kan"); systemAudio[1] = Resources.Load<AudioClip>("correct1");
         systemAudio[2] = Resources.Load<AudioClip>("incorrect1"); systemAudio[3] = Resources.Load<AudioClip>("switch1");
         systemAudio[4] = Resources.Load<AudioClip>("gun1"); systemAudio[5] = Resources.Load<AudioClip>("punch-high1");
@@ -68,12 +67,11 @@ public class ScenariosceneManager : MonoBehaviour
         objTextBox = GameObject.Find("TextBox").gameObject as GameObject;
         objBackImage = GameObject.Find("BackImage").gameObject as GameObject;
         objBackText = GameObject.Find("BackText").gameObject as GameObject; objBackText.gameObject.SetActive(false);
-        objItem = GameObject.Find("Item").gameObject as GameObject; objItem.gameObject.SetActive(false);
         objCanvas = GameObject.Find("CanvasDraw").gameObject as GameObject;
         objBGM = GameObject.Find("BGMManager").gameObject as GameObject;
         for (int i = 0; i < 4; i++) { objBox[i] = GameObject.Find("select" + (i + 1).ToString()).gameObject as GameObject; objBox[i].gameObject.SetActive(false); }
         for (int i = 0; i < 2; i++) { objDice[i] = GameObject.Find("Dice" + (i + 1).ToString()).gameObject as GameObject; objDice[i].gameObject.SetActive(false); }
-        StartCoroutine(LoadPlayerChara(PlayerPrefs.GetString("CharacterIllustPath", "")));
+        StartCoroutine(LoadPlayerChara(PlayerPrefs.GetString("[system]CharacterIllstPath", "")));
         StartCoroutine(MainCoroutine());
     }
 
@@ -98,14 +96,14 @@ public class ScenariosceneManager : MonoBehaviour
             for (int j = 0; j < 4; j++) { buttonText[j] = null; }
             sentenceEnd = false;
             if (scenarioText[i] == "[END]") { break; }
-            if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Text:") { separateText = scenarioText[i].Substring(5).Split(','); TextDraw(separateText[0], separateText[1]);if (PlayerPrefs.GetInt(sectionName + i.ToString(), 0)==1) { skipFlag2 = true; } StartCoroutine(PushWait());PlayerPrefs.SetInt(sectionName + i.ToString(),1);if (skipFlag2 == false) {   PlayerPrefs.SetString("バックログ" + logNum.ToString(), scenarioText[i].Substring(5).Replace(',', ':')); logNum++; if (logNum >= 1000) { logNum = 0; } PlayerPrefs.SetInt("最新ログ番号", logNum); } skipFlag2 = false; }
-            if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "BackText:") { BackTextDraw(scenarioText[i].Substring(9)); if (PlayerPrefs.GetInt(sectionName + i.ToString(), 0) == 1) { skipFlag2 = true; } StartCoroutine(PushWait());  PlayerPrefs.SetInt(sectionName + i.ToString(), 1);if (skipFlag2 == false) {  PlayerPrefs.SetString("バックログ" + logNum.ToString(), scenarioText[i].Substring(9).Replace(',', ':')); logNum++; if (logNum >= 1000) { logNum = 0; } PlayerPrefs.SetInt("最新ログ番号", logNum); } skipFlag2 = false; }
+            if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Text:") { separateText = scenarioText[i].Substring(5).Split(','); TextDraw(separateText[0], separateText[1]);if (PlayerPrefs.GetInt("[system]" + sectionName + i.ToString(), 0)==1) { skipFlag2 = true; } StartCoroutine(PushWait());PlayerPrefs.SetInt("[system]" + sectionName + i.ToString(),1);if (skipFlag2 == false) {   PlayerPrefs.SetString("[system]バックログ" + logNum.ToString(), scenarioText[i].Substring(5).Replace(',', ':')); logNum++; if (logNum >= 1000) { logNum = 0; } PlayerPrefs.SetInt("[system]最新ログ番号", logNum); } skipFlag2 = false; }
+            if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "BackText:") { BackTextDraw(scenarioText[i].Substring(9)); if (PlayerPrefs.GetInt("[system]" + sectionName + i.ToString(), 0) == 1) { skipFlag2 = true; } StartCoroutine(PushWait());  PlayerPrefs.SetInt("[system]" + sectionName + i.ToString(), 1);if (skipFlag2 == false) {  PlayerPrefs.SetString("[system]バックログ" + logNum.ToString(), scenarioText[i].Substring(9).Replace(',', ':')); logNum++; if (logNum >= 1000) { logNum = 0; } PlayerPrefs.SetInt("[system]最新ログ番号", logNum); } skipFlag2 = false; }
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Back:") { BackDraw(int.Parse(scenarioText[i].Substring(5))); sentenceEnd = true; }
             if (scenarioText[i].Length > 4 && scenarioText[i].Substring(0, 4) == "BGM:") { BGMIn(int.Parse(scenarioText[i].Substring(4, 4))); BGMPlay(int.Parse(scenarioText[i].Substring(9))); sentenceEnd = true; }
             if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "BGMStop") { BGMOut(int.Parse(scenarioText[i].Substring(8, 4))); sentenceEnd = true; }
             if (scenarioText[i].Length > 3 && scenarioText[i].Substring(0, 3) == "SE:") { SEPlay(int.Parse(scenarioText[i].Substring(3))); sentenceEnd = true; }
             if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 5) == "Chara") { CharacterDraw(int.Parse(scenarioText[i].Substring(9)), int.Parse(scenarioText[i].Substring(5, 1))); StartCoroutine(CharacterMove(int.Parse(scenarioText[i].Substring(5, 1)), scenarioText[i].Substring(7, 1))); }//Chara2ならポジション2、Chara5ならポジション5...。:の後（6文字目以降）は立ち絵の指定
-            if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Item:") { ItemDraw(int.Parse(scenarioText[i].Substring(5))); sentenceEnd = true; }
+            if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Item:") { ItemDraw(int.Parse(scenarioText[i].Substring(5))); sentenceEnd = false; StartCoroutine(PushWait()); }
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Shake") { StartCoroutine(ShakeScreen()); }
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Jump:") { StartCoroutine(CharacterJump(int.Parse(scenarioText[i].Substring(5, 1)))); }
             if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Select:") { buttonText = scenarioText[i].Substring(7).Split(','); StartCoroutine(Select(buttonText[0], buttonText[1], buttonText[2], buttonText[3].Replace("\r", "").Replace("\n", ""),false)); while (sentenceEnd == false) { yield return null; }; SystemSEPlay(systemAudio[3]); i += selectNum; continue; }
@@ -114,7 +112,7 @@ public class ScenariosceneManager : MonoBehaviour
             if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Battle:") { battleText = scenarioText[i].Substring(7).Split(','); battleFlag = -1; StartCoroutine(Battle(int.Parse(battleText[0]), int.Parse(battleText[1]), int.Parse(battleText[2]), int.Parse(battleText[3]), int.Parse(battleText[4]), int.Parse(battleText[5]), int.Parse(battleText[6]),bool.Parse(battleText[7]), battleText[8], battleText[9], int.Parse(battleText[10]), int.Parse(battleText[11]), bool.Parse(battleText[12].Replace("\r", "").Replace("\n", "")))); while (battleFlag == -1) { yield return null; }; i += battleFlag;sentenceEnd = false; StartCoroutine(PushWait()); while (sentenceEnd == false) { yield return null; }continue; }
             if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "FlagBranch:") { i+=PlayerPrefs.GetInt(scenarioText[i].Substring(11).Replace("\r", "").Replace("\n", ""),0);continue; }
             if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "FlagChange:"){ separateText = scenarioText[i].Substring(11).Split(','); PlayerPrefs.SetInt(separateText[0],int.Parse(separateText[1].Replace("\r", "").Replace("\n", ""))); sentenceEnd = true; }
-            if (scenarioText[i].Length > 8 && scenarioText[i].Substring(0, 8) == "GetTime:"){ dt = DateTime.Now; PlayerPrefs.SetInt("Month", dt.Month); PlayerPrefs.SetInt("Day", dt.Day); PlayerPrefs.SetInt("Hour",dt.Hour); PlayerPrefs.SetInt("Minute", dt.Minute); sentenceEnd = true; }
+            if (scenarioText[i].Length > 8 && scenarioText[i].Substring(0, 8) == "GetTime:"){ dt = DateTime.Now; PlayerPrefs.SetInt("[system]Month", dt.Month); PlayerPrefs.SetInt("[system]Day", dt.Day); PlayerPrefs.SetInt("[system]Hour",dt.Hour); PlayerPrefs.SetInt("[system]Minute", dt.Minute); sentenceEnd = true; }
             if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "FlagName:"){ separateText = scenarioText[i].Substring(9).Split(','); PlayerPrefs.SetInt(separateText[1].Replace("\r", "").Replace("\n", ""), PlayerPrefs.GetInt(separateText[0], 0)); sentenceEnd = true; }//フラグを別名で保存する
             if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "Difference:"){separate3Text = scenarioText[i].Substring(11).Split(',');i+=Difference(separate3Text);continue; }
             if (scenarioText[i].Length > 13 && scenarioText[i].Substring(0, 13) == "StatusChange:"){separateText = scenarioText[i].Substring(13).Split(',');StartCoroutine(StatusChange(separateText));while (sentenceEnd == false) { yield return null; }; sentenceEnd = false; StartCoroutine(PushWait()); }//「StatusChange:正気度,-2D6」のように①変動ステータス、②変動値（○D○または固定値どちらでもプログラム側で適切な解釈をしてくれる）
@@ -140,27 +138,27 @@ public class ScenariosceneManager : MonoBehaviour
         //残す情報を一時避難
         for(int i=0;i<STATUSNUM;i++)
         {
-            status[i] = PlayerPrefs.GetInt("Status" + i.ToString(), 0);
+            status[i] = PlayerPrefs.GetInt("[system]Status" + i.ToString(), 0);
         }
         for (int i = 0; i < SKILLNUM; i++)
         {
-            skills[i] = PlayerPrefs.GetInt("Skill" + i.ToString(), 0);
+            skills[i] = PlayerPrefs.GetInt("[system]Skill" + i.ToString(), 0);
         }
-        nowPlay= PlayerPrefs.GetString("進行中シナリオ", "");
+        nowPlay= PlayerPrefs.GetString("[system]進行中シナリオ", "");
         //セーブデータを全部消す
         PlayerPrefs.DeleteAll();
         //残す情報を再書き込み
         for (int i = 0; i < STATUSNUM; i++)
         {
-            PlayerPrefs.SetInt("Status" + i.ToString(), status[i]);
+            PlayerPrefs.SetInt("[system]Status" + i.ToString(), status[i]);
         }
         for (int i = 0; i < SKILLNUM; i++)
         {
-            PlayerPrefs.SetInt("Skill" + i.ToString(), skills[i]);
+            PlayerPrefs.SetInt("[system]Skill" + i.ToString(), skills[i]);
         }
         logNum = 0;
-        PlayerPrefs.SetString("進行中シナリオ",nowPlay);
-        if (skipFlag == true) { PlayerPrefs.SetInt("skipFlag", 1); }
+        PlayerPrefs.SetString("[system]進行中シナリオ",nowPlay);
+        if (skipFlag == true) { PlayerPrefs.SetInt("[system]skipFlag", 1); }
     }
 
     private IEnumerator CharaLost()
@@ -172,11 +170,11 @@ public class ScenariosceneManager : MonoBehaviour
         //キャラクターデータを全て消し、タイトル画面に送り返す。
         for (int i = 0; i < STATUSNUM; i++)
         {
-            PlayerPrefs.SetInt("Status" + i.ToString(), 0);
+            PlayerPrefs.SetInt("[system]Status" + i.ToString(), 0);
         }
         for (int i = 0; i < SKILLNUM; i++)
         {
-            PlayerPrefs.SetInt("Skill" + i.ToString(), 0);
+            PlayerPrefs.SetInt("[system]Skill" + i.ToString(), 0);
         }
         GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
     }
@@ -191,13 +189,13 @@ public class ScenariosceneManager : MonoBehaviour
         if (skipFlag == false)
         {
             skipFlag = true;
-            PlayerPrefs.SetInt("skipFlag", 1);
+            PlayerPrefs.SetInt("[system]skipFlag", 1);
             objSkip.GetComponent<Text>().text = "<color=red>既読Skip\n<ON></color>";
         }
         else
         {
             skipFlag = false;
-            PlayerPrefs.SetInt("skipFlag", 0);
+            PlayerPrefs.SetInt("[system]skipFlag", 0);
             objSkip.GetComponent<Text>().text = "既読Skip\n<OFF>";
         }
     }
@@ -231,19 +229,19 @@ public class ScenariosceneManager : MonoBehaviour
         if (int.TryParse(separateText[1].Replace("\r", "").Replace("\n", ""), out x1))
         {
             x2 = x1;
-            if (PlayerPrefs.GetInt(targetStr, 0) < -x1) { x1 = -1 * PlayerPrefs.GetInt(targetStr, 0); }
-            if (PlayerPrefs.GetInt(targetStr, 0) + x1 >=100) { x1 = 99 - PlayerPrefs.GetInt(targetStr, 0); }
-            if (targetStr == "耐久力" && PlayerPrefs.GetInt(targetStr, 0) + x1 >= PlayerPrefs.GetInt("Status9", 0)) { x1 = PlayerPrefs.GetInt("Status9", 0)- PlayerPrefs.GetInt(targetStr, 0); }
-            if (targetStr == "マジック・ポイント" && PlayerPrefs.GetInt(targetStr, 0) + x1 >= PlayerPrefs.GetInt("Status10", 0)) { x1 = PlayerPrefs.GetInt("Status10", 0) - PlayerPrefs.GetInt(targetStr, 0); }
-            if (targetStr == "正気度ポイント" && PlayerPrefs.GetInt(targetStr, 0) + x1 >= 99 - PlayerPrefs.GetInt("Skill53", 0)) {x1= 99 - PlayerPrefs.GetInt("Skill53", 0) - PlayerPrefs.GetInt(targetStr, 0); }
-            PlayerPrefs.SetInt(targetStr, PlayerPrefs.GetInt(targetStr, 0) + x1);
+            if (PlayerPrefs.GetInt("[system]" + targetStr, 0) < -x1) { x1 = -1 * PlayerPrefs.GetInt("[system]" + targetStr, 0); }
+            if (PlayerPrefs.GetInt("[system]" + targetStr, 0) + x1 >=100) { x1 = 99 - PlayerPrefs.GetInt("[system]" + targetStr, 0); }
+            if (targetStr == "耐久力" && PlayerPrefs.GetInt("[system]" + targetStr, 0) + x1 >= PlayerPrefs.GetInt("[system]Status9", 0)) { x1 = PlayerPrefs.GetInt("[system]Status9", 0)- PlayerPrefs.GetInt("[system]" + targetStr, 0); }
+            if (targetStr == "マジック・ポイント" && PlayerPrefs.GetInt("[system]" + targetStr, 0) + x1 >= PlayerPrefs.GetInt("[system]Status10", 0)) { x1 = PlayerPrefs.GetInt("[system]Status10", 0) - PlayerPrefs.GetInt("[system]" + targetStr, 0); }
+            if (targetStr == "正気度ポイント" && PlayerPrefs.GetInt("[system]" + targetStr, 0) + x1 >= 99 - PlayerPrefs.GetInt("[system]Skill53", 0)) {x1= 99 - PlayerPrefs.GetInt("[system]Skill53", 0) - PlayerPrefs.GetInt("[system]" + targetStr, 0); }
+            PlayerPrefs.SetInt("[system]" + targetStr, PlayerPrefs.GetInt("[system]" + targetStr, 0) + x1);
             if (x2 > 0)
             {
-                TextDraw("", separateText[0] + "の能力が" + x2.ToString() + "点上昇した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）");
+                TextDraw("", separateText[0] + "の能力が" + x2.ToString() + "点上昇した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt("[system]" + targetStr, 0).ToString() + "）");
             }
             else
             {
-                TextDraw("", separateText[0] + "の能力が" + (-1*x2).ToString() + "点減少した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）");
+                TextDraw("", separateText[0] + "の能力が" + (-1*x2).ToString() + "点減少した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt("[system]" + targetStr, 0).ToString() + "）");
             }
             for (int v = 0; v < 60; v++) { yield return null; }
         }
@@ -258,19 +256,19 @@ public class ScenariosceneManager : MonoBehaviour
                 StartCoroutine(DiceEffect(0, int.Parse(separate3Text[1]), changeValue));
                 StartCoroutine(DiceEffect(1, int.Parse(separate3Text[1]), changeValue2));
                 for (int v = 0; v < 60; v++) { yield return null; }
-                if (PlayerPrefs.GetInt(targetStr, 0) < -1 * (changeValue + changeValue2) * y2) { PlayerPrefs.SetInt(targetStr, 0); }
-                else if (targetStr == "耐久力" && PlayerPrefs.GetInt(targetStr, 0) + (changeValue + changeValue2) * y2 >= PlayerPrefs.GetInt("Status9", 0)) { PlayerPrefs.SetInt(targetStr, PlayerPrefs.GetInt("Status9", 0)); }
-                else if (targetStr == "マジック・ポイント" && PlayerPrefs.GetInt(targetStr, 0) + (changeValue + changeValue2) * y2 >= PlayerPrefs.GetInt("Status10", 0)) { PlayerPrefs.SetInt(targetStr, PlayerPrefs.GetInt("Status10", 0)); }
-                else if (targetStr == "正気度ポイント" && PlayerPrefs.GetInt(targetStr, 0) + (changeValue + changeValue2) * y2 >= 99 - PlayerPrefs.GetInt("Skill53", 0)) { PlayerPrefs.SetInt(targetStr, 99 - PlayerPrefs.GetInt("Skill53", 0)); }
-                else if (PlayerPrefs.GetInt(targetStr, 0) + (changeValue + changeValue2) * y2 >= 100) { PlayerPrefs.SetInt(targetStr, 99); }
-                else { PlayerPrefs.SetInt(targetStr, PlayerPrefs.GetInt(targetStr, 0) + (changeValue + changeValue2) * y2); }
+                if (PlayerPrefs.GetInt("[system]" + targetStr, 0) < -1 * (changeValue + changeValue2) * y2) { PlayerPrefs.SetInt("[system]" + targetStr, 0); }
+                else if (targetStr == "耐久力" && PlayerPrefs.GetInt("[system]" + targetStr, 0) + (changeValue + changeValue2) * y2 >= PlayerPrefs.GetInt("[system]Status9", 0)) { PlayerPrefs.SetInt("[system]" + targetStr, PlayerPrefs.GetInt("[system]Status9", 0)); }
+                else if (targetStr == "マジック・ポイント" && PlayerPrefs.GetInt("[system]" + targetStr, 0) + (changeValue + changeValue2) * y2 >= PlayerPrefs.GetInt("[system]Status10", 0)) { PlayerPrefs.SetInt("[system]" + targetStr, PlayerPrefs.GetInt("[system]Status10", 0)); }
+                else if (targetStr == "正気度ポイント" && PlayerPrefs.GetInt("[system]" + targetStr, 0) + (changeValue + changeValue2) * y2 >= 99 - PlayerPrefs.GetInt("[system]Skill53", 0)) { PlayerPrefs.SetInt("[system]" + targetStr, 99 - PlayerPrefs.GetInt("[system]Skill53", 0)); }
+                else if (PlayerPrefs.GetInt("[system]" + targetStr, 0) + (changeValue + changeValue2) * y2 >= 100) { PlayerPrefs.SetInt("[system]" + targetStr, 99); }
+                else { PlayerPrefs.SetInt("[system]" + targetStr, PlayerPrefs.GetInt("[system]" + targetStr, 0) + (changeValue + changeValue2) * y2); }
                 if (y2 > 0)
                 {
-                    TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "+" + changeValue2.ToString() + "=" + (changeValue + changeValue2).ToString() + "点上昇した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）");
+                    TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "+" + changeValue2.ToString() + "=" + (changeValue + changeValue2).ToString() + "点上昇した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt("[system]" + targetStr, 0).ToString() + "）");
                 }
                 else
                 {
-                    TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "+" + changeValue2.ToString() + "=" + (changeValue + changeValue2).ToString() + "点減少した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）");
+                    TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "+" + changeValue2.ToString() + "=" + (changeValue + changeValue2).ToString() + "点減少した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt("[system]" + targetStr, 0).ToString() + "）");
                 }
                 for (int v = 0; v < 60; v++) { yield return null; }
             }
@@ -289,19 +287,19 @@ public class ScenariosceneManager : MonoBehaviour
                         StartCoroutine(DiceEffect(1, 10, changeValue % 10));
                     }
                     for (int v = 0; v < 60; v++) { yield return null; }
-                    if (PlayerPrefs.GetInt(targetStr, 0) < -1 * changeValue * y2) { PlayerPrefs.SetInt(targetStr, 0); }
-                    else if (targetStr == "耐久力" && PlayerPrefs.GetInt(targetStr, 0) + changeValue * y2 >= PlayerPrefs.GetInt("Status9", 0)) { PlayerPrefs.SetInt(targetStr, PlayerPrefs.GetInt("Status9", 0)); }
-                    else if (targetStr == "マジック・ポイント" && PlayerPrefs.GetInt(targetStr, 0) + changeValue * y2 >= PlayerPrefs.GetInt("Status10", 0)) { PlayerPrefs.SetInt(targetStr, PlayerPrefs.GetInt("Status10", 0)); }
-                    else if (targetStr == "正気度ポイント" && PlayerPrefs.GetInt(targetStr, 0) + changeValue * y2 >= 99 - PlayerPrefs.GetInt("Skill53", 0)) { PlayerPrefs.SetInt(targetStr, 99 - PlayerPrefs.GetInt("Skill53", 0)); }
-                    else if (PlayerPrefs.GetInt(targetStr, 0) + changeValue * y2 >= 100) { PlayerPrefs.SetInt(targetStr, 99); }
-                    else { PlayerPrefs.SetInt(targetStr, PlayerPrefs.GetInt(targetStr, 0) + changeValue * y2); }
+                    if (PlayerPrefs.GetInt("[system]" + targetStr, 0) < -1 * changeValue * y2) { PlayerPrefs.SetInt("[system]" + targetStr, 0); }
+                    else if (targetStr == "耐久力" && PlayerPrefs.GetInt("[system]" + targetStr, 0) + changeValue * y2 >= PlayerPrefs.GetInt("[system]Status9", 0)) { PlayerPrefs.SetInt("[system]" + targetStr, PlayerPrefs.GetInt("[system]Status9", 0)); }
+                    else if (targetStr == "マジック・ポイント" && PlayerPrefs.GetInt("[system]" + targetStr, 0) + changeValue * y2 >= PlayerPrefs.GetInt("[system]Status10", 0)) { PlayerPrefs.SetInt("[system]" + targetStr, PlayerPrefs.GetInt("[system]Status10", 0)); }
+                    else if (targetStr == "正気度ポイント" && PlayerPrefs.GetInt("[system]" + targetStr, 0) + changeValue * y2 >= 99 - PlayerPrefs.GetInt("[system]Skill53", 0)) { PlayerPrefs.SetInt("[system]" + targetStr, 99 - PlayerPrefs.GetInt("[system]Skill53", 0)); }
+                    else if (PlayerPrefs.GetInt("[system]" + targetStr, 0) + changeValue * y2 >= 100) { PlayerPrefs.SetInt("[system]" + targetStr, 99); }
+                    else { PlayerPrefs.SetInt("[system]" + targetStr, PlayerPrefs.GetInt("[system]" + targetStr, 0) + changeValue * y2); }
                     if (y2 > 0)
                     {
-                        TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "点上昇した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）");
+                        TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "点上昇した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt("[system]" + targetStr, 0).ToString() + "）");
                     }
                     else
                     {
-                        TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "点減少した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）");
+                        TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "点減少した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt("[system]" + targetStr, 0).ToString() + "）");
                     }
                     for (int v = 0; v < 60; v++) { yield return null; }
                 }
@@ -359,8 +357,8 @@ public class ScenariosceneManager : MonoBehaviour
         int[] enemyHP = new int[enemyNum];
         int kill = 0;
         int sleep = 0;
-        int playerHP = PlayerPrefs.GetInt("耐久力", 0);
-        int playerDEX = PlayerPrefs.GetInt("Status2", 3);
+        int playerHP = PlayerPrefs.GetInt("[system]耐久力", 0);
+        int playerDEX = PlayerPrefs.GetInt("[system]Status2", 3);
         int damage = 0;
         int avoid = 2;
         int detailAct = 0;
@@ -514,7 +512,7 @@ public class ScenariosceneManager : MonoBehaviour
 
     private void BattleEnd(int playerHP)
     {
-        PlayerPrefs.SetInt("耐久力", playerHP);
+        PlayerPrefs.SetInt("[system]耐久力", playerHP);
         StopCoroutine("Status");
         objTextBox.GetComponent<Text>().text = "";
         for (int i = 0; i < 5; i++)
@@ -583,10 +581,10 @@ public class ScenariosceneManager : MonoBehaviour
                     damage = u1.DiceRoll(1, 6);
                     StartCoroutine(DiceEffect(0, 6, damage));
                     playerDB = 0;
-                    if (PlayerPrefs.GetInt("Status8", 0) == 6) { playerDB = u1.DiceRoll(1, 6); StartCoroutine(DiceEffect(1, 6, playerDB)); }
-                    if (PlayerPrefs.GetInt("Status8", 0) == 4) { playerDB = u1.DiceRoll(1, 4); StartCoroutine(DiceEffect(1, 4, playerDB)); }
-                    if (PlayerPrefs.GetInt("Status8", 0) == -4) { playerDB = -u1.DiceRoll(1, 4); StartCoroutine(DiceEffect(1, 4, -playerDB)); }
-                    if (PlayerPrefs.GetInt("Status8", 0) == -6) { playerDB = -u1.DiceRoll(1, 6); StartCoroutine(DiceEffect(1, 6, -playerDB)); }
+                    if (PlayerPrefs.GetInt("[system]Status8", 0) == 6) { playerDB = u1.DiceRoll(1, 6); StartCoroutine(DiceEffect(1, 6, playerDB)); }
+                    if (PlayerPrefs.GetInt("[system]Status8", 0) == 4) { playerDB = u1.DiceRoll(1, 4); StartCoroutine(DiceEffect(1, 4, playerDB)); }
+                    if (PlayerPrefs.GetInt("[system]Status8", 0) == -4) { playerDB = -u1.DiceRoll(1, 4); StartCoroutine(DiceEffect(1, 4, -playerDB)); }
+                    if (PlayerPrefs.GetInt("[system]Status8", 0) == -6) { playerDB = -u1.DiceRoll(1, 6); StartCoroutine(DiceEffect(1, 6, -playerDB)); }
                     for (int i = 0; i < 60; i++) { yield return null; }
                     sentenceEnd = false;
                     for (y = 0; y < enemyNum - 1; y++) { if (enemyHP[y] >= 3 || (enemyHP[y] > 0 && humanFlag == false)) { break; } }
@@ -620,10 +618,10 @@ public class ScenariosceneManager : MonoBehaviour
                     damage = u1.DiceRoll(1, 10);
                     if (damage < 10) { StartCoroutine(DiceEffect(0, 10, damage)); } else { StartCoroutine(DiceEffect(0, 10, 0)); }
                     playerDB = 0;
-                    if (PlayerPrefs.GetInt("Status8", 0) == 6) { playerDB = u1.DiceRoll(1, 6); StartCoroutine(DiceEffect(1, 6, playerDB)); }
-                    if (PlayerPrefs.GetInt("Status8", 0) == 4) { playerDB = u1.DiceRoll(1, 4); StartCoroutine(DiceEffect(1, 4, playerDB)); }
-                    if (PlayerPrefs.GetInt("Status8", 0) == -4) { playerDB = -u1.DiceRoll(1, 4); StartCoroutine(DiceEffect(1, 4, -playerDB)); }
-                    if (PlayerPrefs.GetInt("Status8", 0) == -6) { playerDB = -u1.DiceRoll(1, 6); StartCoroutine(DiceEffect(1, 6, -playerDB)); }
+                    if (PlayerPrefs.GetInt("[system]Status8", 0) == 6) { playerDB = u1.DiceRoll(1, 6); StartCoroutine(DiceEffect(1, 6, playerDB)); }
+                    if (PlayerPrefs.GetInt("[system]Status8", 0) == 4) { playerDB = u1.DiceRoll(1, 4); StartCoroutine(DiceEffect(1, 4, playerDB)); }
+                    if (PlayerPrefs.GetInt("[system]Status8", 0) == -4) { playerDB = -u1.DiceRoll(1, 4); StartCoroutine(DiceEffect(1, 4, -playerDB)); }
+                    if (PlayerPrefs.GetInt("[system]Status8", 0) == -6) { playerDB = -u1.DiceRoll(1, 6); StartCoroutine(DiceEffect(1, 6, -playerDB)); }
                     for (int i = 0; i < 60; i++) { yield return null; } 
                     sentenceEnd = false;
                     for (y = 0; y < enemyNum - 1; y++) { if (enemyHP[y] >= 3 || (enemyHP[y] > 0 && humanFlag == false)) { break; } }
@@ -640,7 +638,7 @@ public class ScenariosceneManager : MonoBehaviour
     }
     private IEnumerator Status(int playerHP,int damage)
     {
-        int maxHP = PlayerPrefs.GetInt("Status9", 0);
+        int maxHP = PlayerPrefs.GetInt("[system]Status9", 0);
         string color1="";
         string color2="";
         if(playerHP<=0){ color1 = "<color=red>";color2 = "</color>"; }else if (playerHP < 2) { color1 = "<color=orange>";color2 = "</color>"; }else if(playerHP<=maxHP/2){ color1="<color=yellow>"; color2 = "</color>"; } else { color1 = ""; color2 = ""; }
@@ -880,70 +878,70 @@ public class ScenariosceneManager : MonoBehaviour
     private string SkillList(string targetStr)
     {
         string target = targetStr;
-        if (targetStr == "言いくるめ") { target = "Skill0"; }
-        if (targetStr == "医学") { target = "Skill1"; }
-        if (targetStr == "運転") { target = "Skill2"; }
-        if (targetStr == "応急手当") { target = "Skill3"; }
-        if (targetStr == "オカルト") { target = "Skill4"; }
-        if (targetStr == "回避") { target = "Skill5"; }
-        if (targetStr == "化学") { target = "Skill6"; }
-        if (targetStr == "鍵開け") { target = "Skill7"; }
-        if (targetStr == "隠す") { target = "Skill8"; }
-        if (targetStr == "隠れる") { target = "Skill9"; }
-        if (targetStr == "機械修理") { target = "Skill10"; }
-        if (targetStr == "聞き耳") { target = "Skill11"; }
-        if (targetStr == "芸術") { target = "Skill12"; }
-        if (targetStr == "経理") { target = "Skill13"; }
-        if (targetStr == "考古学") { target = "Skill14"; }
-        if (targetStr == "コンピューター") { target = "Skill15"; }
-        if (targetStr == "忍び歩き") { target = "Skill16"; }
-        if (targetStr == "写真術") { target = "Skill17"; }
-        if (targetStr == "重機械操作") { target = "Skill18"; }
-        if (targetStr == "乗馬") { target = "Skill19"; }
-        if (targetStr == "信用") { target = "Skill20"; }
-        if (targetStr == "心理学") { target = "Skill21"; }
-        if (targetStr == "人類学") { target = "Skill22"; }
-        if (targetStr == "水泳") { target = "Skill23"; }
-        if (targetStr == "製作") { target = "Skill24"; }
-        if (targetStr == "精神分析") { target = "Skill25"; }
-        if (targetStr == "生物学") { target = "Skill26"; }
-        if (targetStr == "説得") { target = "Skill27"; }
-        if (targetStr == "操縦") { target = "Skill28"; }
-        if (targetStr == "地質学") { target = "Skill29"; }
-        if (targetStr == "跳躍") { target = "Skill30"; }
-        if (targetStr == "追跡") { target = "Skill31"; }
-        if (targetStr == "電気修理") { target = "Skill32"; }
-        if (targetStr == "電子工学") { target = "Skill33"; }
-        if (targetStr == "天文学") { target = "Skill34"; }
-        if (targetStr == "投擲") { target = "Skill35"; }
-        if (targetStr == "登攀") { target = "Skill36"; }
-        if (targetStr == "図書館") { target = "Skill37"; }
-        if (targetStr == "ナビゲート") { target = "Skill38"; }
-        if (targetStr == "値切り") { target = "Skill39"; }
-        if (targetStr == "博物学") { target = "Skill40"; }
-        if (targetStr == "物理学") { target = "Skill41"; }
-        if (targetStr == "変装") { target = "Skill42"; }
-        if (targetStr == "法律") { target = "Skill43"; }
-        if (targetStr == "ほかの言語") { target = "Skill44"; }
-        if (targetStr == "母国語") { target = "Skill45"; }
-        if (targetStr == "マーシャルアーツ") { target = "Skill46"; }
-        if (targetStr == "目星") { target = "Skill47"; }
-        if (targetStr == "薬学") { target = "Skill48"; }
-        if (targetStr == "歴史") { target = "Skill49"; }
-        if (targetStr == "火器") { target = "Skill50"; }
-        if (targetStr == "格闘") { target = "Skill51"; }
-        if (targetStr == "武器術") { target = "Skill52"; }
-        if (targetStr == "クトゥルフ神話") { target = "Skill53"; }
-        if (targetStr == "STR") { target = "Status0"; }
-        if (targetStr == "DEX") { target = "Status2"; }
-        if (targetStr == "CON") { target = "Status1"; }
-        if (targetStr == "POW") { target = "Status5"; }
-        if (targetStr == "INT") { target = "Status3"; }
-        if (targetStr == "EDU") { target = "Status7"; }
-        if (targetStr == "SIZ") { target = "Status6"; }
-        if (targetStr == "APP") { target = "Status4"; }
-        if (targetStr == "MP") { target = "Status10"; }
-        if (targetStr == "HP") { target = "Status9"; }
+        if (targetStr == "言いくるめ") { target = "[system]Skill0"; }
+        if (targetStr == "医学") { target = "[system]Skill1"; }
+        if (targetStr == "運転") { target = "[system]Skill2"; }
+        if (targetStr == "応急手当") { target = "[system]Skill3"; }
+        if (targetStr == "オカルト") { target = "[system]Skill4"; }
+        if (targetStr == "回避") { target = "[system]Skill5"; }
+        if (targetStr == "化学") { target = "[system]Skill6"; }
+        if (targetStr == "鍵開け") { target = "[system]Skill7"; }
+        if (targetStr == "隠す") { target = "[system]Skill8"; }
+        if (targetStr == "隠れる") { target = "[system]Skill9"; }
+        if (targetStr == "機械修理") { target = "[system]Skill10"; }
+        if (targetStr == "聞き耳") { target = "[system]Skill11"; }
+        if (targetStr == "芸術") { target = "[system]Skill12"; }
+        if (targetStr == "経理") { target = "[system]Skill13"; }
+        if (targetStr == "考古学") { target = "[system]Skill14"; }
+        if (targetStr == "コンピューター") { target = "[system]Skill15"; }
+        if (targetStr == "忍び歩き") { target = "[system]Skill16"; }
+        if (targetStr == "写真術") { target = "[system]Skill17"; }
+        if (targetStr == "重機械操作") { target = "[system]Skill18"; }
+        if (targetStr == "乗馬") { target = "[system]Skill19"; }
+        if (targetStr == "信用") { target = "[system]Skill20"; }
+        if (targetStr == "心理学") { target = "[system]Skill21"; }
+        if (targetStr == "人類学") { target = "[system]Skill22"; }
+        if (targetStr == "水泳") { target = "[system]Skill23"; }
+        if (targetStr == "製作") { target = "[system]Skill24"; }
+        if (targetStr == "精神分析") { target = "[system]Skill25"; }
+        if (targetStr == "生物学") { target = "[system]Skill26"; }
+        if (targetStr == "説得") { target = "[system]Skill27"; }
+        if (targetStr == "操縦") { target = "[system]Skill28"; }
+        if (targetStr == "地質学") { target = "[system]Skill29"; }
+        if (targetStr == "跳躍") { target = "[system]Skill30"; }
+        if (targetStr == "追跡") { target = "[system]Skill31"; }
+        if (targetStr == "電気修理") { target = "[system]Skill32"; }
+        if (targetStr == "電子工学") { target = "[system]Skill33"; }
+        if (targetStr == "天文学") { target = "[system]Skill34"; }
+        if (targetStr == "投擲") { target = "[system]Skill35"; }
+        if (targetStr == "登攀") { target = "[system]Skill36"; }
+        if (targetStr == "図書館") { target = "[system]Skill37"; }
+        if (targetStr == "ナビゲート") { target = "[system]Skill38"; }
+        if (targetStr == "値切り") { target = "[system]Skill39"; }
+        if (targetStr == "博物学") { target = "[system]Skill40"; }
+        if (targetStr == "物理学") { target = "[system]Skill41"; }
+        if (targetStr == "変装") { target = "[system]Skill42"; }
+        if (targetStr == "法律") { target = "[system]Skill43"; }
+        if (targetStr == "ほかの言語") { target = "[system]Skill44"; }
+        if (targetStr == "母国語") { target = "[system]Skill45"; }
+        if (targetStr == "マーシャルアーツ") { target = "[system]Skill46"; }
+        if (targetStr == "目星") { target = "[system]Skill47"; }
+        if (targetStr == "薬学") { target = "[system]Skill48"; }
+        if (targetStr == "歴史") { target = "[system]Skill49"; }
+        if (targetStr == "火器") { target = "[system]Skill50"; }
+        if (targetStr == "格闘") { target = "[system]Skill51"; }
+        if (targetStr == "武器術") { target = "[system]Skill52"; }
+        if (targetStr == "クトゥルフ神話") { target = "[system]Skill53"; }
+        if (targetStr == "STR") { target = "[system]Status0"; }
+        if (targetStr == "DEX") { target = "[system]Status2"; }
+        if (targetStr == "CON") { target = "[system]Status1"; }
+        if (targetStr == "POW") { target = "[system]Status5"; }
+        if (targetStr == "INT") { target = "[system]Status3"; }
+        if (targetStr == "EDU") { target = "[system]Status7"; }
+        if (targetStr == "SIZ") { target = "[system]Status6"; }
+        if (targetStr == "APP") { target = "[system]Status4"; }
+        if (targetStr == "MP") { target = "[system]Status10"; }
+        if (targetStr == "HP") { target = "[system]Status9"; }
         return target;
     }
 
@@ -1041,10 +1039,11 @@ public class ScenariosceneManager : MonoBehaviour
     private void TextDraw(string name,string text)
     {
         objTextBox.gameObject.SetActive(true);
+        text = text.Replace("[PC]",PlayerPrefs.GetString("[system]PlayerCharacterName", "あなた"));
         objText.GetComponent<Text>().text = text;
         if (name == "[PC]")
         {
-            objName.GetComponent<Text>().text = "　" + PlayerPrefs.GetString("PlayerCharacterName","あなた");
+            objName.GetComponent<Text>().text = "　" + PlayerPrefs.GetString("[system]PlayerCharacterName","あなた");
         }
         else
         {
@@ -1075,9 +1074,12 @@ public class ScenariosceneManager : MonoBehaviour
 
     private void ItemDraw(int item)
     {
-        if (item == -1) { objItem.gameObject.SetActive(false); return; }
-        objItem.gameObject.SetActive(true);
-        objItem.GetComponent<Image>().sprite = scenarioGraphic[item];
+        int itemNumMax = 100;
+        BackDraw(item);
+        BackTextDraw("");
+        for (int i = 0; i < itemNumMax; i++) { if (PlayerPrefs.GetString("[system]Item" + i.ToString())==scenarioGraphicToPath[item]) { return; } }//既に持ってたらセーブしない。
+        PlayerPrefs.SetString("[system]Item" + PlayerPrefs.GetInt("[system]所持アイテム数", 0),scenarioGraphicToPath[item]);
+        PlayerPrefs.SetInt("[system]所持アイテム数", PlayerPrefs.GetInt("[system]所持アイテム数", 0) + 1);
     }
 
     private void BGMPlay(int bgm)
@@ -1188,7 +1190,7 @@ public class ScenariosceneManager : MonoBehaviour
             string extractFile = path;
             ICSharpCode.SharpZipLib.Zip.ZipFile zf;
             //ZipFileオブジェクトの作成
-            zf = new ICSharpCode.SharpZipLib.Zip.ZipFile(PlayerPrefs.GetString("進行中シナリオ", ""));//説明に書かれてる以外のエラーが出てる。
+            zf = new ICSharpCode.SharpZipLib.Zip.ZipFile(PlayerPrefs.GetString("[system]進行中シナリオ", ""));//説明に書かれてる以外のエラーが出てる。
 
             zf.Password = Secret.SecretString.zipPass;
             //展開するエントリを探す
@@ -1225,39 +1227,9 @@ public class ScenariosceneManager : MonoBehaviour
             //閉じる
             zf.Close();
         }
-        catch(PathTooLongException)
-        {
-            obj.GetComponent<Text>().text = ("エラーZIP1。シナリオファイルの形式が不適合です。" + PlayerPrefs.GetString("進行中シナリオ", "") + "\\" + path);
-            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
-        }
-        catch (UnauthorizedAccessException)
-        {
-            obj.GetComponent<Text>().text = ("エラーZIP2。シナリオファイルの形式が不適合です。" + PlayerPrefs.GetString("進行中シナリオ", "") + "\\" + path);
-            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
-        }
-        catch (DirectoryNotFoundException)
-        {
-            obj.GetComponent<Text>().text = ("エラーZIP3。シナリオファイルの形式が不適合です。" + PlayerPrefs.GetString("進行中シナリオ", "") + "\\" + path);
-            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            obj.GetComponent<Text>().text = ("エラーZIP4。シナリオファイルの形式が不適合です。" + PlayerPrefs.GetString("進行中シナリオ", "") + "\\" + path);
-            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
-        }
-        catch (FileNotFoundException)
-        {
-            obj.GetComponent<Text>().text = ("エラーZIP5。シナリオファイルの形式が不適合です。" + PlayerPrefs.GetString("進行中シナリオ", "") + "\\" + path);
-            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
-        }
-        catch (NotSupportedException)
-        {
-            obj.GetComponent<Text>().text = ("エラーZIP6。シナリオファイルの形式が不適合です。" + PlayerPrefs.GetString("進行中シナリオ", "") + "\\" + path);
-            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
-        }
         catch
         {
-            obj.GetComponent<Text>().text = ("エラーZIP7。シナリオファイルの形式が不適合です。" + PlayerPrefs.GetString("進行中シナリオ", "") + "\\" + path);
+            obj.GetComponent<Text>().text = ("エラーZIP。シナリオファイルの形式が不適合です。" + PlayerPrefs.GetString("[system]進行中シナリオ", "") + "\\" + path);
             GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
         }
     }
@@ -1268,7 +1240,7 @@ public class ScenariosceneManager : MonoBehaviour
         // 目次ファイルが無かったら終わる
         if (!File.Exists(_FILE_HEADER))
         {
-            obj.GetComponent<Text>().text = ("エラー。シナリオファイルが見当たりません。" + PlayerPrefs.GetString("進行中シナリオ", "") + "\\" + path);
+            obj.GetComponent<Text>().text = ("エラー。シナリオファイルが見当たりません。" + PlayerPrefs.GetString("[system]進行中シナリオ", "") + "\\" + path);
             GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
         }
         try
@@ -1278,7 +1250,7 @@ public class ScenariosceneManager : MonoBehaviour
 
             //ZipFileオブジェクトの作成
             ICSharpCode.SharpZipLib.Zip.ZipFile zf =
-                new ICSharpCode.SharpZipLib.Zip.ZipFile(PlayerPrefs.GetString("進行中シナリオ", ""));
+                new ICSharpCode.SharpZipLib.Zip.ZipFile(PlayerPrefs.GetString("[system]進行中シナリオ", ""));
             zf.Password = Secret.SecretString.zipPass;
             //展開するエントリを探す
             ICSharpCode.SharpZipLib.Zip.ZipEntry ze = zf.GetEntry(extractFile);
@@ -1375,7 +1347,7 @@ public class ScenariosceneManager : MonoBehaviour
                     // 読み込んだ画像からSpriteを作成する
                     for (j = 0; j < 100; j++) { if (scenarioGraphic[j] == null) { break; } }
                     scenarioGraphic[j] = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
-
+                    scenarioGraphicToPath[j] = path;
                     //閉じる
                     fs.Close();
                 }

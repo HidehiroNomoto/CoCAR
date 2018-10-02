@@ -32,13 +32,13 @@ public class Utility : MonoBehaviour {
 
     public void BGMVolume(float volume)
     {
-        PlayerPrefs.SetFloat("BGMVolume", volume);
+        PlayerPrefs.SetFloat("[system]BGMVolume", volume);
         objBGM.GetComponent<AudioSource>().volume = volume;
     }
 
     public void SEVolume(float volume)
     {
-        PlayerPrefs.SetFloat("SEVolume", volume);
+        PlayerPrefs.SetFloat("[system]SEVolume", volume);
     }
 
     public void BGMStop()
@@ -52,7 +52,7 @@ public class Utility : MonoBehaviour {
         fadeFlag = true;
         for (int i = 0; i < time; i++)
         {
-            objBGM.GetComponent<AudioSource>().volume = PlayerPrefs.GetFloat("BGMVolume",0.8f) * (1.0f-(float)i/time);
+            objBGM.GetComponent<AudioSource>().volume = PlayerPrefs.GetFloat("[system]BGMVolume",0.8f) * (1.0f-(float)i/time);
             yield return null;
         }
         objBGM.GetComponent<AudioSource>().volume = 0f;//最終的には０に。（for文をi<=timeにするとtime=0で０除算が発生しうる構造になるので、最後のvol=0のみfor文から隔離）
@@ -66,10 +66,10 @@ public class Utility : MonoBehaviour {
         fadeFlag = true;
         for (int i = 0; i < time; i++)
         {
-            objBGM.GetComponent<AudioSource>().volume = PlayerPrefs.GetFloat("BGMVolume", 0.8f) * ((float)i / time);
+            objBGM.GetComponent<AudioSource>().volume = PlayerPrefs.GetFloat("[system]BGMVolume", 0.8f) * ((float)i / time);
             yield return null;
         }
-        objBGM.GetComponent<AudioSource>().volume = PlayerPrefs.GetFloat("BGMVolume", 0.8f);//最終的には０に。（for文をi<=timeにするとtime=0で０除算が発生しうる構造になるので、最後のvol=BGMVolumeのみfor文から隔離）
+        objBGM.GetComponent<AudioSource>().volume = PlayerPrefs.GetFloat("[system]BGMVolume", 0.8f);//最終的には０に。（for文をi<=timeにするとtime=0で０除算が発生しうる構造になるので、最後のvol=BGMVolumeのみfor文から隔離）
         fadeFlag = false;
         yield return null;
     }
@@ -82,7 +82,7 @@ public class Utility : MonoBehaviour {
 
     public void SEPlay(AudioClip se)
     {
-        GetComponent<AudioSource>().volume = PlayerPrefs.GetFloat("SEVolume", 0.8f);
+        GetComponent<AudioSource>().volume = PlayerPrefs.GetFloat("[system]SEVolume", 0.8f);
         GetComponent<AudioSource>().PlayOneShot(se);
     }
 

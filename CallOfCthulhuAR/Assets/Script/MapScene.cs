@@ -2,6 +2,7 @@
 using UnityEngine.UI;
 using System.Collections;
 using System;
+using UnityEngine.SceneManagement;
 
 public class MapScene : MonoBehaviour
 {
@@ -18,6 +19,7 @@ public class MapScene : MonoBehaviour
     private float targetY=0;
     private string[] mapData;
     private bool sceneChange = false;
+    private bool mapLoad = false;
     GameObject mapImageObj;
     GameObject obj;
     GameObject objTarget;
@@ -27,9 +29,9 @@ public class MapScene : MonoBehaviour
 
     void Start()
     {
-        _FILE_HEADER = PlayerPrefs.GetString("進行中シナリオ","");                      //ファイル場所の頭
+        _FILE_HEADER = PlayerPrefs.GetString("[system]進行中シナリオ","");                      //ファイル場所の頭
         if (_FILE_HEADER==null || _FILE_HEADER == "") { GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene"); }
-        longitude=PlayerPrefs.GetFloat("longitude",135.768738f); latitude = PlayerPrefs.GetFloat("latitude", 35.010348f);
+        longitude=PlayerPrefs.GetFloat("[system]longitude",135.768738f); latitude = PlayerPrefs.GetFloat("[system]latitude", 35.010348f);
         obj = GameObject.Find("error").gameObject as GameObject;
         objTarget = GameObject.Find("Target").gameObject as GameObject;
         mapImageObj = GameObject.Find("mapImage").gameObject as GameObject;
@@ -45,7 +47,7 @@ public class MapScene : MonoBehaviour
     {
         intervalTime += Time.deltaTime; 
         GetPos();
-        if ((Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer) || Input.location.status == LocationServiceStatus.Running) { IventCheck(); }
+        if ((Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer) || Input.location.status == LocationServiceStatus.Running) { if (mapLoad==true) { IventCheck(); } }
         objBGM.GetComponent<Text>().text = longitude.ToString() + "," + latitude.ToString();
         //地図の更新は、マップ範囲から出た時かつ時間が相当経過している時に。（時間変数入れないと、場所によってはGPS誤差でマップ連続読込になりかねない）
             if (((longitude>longitudeMap+0.003) ||
@@ -89,7 +91,7 @@ public class MapScene : MonoBehaviour
                 objTime.GetComponent<Text>().text = "<color=red>[★イベント発生]</color>";
                 sceneChange = true;
                 if ((Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer) && (!Input.location.isEnabledByUser)){ Input.location.Stop(); }
-                PlayerPrefs.SetFloat("longitude",(float)longitude); PlayerPrefs.SetFloat("latitude", (float)latitude);
+                PlayerPrefs.SetFloat("[system]longitude",(float)longitude); PlayerPrefs.SetFloat("[system]latitude", (float)latitude);
                 GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "NovelScene");                
             }
         }
@@ -184,7 +186,7 @@ public class MapScene : MonoBehaviour
 
         //ZipFileオブジェクトの作成
         ICSharpCode.SharpZipLib.Zip.ZipFile zf =
-            new ICSharpCode.SharpZipLib.Zip.ZipFile(PlayerPrefs.GetString("進行中シナリオ",""));
+            new ICSharpCode.SharpZipLib.Zip.ZipFile(PlayerPrefs.GetString("[system]進行中シナリオ",""));
         zf.Password = Secret.SecretString.zipPass;
         //展開するエントリを探す
         ICSharpCode.SharpZipLib.Zip.ZipEntry ze = zf.GetEntry(extractFile);
@@ -204,10 +206,11 @@ public class MapScene : MonoBehaviour
             //閉じる
             sr.Close();
             reader.Close();
+            mapLoad = true;
         }
         else
         {
-            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
+                SceneManager.LoadScene("TitleScene");
         }
         //閉じる
         zf.Close();
@@ -215,7 +218,7 @@ public class MapScene : MonoBehaviour
         catch
         {
             obj.GetComponent<Text>().text = ("エラー。シナリオファイルの形式が不適合です。" + _FILE_HEADER + "\\" + path);
-            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
+            SceneManager.LoadScene("TitleScene");
         }
     }
 }

@@ -77,7 +77,7 @@ namespace GracesGames.SimpleFileBrowser.Scripts
         // Loads a file using a path★ここを改造する
         private void LoadFileUsingPath(string path)
         {
-            if (GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "進行中シナリオ")
+            if (GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]進行中シナリオ")
             {
                 int[] status = new int[STATUSNUM];
                 int[] skills = new int[SKILLNUM];
@@ -87,26 +87,26 @@ namespace GracesGames.SimpleFileBrowser.Scripts
                     //残す情報を一時避難
                     for (int i = 0; i < STATUSNUM; i++)
                     {
-                        status[i] = PlayerPrefs.GetInt("Status" + i.ToString(), 0);
+                        status[i] = PlayerPrefs.GetInt("[system]Status" + i.ToString(), 0);
                     }
                     for (int i = 0; i < SKILLNUM; i++)
                     {
-                        skills[i] = PlayerPrefs.GetInt("Skill" + i.ToString(), 0);
+                        skills[i] = PlayerPrefs.GetInt("[system]Skill" + i.ToString(), 0);
                     }
                     //セーブデータを全部消す
                     PlayerPrefs.DeleteAll();
                     //残す情報を再書き込み
                     for (int i = 0; i < STATUSNUM; i++)
                     {
-                        PlayerPrefs.SetInt("Status" + i.ToString(), status[i]);
+                        PlayerPrefs.SetInt("[system]Status" + i.ToString(), status[i]);
                     }
                     for (int i = 0; i < SKILLNUM; i++)
                     {
-                        PlayerPrefs.SetInt("Skill" + i.ToString(), skills[i]);
+                        PlayerPrefs.SetInt("[system]Skill" + i.ToString(), skills[i]);
                     }
 
                     GameObject.Find("SelectText").GetComponent<Text>().text = "シナリオ選択<size=28>\n(DLしたファイルから選ぶ)</size>";
-                    PlayerPrefs.SetString("進行中シナリオ",path);
+                    PlayerPrefs.SetString("[system]進行中シナリオ",path);
                     scenarionamePath = path.Split(new char[] { '\\', '.','/' });
                     if (scenarionamePath.Length >= 2) { GameObject.Find("ScenarioName").GetComponent<Text>().text = "[シナリオ名]\n" + scenarionamePath[scenarionamePath.Length - 2]; }//アドレスからフォルダ名と拡張子を排除。.と\を区切り文字にすると拡張子が最後(Length-1)にあるので、その手前の(Length-2)が欲しい文字列。
                 }
@@ -115,10 +115,10 @@ namespace GracesGames.SimpleFileBrowser.Scripts
                     GameObject.Find("SelectText").GetComponent<Text>().text = "<color=red>シナリオ選択<size=28>\n(DLしたファイルから選ぶ)</size></color>";
                 }
             }
-            else if (GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "CharacterIllustPath")
+            else if (GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]CharacterIllstPath")
             {
-                PlayerPrefs.SetString("CharacterIllustPath", path);
-                StartCoroutine(GetComponent<CSManager>().LoadChara(PlayerPrefs.GetString("CharacterIllustPath", "")));
+                PlayerPrefs.SetString("[system]CharacterIllstPath", path);
+                StartCoroutine(GetComponent<CSManager>().LoadChara(PlayerPrefs.GetString("[system]CharacterIllstPath", "")));
             }
         }
 

@@ -15,6 +15,7 @@ public class CSManager : MonoBehaviour {
     private GameObject objSkillButton;
     private GameObject objBuyPoint;
     private GameObject objChara;
+    private GameObject objCS;
     private GameObject[] objSkill = new GameObject[SKILLNUM];
     private bool skill;
     private int[] skillDefault = new int[SKILLNUM];
@@ -30,12 +31,13 @@ public class CSManager : MonoBehaviour {
         SeeCharacter();
         if (SceneManager.GetActiveScene().name == "CharacterSheet")
         {
-            GameObject.Find("InputField").GetComponent<InputField>().text = PlayerPrefs.GetString("PlayerCharacterName", "");
+            GameObject.Find("InputField").GetComponent<InputField>().text = PlayerPrefs.GetString("[system]PlayerCharacterName", "");
         }
         else
         {
-            GameObject.Find("PlayerCharacterName").GetComponent<Text>().text = PlayerPrefs.GetString("PlayerCharacterName", "――");
-            transform.GetChild(0).gameObject.SetActive(false);
+            GameObject.Find("PlayerCharacterName").GetComponent<Text>().text = PlayerPrefs.GetString("[system]PlayerCharacterName", "――");
+            objCS=GameObject.Find("CS") as GameObject;
+            objCS.gameObject.SetActive(false);
         }
     }
 
@@ -63,7 +65,7 @@ public class CSManager : MonoBehaviour {
         {
             objSkill[i] = GameObject.Find("2Skill" + (i - SKILLNUM / 2 + 1).ToString()).gameObject as GameObject;
         }
-        StartCoroutine(LoadChara(PlayerPrefs.GetString("CharacterIllustPath", "")));
+        StartCoroutine(LoadChara(PlayerPrefs.GetString("[system]CharacterIllstPath", "")));
 
         //技能初期値設定
         skillDefault[0] = 5; skillDefault[1] = 5; skillDefault[2] = 20; skillDefault[3] = 30;
@@ -90,15 +92,15 @@ public class CSManager : MonoBehaviour {
         string str3 = "";
         for (int i = 0; i < STATUSNUM; i++)
         {
-            status[i] = PlayerPrefs.GetInt("Status" + i.ToString(), 0);
+            status[i] = PlayerPrefs.GetInt("[system]Status" + i.ToString(), 0);
         }
         for (int i = 0; i < SKILLNUM; i++)
         {
-            skills[i] = PlayerPrefs.GetInt("Skill" + i.ToString(), 0);
+            skills[i] = PlayerPrefs.GetInt("[system]Skill" + i.ToString(), 0);
         }
-        nowHP = PlayerPrefs.GetInt("耐久力", 0);
-        nowMP = PlayerPrefs.GetInt("マジック・ポイント", 0);
-        nowSAN = PlayerPrefs.GetInt("正気度ポイント", 0);
+        nowHP = PlayerPrefs.GetInt("[system]耐久力", 0);
+        nowMP = PlayerPrefs.GetInt("[system]マジック・ポイント", 0);
+        nowSAN = PlayerPrefs.GetInt("[system]正気度ポイント", 0);
         for (int i = 0; i < STATUSNUM; i++)
         {
             str[i] = statusObj[i].GetComponent<Text>().text.Split(':');
@@ -339,16 +341,16 @@ public class CSManager : MonoBehaviour {
     {
         for (int i = 0; i < STATUSNUM; i++)
         {
-            PlayerPrefs.SetInt("Status" + i.ToString(), status[i]);
+            PlayerPrefs.SetInt("[system]Status" + i.ToString(), status[i]);
         }
         for (int i = 0; i < SKILLNUM; i++)
         {
-            PlayerPrefs.SetInt("Skill" + i.ToString(), skills[i]);
+            PlayerPrefs.SetInt("[system]Skill" + i.ToString(), skills[i]);
         }
-        PlayerPrefs.SetInt("耐久力", nowHP);
-        PlayerPrefs.SetInt("マジック・ポイント", nowMP);
-        PlayerPrefs.SetInt("正気度ポイント", nowSAN);
-        PlayerPrefs.SetString("PlayerCharacterName", GameObject.Find("PlayerCharacterName").GetComponent<Text>().text);
+        PlayerPrefs.SetInt("[system]耐久力", nowHP);
+        PlayerPrefs.SetInt("[system]マジック・ポイント", nowMP);
+        PlayerPrefs.SetInt("[system]正気度ポイント", nowSAN);
+        PlayerPrefs.SetString("[system]PlayerCharacterName", GameObject.Find("PlayerCharacterName").GetComponent<Text>().text);
         GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
     }
 
@@ -381,29 +383,29 @@ public class CSManager : MonoBehaviour {
 
     private void CSButtonIn()
     {
-        if (transform.GetChild(0).gameObject.activeSelf == false)
+        if (objCS.activeSelf == false)
         {
             if (SceneManager.GetActiveScene().name == "NovelScene")
             {
                 GameObject.Find("NovelManager").gameObject.GetComponent<ScenariosceneManager>().backLogCSFlag = true;
             }
-            transform.GetChild(0).gameObject.SetActive(true);
-            transform.GetChild(1).gameObject.GetComponent<Text>().text = "戻る";
+            objCS.gameObject.SetActive(true);
+            transform.GetChild(0).gameObject.GetComponent<Text>().text = "戻る";
         }
-        else if (Camera.main.ScreenToWorldPoint(Input.mousePosition).y < -4.2f)//ボタン部以外の背景等も子オブジェクトなのでタップでボタン押された判定になって終了してしまう。それを避けるためにボタン部の位置をifで判定
+        else
         {
             if (SceneManager.GetActiveScene().name == "NovelScene")
             {
                 GameObject.Find("NovelManager").gameObject.GetComponent<ScenariosceneManager>().backLogCSFlag = false;
             }
-            transform.GetChild(0).gameObject.SetActive(false);
-            transform.GetChild(1).gameObject.GetComponent<Text>().text = "Character\nsheet";
+            objCS.gameObject.SetActive(false);
+            transform.GetChild(0).gameObject.GetComponent<Text>().text = "Character\nsheet";
         }
     }
 
     public void CharacterIllustButton()
     {
-        GetComponent<GracesGames.SimpleFileBrowser.Scripts.FileOpenManager>().GetFilePathWithKey("CharacterIllustPath");
+        GetComponent<GracesGames.SimpleFileBrowser.Scripts.FileOpenManager>().GetFilePathWithKey("[system]CharacterIllstPath");
     }
 
     // Update is called once per frame

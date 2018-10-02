@@ -6,7 +6,7 @@ public class BGMManager : MonoBehaviour {
     public bgmFlag b1;
     //
     public string chapterName="start.txt";
-    public string saveKey = "進行中シナリオ";
+    public string saveKey = "[system]進行中シナリオ";
     //マルチプレイのフラグ
     public int multiPlay = 0;
 
