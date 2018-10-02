@@ -140,11 +140,25 @@ public class BackLog : MonoBehaviour {
     }
     private IEnumerator ItemSee()
     {
-        int itemNum = 0;
+        int itemNum;
         string str = "";
         bool changeFlag = false;
         Vector3 mousePos = Vector3.zero;
         int itemNumMax = 100;
+        itemNum=PlayerPrefs.GetInt("[system]NowItem",-1);
+        str = PlayerPrefs.GetString("[system]Item" + itemNum.ToString(), "");
+        if (str == "")
+        {
+            if (PlayerPrefs.GetString("[system]Item0", "") == "")
+            {
+                obj7.GetComponent<Text>().text = "NotFind";
+            }
+            else//アイテムはあるが、まだ情報取得画面を一度も開いたことがない場合。
+            {
+                obj7.GetComponent<Text>().text = "<size=36>左に\nスライド</size>";
+            }
+        }
+        else { obj7.GetComponent<Text>().text = itemNum.ToString(); LoadItem(str); }
         while (itemFlag == true)
         {
             //
@@ -164,8 +178,8 @@ public class BackLog : MonoBehaviour {
                     diff = Camera.main.ScreenToWorldPoint(Input.GetTouch(0).position) - mousePos;
                 }
                 diff.z = 0;
-                if (changeFlag==false && diff.x < - 0.2f) {  for (itemNum++; itemNum < itemNumMax; itemNum++) { str = PlayerPrefs.GetString("[system]Item" + itemNum.ToString(), ""); if (str != "") { obj7.GetComponent<Text>().text = itemNum.ToString(); LoadItem(str); changeFlag = true; break; } } if (itemNum >= itemNumMax) { itemNum = itemNumMax-1; } } 
-                if (changeFlag==false && diff.x > + 0.2f) {  for (itemNum--; itemNum >=0; itemNum--) { str = PlayerPrefs.GetString("[system]Item" + itemNum.ToString(), ""); if (str != "") { obj7.GetComponent<Text>().text = itemNum.ToString(); LoadItem(str); changeFlag = true; break; } } if (itemNum < 0) { itemNum = 0; }  }
+                if (changeFlag==false && diff.x < - 0.2f) {  for (itemNum++; itemNum < itemNumMax; itemNum++) { str = PlayerPrefs.GetString("[system]Item" + itemNum.ToString(), ""); if (str != "") { obj7.GetComponent<Text>().text = itemNum.ToString(); LoadItem(str); PlayerPrefs.SetInt("[system]NowItem", itemNum); changeFlag = true; break; } } if (itemNum >= itemNumMax) { itemNum = itemNumMax-1; } } 
+                if (changeFlag==false && diff.x > + 0.2f) {  for (itemNum--; itemNum >=0; itemNum--) { str = PlayerPrefs.GetString("[system]Item" + itemNum.ToString(), ""); if (str != "") { obj7.GetComponent<Text>().text = itemNum.ToString(); LoadItem(str); PlayerPrefs.SetInt("[system]NowItem", itemNum); changeFlag = true; break; } } if (itemNum < 0) { itemNum = 0; }  }
             }
             if (Input.GetMouseButtonUp(0))
             {
