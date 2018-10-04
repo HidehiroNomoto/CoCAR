@@ -135,6 +135,7 @@ public class ScenariosceneManager : MonoBehaviour
     {
         int[] status=new int[STATUSNUM];
         int[] skills=new int[SKILLNUM];
+        string temp1, temp2;
         string nowPlay;
         //残す情報を一時避難
         for(int i=0;i<STATUSNUM;i++)
@@ -146,6 +147,8 @@ public class ScenariosceneManager : MonoBehaviour
             skills[i] = PlayerPrefs.GetInt("[system]Skill" + i.ToString(), 0);
         }
         nowPlay= PlayerPrefs.GetString("[system]進行中シナリオ", "");
+        temp1 = PlayerPrefs.GetString("[system]CharacterIllstPath", "");
+        temp2 = PlayerPrefs.GetString("[system]PlayerCharacterName", "");
         //セーブデータを全部消す
         PlayerPrefs.DeleteAll();
         //残す情報を再書き込み
@@ -157,6 +160,8 @@ public class ScenariosceneManager : MonoBehaviour
         {
             PlayerPrefs.SetInt("[system]Skill" + i.ToString(), skills[i]);
         }
+        PlayerPrefs.SetString("[system]CharacterIllstPath", temp1);
+        PlayerPrefs.SetString("[system]PlayerCharacterName", temp2);
         logNum = 0;
         PlayerPrefs.SetString("[system]進行中シナリオ",nowPlay);
         if (skipFlag == true) { PlayerPrefs.SetInt("[system]skipFlag", 1); }
