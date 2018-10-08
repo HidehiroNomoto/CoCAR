@@ -1368,7 +1368,7 @@ public class ScenariosceneManager : MonoBehaviour
                     //閲覧するZIPエントリのStreamを取得
                     Stream fs = zf.GetInputStream(ze);
                     buffer = ReadBinaryData(fs);//bufferにbyte[]になったファイルを読み込み
-                    for (j = 0; j < 10; j++) { if (scenarioAudio[j] == null) { break; } }
+                    for (j = 0; j < 40; j++) { if (scenarioAudio[j] == null) { break; } }
                     scenarioAudio[j] = WavUtility.ToAudioClip(buffer);
                     //閉じる
                     fs.Close();
