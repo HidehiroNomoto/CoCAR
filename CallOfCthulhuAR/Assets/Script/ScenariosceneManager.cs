@@ -98,7 +98,7 @@ public class ScenariosceneManager : MonoBehaviour
         {
             for (int j = 0; j < 4; j++) { buttonText[j] = null; }
             sentenceEnd = false;
-            if (scenarioText[i] == "[END]") { break; }
+            if (scenarioText[i].Replace("\r", "").Replace("\n", "") == "[END]" || scenarioText[i].Replace("\r","").Replace("\n","") == "" || scenarioText[i] == null) { break; }
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Text:") { separateText = scenarioText[i].Substring(5).Split(','); TextDraw(separateText[0], separateText[1]);if (PlayerPrefs.GetInt("[system]" + sectionName + i.ToString(), 0)==1) { skipFlag2 = true; } StartCoroutine(PushWait());PlayerPrefs.SetInt("[system]" + sectionName + i.ToString(),1);if (skipFlag2 == false) {   PlayerPrefs.SetString("[system]バックログ" + logNum.ToString(), scenarioText[i].Substring(5).Replace(',', ':')); logNum++; if (logNum >= 1000) { logNum = 0; } PlayerPrefs.SetInt("[system]最新ログ番号", logNum); } skipFlag2 = false; }
             if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "BackText:") { BackTextDraw(scenarioText[i].Substring(9)); if (PlayerPrefs.GetInt("[system]" + sectionName + i.ToString(), 0) == 1) { skipFlag2 = true; } StartCoroutine(PushWait());  PlayerPrefs.SetInt("[system]" + sectionName + i.ToString(), 1);if (skipFlag2 == false) {  PlayerPrefs.SetString("[system]バックログ" + logNum.ToString(), scenarioText[i].Substring(9).Replace(',', ':')); logNum++; if (logNum >= 1000) { logNum = 0; } PlayerPrefs.SetInt("[system]最新ログ番号", logNum); } skipFlag2 = false; }
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Back:") { BackDraw(int.Parse(scenarioText[i].Substring(5))); sentenceEnd = true; }
@@ -131,6 +131,8 @@ public class ScenariosceneManager : MonoBehaviour
             for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
             objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
         }
+        GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
+
     }
 
     private IEnumerator BlackOut(int r,int g,int b,int time)
