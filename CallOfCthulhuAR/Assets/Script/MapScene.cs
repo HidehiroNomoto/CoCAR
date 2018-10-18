@@ -92,7 +92,8 @@ public class MapScene : MonoBehaviour
                 sceneChange = true;
                 if ((Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer) && (!Input.location.isEnabledByUser)){ Input.location.Stop(); }
                 PlayerPrefs.SetFloat("[system]longitude",(float)longitude); PlayerPrefs.SetFloat("[system]latitude", (float)latitude);
-                GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "NovelScene");                
+                GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "NovelScene");
+                return;
             }
         }
         if (sceneChange == false) { objTime.GetComponent<Text>().text = dt.ToString("MM/dd  HH:mm") + "\n" + "<size=48>緯度：" + Math.Round(latitude, 4).ToString() + "　,　経度：" + Math.Round(longitude, 4).ToString().ToString() + "</size>"; }
