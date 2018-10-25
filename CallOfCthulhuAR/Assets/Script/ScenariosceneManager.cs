@@ -115,13 +115,13 @@ public class ScenariosceneManager : MonoBehaviour
             if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Hantei:") { separateText = scenarioText[i].Substring(7).Split(','); i += Hantei(separateText[0], int.Parse(separateText[1].Replace("\r", "").Replace("\n", ""))); while (sentenceEnd == false) { yield return null; }; sentenceEnd = false; StartCoroutine(PushWait()); }
             if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Battle:") { battleText = scenarioText[i].Substring(7).Split(','); battleFlag = -1; StartCoroutine(Battle(int.Parse(battleText[0]), int.Parse(battleText[1]), int.Parse(battleText[2]), int.Parse(battleText[3]), int.Parse(battleText[4]), int.Parse(battleText[5]), int.Parse(battleText[6]),bool.Parse(battleText[7]), battleText[8], battleText[9], int.Parse(battleText[10]), int.Parse(battleText[11]), bool.Parse(battleText[12].Replace("\r", "").Replace("\n", "")))); while (battleFlag == -1) { yield return null; }; i += battleFlag;sentenceEnd = false; StartCoroutine(PushWait()); while (sentenceEnd == false) { yield return null; }continue; }
             if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "FlagBranch:") { separateText = scenarioText[i].Substring(11).Replace("\r", "").Replace("\n", "").Split(','); if (PlayerPrefs.GetInt(separateText[0], 0) < int.Parse(separateText[1]) ) { i++; }continue; }
-            if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "FlagChange:"){ separateText = scenarioText[i].Substring(11).Split(','); PlayerPrefs.SetInt(separateText[0],int.Parse(separateText[1].Replace("\r", "").Replace("\n", ""))); sentenceEnd = true; }
+            if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "FlagChange:"){ separate3Text = scenarioText[i].Substring(11).Replace("\r", "").Replace("\n","").Split(','); if (separate3Text[1]=="") { FlagChange(separate3Text[0],0,int.Parse(separate3Text[2]),true); } else { FlagChange(separate3Text[0], int.Parse(separate3Text[1]), 0,false); } sentenceEnd = true; }
             if (scenarioText[i].Length > 8 && scenarioText[i].Substring(0, 8) == "GetTime:"){ dt = DateTime.Now; PlayerPrefs.SetInt("[system]Month", dt.Month); PlayerPrefs.SetInt("[system]Day", dt.Day); PlayerPrefs.SetInt("[system]Hour",dt.Hour); PlayerPrefs.SetInt("[system]Minute", dt.Minute); sentenceEnd = true; }
             if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "FlagCopy:"){ separateText = scenarioText[i].Substring(9).Split(','); PlayerPrefs.SetInt(separateText[1].Replace("\r", "").Replace("\n", ""), PlayerPrefs.GetInt(separateText[0], 0)); sentenceEnd = true; }//フラグを別名で保存する
             if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "Difference:"){separate3Text = scenarioText[i].Substring(11).Split(',');i+=Difference(separate3Text);continue; }
             if (scenarioText[i].Length > 13 && scenarioText[i].Substring(0, 13) == "StatusChange:"){separateText = scenarioText[i].Substring(13).Split(',');StartCoroutine(StatusChange(separateText));while (sentenceEnd == false) { yield return null; }; sentenceEnd = false; StartCoroutine(PushWait()); }//「StatusChange:正気度,-2D6」のように①変動ステータス、②変動値（○D○または固定値どちらでもプログラム側で適切な解釈をしてくれる）
             if (scenarioText[i].Length > 6 && scenarioText[i].Substring(0, 6) == "Input:") { StartCoroutine(InputText(scenarioText[i].Substring(6).Replace("\r", "").Replace("\n", ""))); }
-            if (scenarioText[i].Length > 6 && scenarioText[i].Substring(0, 6) == "Equal:"){separateText = scenarioText[i].Substring(6).Split(',');if (PlayerPrefs.GetString(separateText[0],"").Contains(separateText[1].Replace("\r", "").Replace("\n", ""))==false) {i++; } continue; }
+            if (scenarioText[i].Length > 6 && scenarioText[i].Substring(0, 6) == "Equal:"){separateText = scenarioText[i].Substring(6).Split(',');if (PlayerPrefs.GetString(separateText[0], "[system]NotString")=="[system]NotString") { i += Equal(PlayerPrefs.GetInt(separateText[0], 0), int.Parse(separateText[1].Replace("\r", "").Replace("\n", ""))); } else { i += Equal(PlayerPrefs.GetString(separateText[0], ""), separateText[1].Replace("\r", "").Replace("\n", "")); } continue; }
             if (scenarioText[i].Length > 12 && scenarioText[i].Substring(0, 12) == "PlaceChange:") { separateText = scenarioText[i].Substring(12).Split(','); PlayerPrefs.SetFloat("[system]latitude", float.Parse(separateText[0].Replace("\r", "").Replace("\n", ""))); PlayerPrefs.SetFloat("[system]longitude", float.Parse(separateText[1].Replace("\r", "").Replace("\n", ""))); sentenceEnd = true; }
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Lost:") { StartCoroutine(CharaLost()); }
             if (scenarioText[i].Length > 10 && scenarioText[i].Substring(0, 10) == "FlagReset:") { FlagReset(); sentenceEnd = true; }
@@ -134,6 +134,25 @@ public class ScenariosceneManager : MonoBehaviour
         }
         GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
 
+    }
+
+    private int Equal(int a,int b)
+    {
+        if (a == b) { return 0; }
+        return 1;
+    }
+
+    private int Equal(string a,string b)
+    {
+        if (a == b) { return 0; }
+        return 1;
+    }
+
+
+    private void FlagChange(string flagname,int value,int changevalue,bool changevalueflag)
+    {
+        if (changevalueflag==false) { PlayerPrefs.SetInt(flagname, value); }
+        if (changevalueflag==true) { PlayerPrefs.SetInt(flagname, PlayerPrefs.GetInt(flagname, 0) + changevalue); }
     }
 
     private IEnumerator BlackOut(int r,int g,int b,int time)
@@ -254,19 +273,19 @@ public class ScenariosceneManager : MonoBehaviour
         if (int.TryParse(separateText[1].Replace("\r", "").Replace("\n", ""), out x1))
         {
             x2 = x1;
-            if (PlayerPrefs.GetInt("[system]" + targetStr, 0) < -x1) { x1 = -1 * PlayerPrefs.GetInt("[system]" + targetStr, 0); }
-            if (PlayerPrefs.GetInt("[system]" + targetStr, 0) + x1 >=100) { x1 = 99 - PlayerPrefs.GetInt("[system]" + targetStr, 0); }
-            if (targetStr == "耐久力" && PlayerPrefs.GetInt("[system]" + targetStr, 0) + x1 >= PlayerPrefs.GetInt("[system]Status9", 0)) { x1 = PlayerPrefs.GetInt("[system]Status9", 0)- PlayerPrefs.GetInt("[system]" + targetStr, 0); }
-            if (targetStr == "マジック・ポイント" && PlayerPrefs.GetInt("[system]" + targetStr, 0) + x1 >= PlayerPrefs.GetInt("[system]Status10", 0)) { x1 = PlayerPrefs.GetInt("[system]Status10", 0) - PlayerPrefs.GetInt("[system]" + targetStr, 0); }
-            if (targetStr == "正気度ポイント" && PlayerPrefs.GetInt("[system]" + targetStr, 0) + x1 >= 99 - PlayerPrefs.GetInt("[system]Skill53", 0)) {x1= 99 - PlayerPrefs.GetInt("[system]Skill53", 0) - PlayerPrefs.GetInt("[system]" + targetStr, 0); }
-            PlayerPrefs.SetInt("[system]" + targetStr, PlayerPrefs.GetInt("[system]" + targetStr, 0) + x1);
+            if (PlayerPrefs.GetInt(targetStr, 0) < -x1) { x1 = -1 * PlayerPrefs.GetInt(targetStr, 0); }
+            if (PlayerPrefs.GetInt(targetStr, 0) + x1 >=100) { x1 = 99 - PlayerPrefs.GetInt(targetStr, 0); }
+            if (targetStr == "[system]耐久力" && PlayerPrefs.GetInt(targetStr, 0) + x1 >= PlayerPrefs.GetInt("[system]Status9", 0)) { x1 = PlayerPrefs.GetInt("[system]Status9", 0)- PlayerPrefs.GetInt(targetStr, 0); }
+            if (targetStr == "[system]マジック・ポイント" && PlayerPrefs.GetInt(targetStr, 0) + x1 >= PlayerPrefs.GetInt("[system]Status10", 0)) { x1 = PlayerPrefs.GetInt("[system]Status10", 0) - PlayerPrefs.GetInt(targetStr, 0); }
+            if (targetStr == "[system]正気度ポイント" && PlayerPrefs.GetInt(targetStr, 0) + x1 >= 99 - PlayerPrefs.GetInt("[system]Skill53", 0)) {x1= 99 - PlayerPrefs.GetInt("[system]Skill53", 0) - PlayerPrefs.GetInt(targetStr, 0); }
+            PlayerPrefs.SetInt(targetStr, PlayerPrefs.GetInt(targetStr, 0) + x1);
             if (x2 > 0)
             {
-                TextDraw("", separateText[0] + "の能力が" + x2.ToString() + "点上昇した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt("[system]" + targetStr, 0).ToString() + "）");
+                TextDraw("", separateText[0] + "の能力が" + x2.ToString() + "点上昇した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）");
             }
             else
             {
-                TextDraw("", separateText[0] + "の能力が" + (-1*x2).ToString() + "点減少した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt("[system]" + targetStr, 0).ToString() + "）");
+                TextDraw("", separateText[0] + "の能力が" + (-1*x2).ToString() + "点減少した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）");
             }
             for (int v = 0; v < 60; v++) { yield return null; }
         }
@@ -281,19 +300,19 @@ public class ScenariosceneManager : MonoBehaviour
                 StartCoroutine(DiceEffect(0, int.Parse(separate3Text[1]), changeValue));
                 StartCoroutine(DiceEffect(1, int.Parse(separate3Text[1]), changeValue2));
                 for (int v = 0; v < 60; v++) { yield return null; }
-                if (PlayerPrefs.GetInt("[system]" + targetStr, 0) < -1 * (changeValue + changeValue2) * y2) { PlayerPrefs.SetInt("[system]" + targetStr, 0); }
-                else if (targetStr == "耐久力" && PlayerPrefs.GetInt("[system]" + targetStr, 0) + (changeValue + changeValue2) * y2 >= PlayerPrefs.GetInt("[system]Status9", 0)) { PlayerPrefs.SetInt("[system]" + targetStr, PlayerPrefs.GetInt("[system]Status9", 0)); }
-                else if (targetStr == "マジック・ポイント" && PlayerPrefs.GetInt("[system]" + targetStr, 0) + (changeValue + changeValue2) * y2 >= PlayerPrefs.GetInt("[system]Status10", 0)) { PlayerPrefs.SetInt("[system]" + targetStr, PlayerPrefs.GetInt("[system]Status10", 0)); }
-                else if (targetStr == "正気度ポイント" && PlayerPrefs.GetInt("[system]" + targetStr, 0) + (changeValue + changeValue2) * y2 >= 99 - PlayerPrefs.GetInt("[system]Skill53", 0)) { PlayerPrefs.SetInt("[system]" + targetStr, 99 - PlayerPrefs.GetInt("[system]Skill53", 0)); }
-                else if (PlayerPrefs.GetInt("[system]" + targetStr, 0) + (changeValue + changeValue2) * y2 >= 100) { PlayerPrefs.SetInt("[system]" + targetStr, 99); }
-                else { PlayerPrefs.SetInt("[system]" + targetStr, PlayerPrefs.GetInt("[system]" + targetStr, 0) + (changeValue + changeValue2) * y2); }
+                if (PlayerPrefs.GetInt(targetStr, 0) < -1 * (changeValue + changeValue2) * y2) { PlayerPrefs.SetInt(targetStr, 0); }
+                else if (targetStr == "[system]耐久力" && PlayerPrefs.GetInt(targetStr, 0) + (changeValue + changeValue2) * y2 >= PlayerPrefs.GetInt("[system]Status9", 0)) { PlayerPrefs.SetInt(targetStr, PlayerPrefs.GetInt("[system]Status9", 0)); }
+                else if (targetStr == "[system]マジック・ポイント" && PlayerPrefs.GetInt(targetStr, 0) + (changeValue + changeValue2) * y2 >= PlayerPrefs.GetInt("[system]Status10", 0)) { PlayerPrefs.SetInt(targetStr, PlayerPrefs.GetInt("[system]Status10", 0)); }
+                else if (targetStr == "[system]正気度ポイント" && PlayerPrefs.GetInt(targetStr, 0) + (changeValue + changeValue2) * y2 >= 99 - PlayerPrefs.GetInt("[system]Skill53", 0)) { PlayerPrefs.SetInt(targetStr, 99 - PlayerPrefs.GetInt("[system]Skill53", 0)); }
+                else if (PlayerPrefs.GetInt(targetStr, 0) + (changeValue + changeValue2) * y2 >= 100) { PlayerPrefs.SetInt(targetStr, 99); }
+                else { PlayerPrefs.SetInt(targetStr, PlayerPrefs.GetInt(targetStr, 0) + (changeValue + changeValue2) * y2); }
                 if (y2 > 0)
                 {
-                    TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "+" + changeValue2.ToString() + "=" + (changeValue + changeValue2).ToString() + "点上昇した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt("[system]" + targetStr, 0).ToString() + "）");
+                    TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "+" + changeValue2.ToString() + "=" + (changeValue + changeValue2).ToString() + "点上昇した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）");
                 }
                 else
                 {
-                    TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "+" + changeValue2.ToString() + "=" + (changeValue + changeValue2).ToString() + "点減少した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt("[system]" + targetStr, 0).ToString() + "）");
+                    TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "+" + changeValue2.ToString() + "=" + (changeValue + changeValue2).ToString() + "点減少した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）");
                 }
                 for (int v = 0; v < 60; v++) { yield return null; }
             }
@@ -312,19 +331,19 @@ public class ScenariosceneManager : MonoBehaviour
                         StartCoroutine(DiceEffect(1, 10, changeValue % 10));
                     }
                     for (int v = 0; v < 60; v++) { yield return null; }
-                    if (PlayerPrefs.GetInt("[system]" + targetStr, 0) < -1 * changeValue * y2) { PlayerPrefs.SetInt("[system]" + targetStr, 0); }
-                    else if (targetStr == "耐久力" && PlayerPrefs.GetInt("[system]" + targetStr, 0) + changeValue * y2 >= PlayerPrefs.GetInt("[system]Status9", 0)) { PlayerPrefs.SetInt("[system]" + targetStr, PlayerPrefs.GetInt("[system]Status9", 0)); }
-                    else if (targetStr == "マジック・ポイント" && PlayerPrefs.GetInt("[system]" + targetStr, 0) + changeValue * y2 >= PlayerPrefs.GetInt("[system]Status10", 0)) { PlayerPrefs.SetInt("[system]" + targetStr, PlayerPrefs.GetInt("[system]Status10", 0)); }
-                    else if (targetStr == "正気度ポイント" && PlayerPrefs.GetInt("[system]" + targetStr, 0) + changeValue * y2 >= 99 - PlayerPrefs.GetInt("[system]Skill53", 0)) { PlayerPrefs.SetInt("[system]" + targetStr, 99 - PlayerPrefs.GetInt("[system]Skill53", 0)); }
-                    else if (PlayerPrefs.GetInt("[system]" + targetStr, 0) + changeValue * y2 >= 100) { PlayerPrefs.SetInt("[system]" + targetStr, 99); }
-                    else { PlayerPrefs.SetInt("[system]" + targetStr, PlayerPrefs.GetInt("[system]" + targetStr, 0) + changeValue * y2); }
+                    if (PlayerPrefs.GetInt(targetStr, 0) < -1 * changeValue * y2) { PlayerPrefs.SetInt(targetStr, 0); }
+                    else if (targetStr == "[system]耐久力" && PlayerPrefs.GetInt(targetStr, 0) + changeValue * y2 >= PlayerPrefs.GetInt("[system]Status9", 0)) { PlayerPrefs.SetInt(targetStr, PlayerPrefs.GetInt("[system]Status9", 0)); }
+                    else if (targetStr == "[system]マジック・ポイント" && PlayerPrefs.GetInt(targetStr, 0) + changeValue * y2 >= PlayerPrefs.GetInt("[system]Status10", 0)) { PlayerPrefs.SetInt(targetStr, PlayerPrefs.GetInt("[system]Status10", 0)); }
+                    else if (targetStr == "[system]正気度ポイント" && PlayerPrefs.GetInt(targetStr, 0) + changeValue * y2 >= 99 - PlayerPrefs.GetInt("[system]Skill53", 0)) { PlayerPrefs.SetInt(targetStr, 99 - PlayerPrefs.GetInt("[system]Skill53", 0)); }
+                    else if (PlayerPrefs.GetInt(targetStr, 0) + changeValue * y2 >= 100) { PlayerPrefs.SetInt(targetStr, 99); }
+                    else { PlayerPrefs.SetInt(targetStr, PlayerPrefs.GetInt(targetStr, 0) + changeValue * y2); }
                     if (y2 > 0)
                     {
-                        TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "点上昇した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt("[system]" + targetStr, 0).ToString() + "）");
+                        TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "点上昇した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）");
                     }
                     else
                     {
-                        TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "点減少した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt("[system]" + targetStr, 0).ToString() + "）");
+                        TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "点減少した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）");
                     }
                     for (int v = 0; v < 60; v++) { yield return null; }
                 }
@@ -392,7 +411,7 @@ public class ScenariosceneManager : MonoBehaviour
         BattleBegin(enemyGraph,enemyNum,HP,playerHP,ref enemyHP);
 
         Utility u1 = GetComponent<Utility>();
-        for (int x=0;x<maxTurn;x++)
+        for (int x=0;x<maxTurn || maxTurn==-1;x++)
         {
             firstSelect:
             cutFlag = false;
@@ -965,8 +984,14 @@ public class ScenariosceneManager : MonoBehaviour
         if (targetStr == "EDU") { target = "[system]Status7"; }
         if (targetStr == "SIZ") { target = "[system]Status6"; }
         if (targetStr == "APP") { target = "[system]Status4"; }
-        if (targetStr == "MP") { target = "[system]Status10"; }
-        if (targetStr == "HP") { target = "[system]Status9"; }
+        if (targetStr == "最大マジック・ポイント") { target = "[system]Status10"; }
+        if (targetStr == "最大耐久力") { target = "[system]Status9"; }
+        if (targetStr == "マジック・ポイント") { target = "[system]マジック・ポイント"; }
+        if (targetStr == "耐久力") { target = "[system]耐久力"; }
+        if (targetStr == "正気度ポイント") { target = "[system]正気度ポイント"; }
+        if (targetStr == "アイデア") { PlayerPrefs.SetInt("[system]アイデア", PlayerPrefs.GetInt("[system]Status3")*5);target = "[system]アイデア"; }
+        if (targetStr == "知識") { PlayerPrefs.SetInt("[system]知識", PlayerPrefs.GetInt("[system]Status7") * 5); target = "[system]知識"; }
+        if (targetStr == "幸運") { PlayerPrefs.SetInt("[system]幸運", PlayerPrefs.GetInt("[system]Status5") * 5); target = "[system]幸運"; }
         return target;
     }
 
