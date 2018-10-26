@@ -70,10 +70,16 @@ public class MapScene : MonoBehaviour
         dt = DateTime.UtcNow;
         dt=dt.AddHours(9);//アンドロイドがローカル時間周りで妙な動きをするので、UTCで出してからJSTに変換してやる。
         string[] data;
+        char[] tempChar = {' ','　' };
+        string[] dataFlag;
+        bool tempBool;
         for (int i = 0; i < mapData.Length; i++)
         {
+            tempBool = false;
             if (mapData[i] == "[END]") { break; }
             data =mapData[i].Replace("\r", "").Replace("\n", "").Split(',');
+            dataFlag=data[10].Split(tempChar);
+            for (int j = 0; j < dataFlag.Length; j++) { if (dataFlag[j] != "" && PlayerPrefs.GetInt(dataFlag[j], 0) <= 0) { tempBool = true; } }
             if ((data[0] == "" || double.Parse(data[0]) > latitude - 0.0001 && double.Parse(data[0]) < latitude + 0.001) &&
                 (data[1] == "" || double.Parse(data[1]) > longitude - 0.0001 && double.Parse(data[1]) < longitude + 0.001) &&
                 (data[2] == "" || (int.Parse(data[2]) >= dt.Month)) &&
@@ -84,7 +90,7 @@ public class MapScene : MonoBehaviour
                 (data[7] == "" || (int.Parse(data[7]) <= dt.Day) || (int.Parse(data[6]) < dt.Month)) &&
                 (data[8] == "" || (int.Parse(data[8]) <= dt.Hour) || (int.Parse(data[7]) < dt.Day) || (int.Parse(data[6]) < dt.Month)) &&
                 (data[9] == "" || (int.Parse(data[9]) <= dt.Minute) || (int.Parse(data[8]) < dt.Hour) || (int.Parse(data[7]) < dt.Day) || (int.Parse(data[6]) < dt.Month)) &&
-                (data[10] == "" || PlayerPrefs.GetInt(data[10], 0) > 0) &&
+                (tempBool==false) &&
                 (PlayerPrefs.GetInt(data[11].Substring(0, data[11].Length - 4) + "Flag", 0)==0))
             {
                 objBGM.GetComponent<BGMManager>().chapterName = data[11];
