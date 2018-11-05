@@ -83,13 +83,13 @@ public class MapScene : MonoBehaviour
             if ((data[0] == "" || double.Parse(data[0]) > latitude - 0.0001 && double.Parse(data[0]) < latitude + 0.001) &&
                 (data[1] == "" || double.Parse(data[1]) > longitude - 0.0001 && double.Parse(data[1]) < longitude + 0.001) &&
                 (data[2] == "" || (int.Parse(data[2]) >= dt.Month)) &&
-                (data[3] == "" || (int.Parse(data[3]) >= dt.Day) || (int.Parse(data[2]) > dt.Month)) &&
-                (data[4] == "" || (int.Parse(data[4]) >= dt.Hour) || (int.Parse(data[3]) > dt.Day) || (int.Parse(data[2]) > dt.Month)) &&
-                (data[5] == "" || (int.Parse(data[5]) >= dt.Minute) || (int.Parse(data[4]) > dt.Hour) || (int.Parse(data[3]) > dt.Day) || (int.Parse(data[2]) > dt.Month)) &&
+                (data[3] == "" || (int.Parse(data[3]) >= dt.Day) || ((data[2]=="") || (int.Parse(data[2]) > dt.Month))) &&
+                (data[4] == "" || (int.Parse(data[4]) >= dt.Hour) || ((data[3]=="") || (int.Parse(data[3]) > dt.Day)) || ((data[2]=="") || (int.Parse(data[2]) > dt.Month))) &&
+                (data[5] == "" || (int.Parse(data[5]) >= dt.Minute) || ((data[4]=="") || (int.Parse(data[4]) > dt.Hour)) || ((data[3]=="") || (int.Parse(data[3]) > dt.Day)) || ((data[2]=="") || (int.Parse(data[2]) > dt.Month))) &&
                 (data[6] == "" || (int.Parse(data[6]) <= dt.Month)) &&
-                (data[7] == "" || (int.Parse(data[7]) <= dt.Day) || (int.Parse(data[6]) < dt.Month)) &&
-                (data[8] == "" || (int.Parse(data[8]) <= dt.Hour) || (int.Parse(data[7]) < dt.Day) || (int.Parse(data[6]) < dt.Month)) &&
-                (data[9] == "" || (int.Parse(data[9]) <= dt.Minute) || (int.Parse(data[8]) < dt.Hour) || (int.Parse(data[7]) < dt.Day) || (int.Parse(data[6]) < dt.Month)) &&
+                (data[7] == "" || (int.Parse(data[7]) <= dt.Day) || ((data[6]=="") || (int.Parse(data[6]) < dt.Month))) &&
+                (data[8] == "" || (int.Parse(data[8]) <= dt.Hour) || ((data[7]=="") || (int.Parse(data[7]) < dt.Day)) || ((data[6]=="") || (int.Parse(data[6]) < dt.Month))) &&
+                (data[9] == "" || (int.Parse(data[9]) <= dt.Minute) || ((data[8]=="") || (int.Parse(data[8]) < dt.Hour)) || ((data[7]=="") || (int.Parse(data[7]) < dt.Day)) || ((data[6]=="") || (int.Parse(data[6]) < dt.Month))) &&
                 (tempBool==false) &&
                 (PlayerPrefs.GetInt(data[11].Substring(0, data[11].Length - 4) + "Flag", 0)==0))
             {

@@ -44,7 +44,7 @@ public class ScenariosceneManager : MonoBehaviour
     private int backNum=-1;
     private int logNum=0;
     string _FILE_HEADER;
-    const int CHARACTER_Y = -300;
+    const int CHARACTER_Y = -615;
     private int gNum = 0;
     private int sNum = 0;
 
@@ -121,7 +121,7 @@ public class ScenariosceneManager : MonoBehaviour
             if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "Difference:"){separate3Text = scenarioText[i].Substring(11).Split(',');i+=Difference(separate3Text);continue; }
             if (scenarioText[i].Length > 13 && scenarioText[i].Substring(0, 13) == "StatusChange:"){separateText = scenarioText[i].Substring(13).Split(',');StartCoroutine(StatusChange(separateText));while (sentenceEnd == false) { yield return null; }; sentenceEnd = false; StartCoroutine(PushWait()); }//「StatusChange:正気度,-2D6」のように①変動ステータス、②変動値（○D○または固定値どちらでもプログラム側で適切な解釈をしてくれる）
             if (scenarioText[i].Length > 6 && scenarioText[i].Substring(0, 6) == "Input:") { StartCoroutine(InputText(scenarioText[i].Substring(6).Replace("\r", "").Replace("\n", ""))); }
-            if (scenarioText[i].Length > 6 && scenarioText[i].Substring(0, 6) == "Equal:"){separateText = scenarioText[i].Substring(6).Split(',');if (PlayerPrefs.GetString(separateText[0], "[system]NotString")=="[system]NotString") { i += Equal(PlayerPrefs.GetInt(separateText[0], 0), int.Parse(separateText[1].Replace("\r", "").Replace("\n", ""))); } else { i += Equal(PlayerPrefs.GetString(separateText[0], ""), separateText[1].Replace("\r", "").Replace("\n", "")); } continue; }
+            if (scenarioText[i].Length > 6 && scenarioText[i].Substring(0, 6) == "Equal:"){ int k; separateText = scenarioText[i].Substring(6).Split(',');if (PlayerPrefs.GetString(separateText[0], "[system]NotString")=="[system]NotString" && int.TryParse(separateText[1].Replace("０", "0").Replace("１", "1").Replace("２", "2").Replace("３", "3").Replace("４", "4").Replace("５", "5").Replace("６", "6").Replace("７", "7").Replace("８", "8").Replace("９", "9").Replace("．", ".").Replace("−", "-").Replace("－", "-").Replace("\r","").Replace("\n",""), out k)) { i += Equal(PlayerPrefs.GetInt(separateText[0], 0), k); } else { i += Equal(PlayerPrefs.GetString(separateText[0], ""), separateText[1].Replace("\r", "").Replace("\n", "")); } continue; }
             if (scenarioText[i].Length > 12 && scenarioText[i].Substring(0, 12) == "PlaceChange:") { separateText = scenarioText[i].Substring(12).Split(','); PlayerPrefs.SetFloat("[system]latitude", float.Parse(separateText[0].Replace("\r", "").Replace("\n", ""))); PlayerPrefs.SetFloat("[system]longitude", float.Parse(separateText[1].Replace("\r", "").Replace("\n", ""))); sentenceEnd = true; }
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Lost:") { StartCoroutine(CharaLost()); }
             if (scenarioText[i].Length > 10 && scenarioText[i].Substring(0, 10) == "FlagReset:") { FlagReset(); sentenceEnd = true; }
@@ -246,6 +246,8 @@ public class ScenariosceneManager : MonoBehaviour
 
     private IEnumerator InputText(string str)
     {
+        int x;
+        string inputField2;
         selectNum = -1;
         objInput.gameObject.SetActive(true);
         InputField inputField = objInput.GetComponent<InputField>();
@@ -255,7 +257,8 @@ public class ScenariosceneManager : MonoBehaviour
         objBox[3].GetComponentInChildren<Text>().text = "決定";
         SelectBoxMake(0, 0, 0, 2, false);
         while (selectNum==-1) { yield return null; }
-        PlayerPrefs.SetString(str,inputField.text);
+        inputField2 = inputField.text.Replace("０","0").Replace("１","1").Replace("２","2").Replace("３","3").Replace("４","4").Replace("５","5").Replace("６", "6").Replace("７", "7").Replace("８", "8").Replace("９", "9").Replace("．", ".").Replace("−", "-").Replace("－", "-");
+        if (int.TryParse(inputField2, out x)) { PlayerPrefs.SetString(str, "[system]NotString"); PlayerPrefs.SetInt(str, x); }else { PlayerPrefs.SetString(str, inputField.text); }
         objInput.gameObject.SetActive(false);
         objBox[3].gameObject.SetActive(false);
         sentenceEnd = true;
@@ -406,6 +409,7 @@ public class ScenariosceneManager : MonoBehaviour
         int damage = 0;
         int avoid = 2;
         int detailAct = 0;
+        int tmpDice;
         bool cutFlag = false;
 
         BattleBegin(enemyGraph,enemyNum,HP,playerHP,ref enemyHP);
@@ -446,7 +450,8 @@ public class ScenariosceneManager : MonoBehaviour
             {
                 if ((enemyHP[i] > 0 && humanFlag==false) || enemyHP[i]>2)
                 {
-                    if (u1.DiceRoll(1, 100) < AttackPercent)
+                    tmpDice = u1.DiceRoll(1, 100);
+                    if (tmpDice < AttackPercent)
                     {
                         if (humanFlag==true && cutFlag==true)
                         {
@@ -483,6 +488,7 @@ public class ScenariosceneManager : MonoBehaviour
                             StartCoroutine(Status(playerHP, damage));
                             playerHP -= damage;
                             if (playerHP <= 2) { break; }
+                            if (tmpDice<=AttackPercent/5) { i--; }
                         }
                         if (selectNum==1 && avoid!=0) { selectNum = -1; }//スペシャルなら回避を連続でできる。
                     }
@@ -709,13 +715,12 @@ public class ScenariosceneManager : MonoBehaviour
         if (humanFlag == false) {  TextDraw("", "拘束できる相手ではない……！"); for (int i = 0; i < 80; i++) { yield return null; } }//人外は拘束できない
         else
         {
-
             for (int i = 0; i < enemyNum; i++) { if (enemyHP[i] <= 2 && humanFlag == true) { sleep++; } if (enemyHP[i] <= 0) { kill++; sleep--; } }
             for (catcherNum = 0; catcherNum < enemyNum - sleep - kill; catcherNum++)
             {
                 objCharacter[y].GetComponent<Image>().color = new Color(0.5f, 0.5f, 0.5f);
                 sentenceEnd = false;
-                catcher = Hantei("格闘", +250);
+                catcher = Hantei("格闘", 0);
                 while (sentenceEnd == false) { yield return null; }
                 for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                 objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
@@ -1090,7 +1095,7 @@ public class ScenariosceneManager : MonoBehaviour
     {
         objBackText.gameObject.SetActive(false);
         objTextBox.gameObject.SetActive(true);
-        text = text.Replace("[PC]",PlayerPrefs.GetString("[system]PlayerCharacterName", "あなた"));
+        text = text.Replace("[system]改行", "\r\n").Replace("[PC]",PlayerPrefs.GetString("[system]PlayerCharacterName", "あなた"));
         objText.GetComponent<Text>().text = text;
         if (name == "[PC]")
         {
@@ -1107,6 +1112,7 @@ public class ScenariosceneManager : MonoBehaviour
         //背景テキスト表示の際は通常テキスト欄は消す
         objTextBox.gameObject.SetActive(false);
         objBackText.gameObject.SetActive(true);
+        text = text.Replace("[system]改行", "\r\n");
         objBackText.GetComponent<Text>().text = text;
     }
 
@@ -1172,11 +1178,11 @@ public class ScenariosceneManager : MonoBehaviour
     {
         for (int i = 0; i < 5; i++)//キャラクター移動
         {
-            if (lr == "L")
+            if (lr == "L" && objCharacter[position-1].activeSelf)
             {
                 objCharacter[position - 1].GetComponent<RectTransform>().localPosition = new Vector3((position - 1) * 150 + i * 6 - 300 - 30, CHARACTER_Y, 0);
             }
-            if (lr == "R")
+            if (lr == "R" && objCharacter[position - 1].activeSelf)
             {
                 objCharacter[position - 1].GetComponent<RectTransform>().localPosition = new Vector3((position - 1) * 150 - i * 6 - 300 + 30, CHARACTER_Y, 0);
             }
