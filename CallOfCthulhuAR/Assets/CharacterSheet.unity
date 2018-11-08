@@ -3151,7 +3151,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u518D\u30ED\u30FC\u30EB\n<size=20>(\u5E83\u544A\u304C\u6D41\u308C\u307E\u3059)</size>"
+  m_Text: "\u518D\u30ED\u30FC\u30EB\n<size=16>(\u30B7\u30CA\u30EA\u30AA\u96C6\u306E\u5E83\u544A\u30DA\u30FC\u30B8\u304C\u958B\u304D\u307E\u3059)\n</size>"
 --- !u!222 &603958892
 CanvasRenderer:
   m_ObjectHideFlags: 0

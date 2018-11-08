@@ -361,14 +361,13 @@ public class CSManager : MonoBehaviour {
 
     private void PushRediceButtonIn()
     {
-        //スタンドアロン用は広告機能使えないのでコメントアウトする
-        /*
-        if (Advertisement.IsReady())
-        {
-            Advertisement.Show();
-        }
-        */
-        
+        int adnum;
+        adnum=Random.Range(0,4);
+        if (adnum == 0) { Application.OpenURL("https://www.melonbooks.com/index.php?main_page=maker_affiliate_go&affiliate_id=AF0000028251"); }
+        if (adnum == 1) { Application.OpenURL("https://www.melonbooks.com/index.php?main_page=maker_affiliate_go&affiliate_id=AF0000027414"); }
+        if (adnum == 2) { Application.OpenURL("https://www.melonbooks.com/index.php?main_page=maker_affiliate_go&affiliate_id=AF0000028253"); }
+        if (adnum == 3) { Application.OpenURL("https://www.melonbooks.com/index.php?main_page=maker_affiliate_go&affiliate_id=AF0000029264"); }
+
         for (int i = 0; i < SKILLNUM; i++)
         {
             skills[i] = 0;
