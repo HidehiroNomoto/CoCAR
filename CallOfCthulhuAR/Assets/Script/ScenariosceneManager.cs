@@ -1176,6 +1176,8 @@ public class ScenariosceneManager : MonoBehaviour
 
     private IEnumerator CharacterMove(int position, string lr)
     {
+        objBackText.gameObject.SetActive(false);
+        objTextBox.gameObject.SetActive(true);
         for (int i = 0; i < 5; i++)//キャラクター移動
         {
             if (lr == "L" && objCharacter[position-1].activeSelf)
@@ -1209,6 +1211,8 @@ public class ScenariosceneManager : MonoBehaviour
     //キャラクターの小ジャンプ
     private IEnumerator CharacterJump(int position)
     {
+        objBackText.gameObject.SetActive(false);
+        objTextBox.gameObject.SetActive(true);
         for (int i = 0; i < 7; i++)
         {
             objCharacter[position - 1].GetComponent<RectTransform>().localPosition = new Vector3((position - 1) * 150 - 300, CHARACTER_Y + i * 2, 1);
