@@ -37,7 +37,7 @@ public class MapScene : MonoBehaviour
         mapImageObj = GameObject.Find("mapImage").gameObject as GameObject;
         objBGM= GameObject.Find("BGMManager").gameObject as GameObject;
         objTime = GameObject.Find("TimeText").gameObject as GameObject;
-        LoadMapData("[system]mapdata.txt");
+        LoadMapData("[system]mapdata[system].txt");
         if ((Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer)) { Input.location.Start(); }
         GetPos();
         GetMap();
