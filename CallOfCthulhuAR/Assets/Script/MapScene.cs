@@ -69,27 +69,32 @@ public class MapScene : MonoBehaviour
         DateTime dt;
         dt = DateTime.UtcNow;
         dt=dt.AddHours(9);//アンドロイドがローカル時間周りで妙な動きをするので、UTCで出してからJSTに変換してやる。
-        string[] data;
         char[] tempChar = {' ','　' };
-        string[] dataFlag;
-        bool tempBool;
+
         for (int i = 0; i < mapData.Length; i++)
         {
-            tempBool = false;
+            bool tempBool = false;
+            string[] dataFlag;
+            string[] data;
             if (mapData[i] == "[END]") { break; }
             data =mapData[i].Replace("\r", "").Replace("\n", "").Split(',');
             dataFlag=data[10].Split(tempChar);
             for (int j = 0; j < dataFlag.Length; j++) { if (dataFlag[j] != "" && PlayerPrefs.GetInt(dataFlag[j], 0) <= 0) { tempBool = true; } }
+            if (data[5] != "" && data[9] != "" && int.Parse(data[9]) < int.Parse(data[5])) { if (dt.Minute >= int.Parse(data[5])) { data[9] = (int.Parse(data[9]) + 60).ToString();if (data[8] != "") { data[8] = (int.Parse(data[8]) - 1).ToString(); } } else { data[5] = (int.Parse(data[5]) - 60).ToString(); if (data[4] != "") { data[4] = (int.Parse(data[4]) + 1).ToString(); } } }
+            if (data[4] != "" && data[8] != "" && int.Parse(data[8]) < int.Parse(data[4])) { if (dt.Hour >= int.Parse(data[4])) { data[8] = (int.Parse(data[8]) + 24).ToString(); if (data[7] != "") { data[7] = (int.Parse(data[7]) - 1).ToString();  } } else { data[4] = (int.Parse(data[4]) - 24).ToString(); if (data[3] != "") { data[3] = (int.Parse(data[3]) + 1).ToString(); } } }
+            if (data[3] != "" && data[7] != "" && int.Parse(data[7]) < int.Parse(data[3])) { if (dt.Day >= int.Parse(data[3])) { data[7] = (int.Parse(data[7]) + 31).ToString(); if (data[6] != "") { data[6] = (int.Parse(data[6]) - 1).ToString(); } } else { data[3] = (int.Parse(data[3]) - 31).ToString(); if (data[4] != "") { data[2] = (int.Parse(data[2]) + 1).ToString(); } } }
+            if (data[2]!= "" && data[6]!="" && int.Parse(data[6]) < int.Parse(data[2])) { if (dt.Month >= int.Parse(data[2])) { data[6] = (int.Parse(data[6]) + 12).ToString(); } else { data[2] = (int.Parse(data[2]) -12).ToString(); } }
+
             if ((data[0] == "" || double.Parse(data[0]) > latitude - 0.0001 && double.Parse(data[0]) < latitude + 0.001) &&
                 (data[1] == "" || double.Parse(data[1]) > longitude - 0.0001 && double.Parse(data[1]) < longitude + 0.001) &&
-                (data[2] == "" || (int.Parse(data[2]) >= dt.Month)) &&
-                (data[3] == "" || (int.Parse(data[3]) >= dt.Day) || ((data[2]=="") || (int.Parse(data[2]) > dt.Month))) &&
-                (data[4] == "" || (int.Parse(data[4]) >= dt.Hour) || ((data[3]=="") || (int.Parse(data[3]) > dt.Day)) || ((data[2]=="") || (int.Parse(data[2]) > dt.Month))) &&
-                (data[5] == "" || (int.Parse(data[5]) >= dt.Minute) || ((data[4]=="") || (int.Parse(data[4]) > dt.Hour)) || ((data[3]=="") || (int.Parse(data[3]) > dt.Day)) || ((data[2]=="") || (int.Parse(data[2]) > dt.Month))) &&
-                (data[6] == "" || (int.Parse(data[6]) <= dt.Month)) &&
-                (data[7] == "" || (int.Parse(data[7]) <= dt.Day) || ((data[6]=="") || (int.Parse(data[6]) < dt.Month))) &&
-                (data[8] == "" || (int.Parse(data[8]) <= dt.Hour) || ((data[7]=="") || (int.Parse(data[7]) < dt.Day)) || ((data[6]=="") || (int.Parse(data[6]) < dt.Month))) &&
-                (data[9] == "" || (int.Parse(data[9]) <= dt.Minute) || ((data[8]=="") || (int.Parse(data[8]) < dt.Hour)) || ((data[7]=="") || (int.Parse(data[7]) < dt.Day)) || ((data[6]=="") || (int.Parse(data[6]) < dt.Month))) &&
+                (data[2] == "" || (int.Parse(data[2]) <= dt.Month)) &&
+                (data[3] == "" || (int.Parse(data[3]) <= dt.Day))  &&
+                (data[4] == "" || (int.Parse(data[4]) <= dt.Hour)) &&
+                (data[5] == "" || (int.Parse(data[5]) <= dt.Minute)) &&
+                (data[6] == "" || (int.Parse(data[6]) >= dt.Month)) &&
+                (data[7] == "" || (int.Parse(data[7]) >= dt.Day)) &&
+                (data[8] == "" || (int.Parse(data[8]) >= dt.Hour)) &&
+                (data[9] == "" || (int.Parse(data[9]) >= dt.Minute)) &&
                 (tempBool==false) &&
                 (PlayerPrefs.GetInt(data[11].Substring(0, data[11].Length - 4) + "Flag", 0)==0))
             {
