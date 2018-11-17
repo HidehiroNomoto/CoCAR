@@ -963,7 +963,7 @@ public class ScenariosceneManager : MonoBehaviour
         if (targetStr == "電子工学") { target = "[system]Skill33"; }
         if (targetStr == "天文学") { target = "[system]Skill34"; }
         if (targetStr == "投擲") { target = "[system]Skill35"; }
-        if (targetStr == "登攀") { target = "[system]Skill36"; }
+        if (targetStr == "登ハン") { target = "[system]Skill36"; }
         if (targetStr == "図書館") { target = "[system]Skill37"; }
         if (targetStr == "ナビゲート") { target = "[system]Skill38"; }
         if (targetStr == "値切り") { target = "[system]Skill39"; }
