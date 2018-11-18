@@ -82,7 +82,9 @@ public class BackLog : MonoBehaviour {
         int startLog2 = 0;
         if (SceneManager.GetActiveScene().name == "NovelScene")
         {
+           
             GameObject.Find("NovelManager").gameObject.GetComponent<ScenariosceneManager>().backLogCSFlag = true;
+           
         }
         if (backLog == false)
         {
@@ -122,7 +124,9 @@ public class BackLog : MonoBehaviour {
     {
         if (SceneManager.GetActiveScene().name == "NovelScene")
         {
+           
             GameObject.Find("NovelManager").gameObject.GetComponent<ScenariosceneManager>().backLogCSFlag = true;
+           
         }
         if (itemFlag == false)
         {

@@ -91,21 +91,13 @@ public class Utility : MonoBehaviour {
     {
         while (true)//ブレークするまでループを続ける。
         {
+            yield return null;//本体に処理を返して他のオブジェクトのイベントトリガーを確認。
             if (Input.GetMouseButtonDown(0) == true)
             {
-                yield return null;//本体に処理を返して他のオブジェクトのイベントトリガーを確認。
                 if (pushObjectFlag == false)//フラグが立っていたらオブジェクト処理のためのタップだったと判定。
                 {
                     yield break;//falseならコルーチン脱出
                 }
-                else
-                {
-                    yield return null;//trueならコルーチン継続
-                }
-            }
-            else
-            {
-                yield return null;
             }
         }
     }

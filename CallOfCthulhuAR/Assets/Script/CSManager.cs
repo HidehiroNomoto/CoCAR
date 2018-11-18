@@ -386,6 +386,7 @@ public class CSManager : MonoBehaviour {
         {
             if (SceneManager.GetActiveScene().name == "NovelScene")
             {
+ 
                 GameObject.Find("NovelManager").gameObject.GetComponent<ScenariosceneManager>().backLogCSFlag = true;
             }
             objCS.gameObject.SetActive(true);
@@ -396,6 +397,7 @@ public class CSManager : MonoBehaviour {
             if (SceneManager.GetActiveScene().name == "NovelScene")
             {
                 GameObject.Find("NovelManager").gameObject.GetComponent<ScenariosceneManager>().backLogCSFlag = false;
+               
             }
             objCS.gameObject.SetActive(false);
             transform.GetChild(0).gameObject.GetComponent<Text>().text = "Character\nsheet";
