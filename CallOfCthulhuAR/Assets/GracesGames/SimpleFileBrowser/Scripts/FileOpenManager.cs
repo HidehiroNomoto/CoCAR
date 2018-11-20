@@ -81,7 +81,8 @@ namespace GracesGames.SimpleFileBrowser.Scripts
             {
                 int[] status = new int[STATUSNUM];
                 int[] skills = new int[SKILLNUM];
-                string temp1, temp2;
+                string[] tmpstrs = new string[2];
+                int[] tmpints = new int[6];
                 if (path != null && path.Length != 0)
                 {
                     //フラグ情報の全消去（別シナリオのフラグが生きてると意図せぬバッティングなどバグの元）
@@ -94,8 +95,14 @@ namespace GracesGames.SimpleFileBrowser.Scripts
                     {
                         skills[i] = PlayerPrefs.GetInt("[system]Skill" + i.ToString(), 0);
                     }
-                    temp1= PlayerPrefs.GetString("[system]CharacterIllstPath", "");
-                    temp2= PlayerPrefs.GetString("[system]PlayerCharacterName", "");
+                    tmpstrs[0]= PlayerPrefs.GetString("[system]CharacterIllstPath", "");
+                    tmpstrs[1]= PlayerPrefs.GetString("[system]PlayerCharacterName", "");
+                   tmpints[0] = PlayerPrefs.GetInt("[system]マジック・ポイント"); 
+                   tmpints[1] = PlayerPrefs.GetInt("[system]耐久力"); 
+                   tmpints[2] = PlayerPrefs.GetInt("[system]正気度ポイント");
+                    tmpints[3] = PlayerPrefs.GetInt("[system]アイデア");
+                   tmpints[4] = PlayerPrefs.GetInt("[system]知識");
+                   tmpints[5] = PlayerPrefs.GetInt("[system]幸運");
                     //セーブデータを全部消す
                     PlayerPrefs.DeleteAll();
                     //残す情報を再書き込み
@@ -107,8 +114,14 @@ namespace GracesGames.SimpleFileBrowser.Scripts
                     {
                         PlayerPrefs.SetInt("[system]Skill" + i.ToString(), skills[i]);
                     }
-                    PlayerPrefs.SetString("[system]CharacterIllstPath",temp1);
-                    PlayerPrefs.SetString("[system]PlayerCharacterName", temp2);
+                    PlayerPrefs.SetString("[system]CharacterIllstPath",tmpstrs[0]);
+                    PlayerPrefs.SetString("[system]PlayerCharacterName", tmpstrs[1]);
+                    PlayerPrefs.SetInt("[system]マジック・ポイント",tmpints[0]);
+                    PlayerPrefs.SetInt("[system]耐久力", tmpints[1]);
+                    PlayerPrefs.SetInt("[system]正気度ポイント", tmpints[2]);
+                    PlayerPrefs.SetInt("[system]アイデア", tmpints[3]);
+                    PlayerPrefs.SetInt("[system]知識", tmpints[4]);
+                    PlayerPrefs.SetInt("[system]幸運", tmpints[5]);
                     GameObject.Find("SelectText").GetComponent<Text>().text = "シナリオ選択<size=28>\n(DLしたファイルから選ぶ)</size>";
                     PlayerPrefs.SetString("[system]進行中シナリオ",path);
                     scenarionamePath = path.Split(new char[] { '\\', '.','/' });

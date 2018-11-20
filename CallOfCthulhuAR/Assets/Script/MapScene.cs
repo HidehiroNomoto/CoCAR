@@ -25,7 +25,8 @@ public class MapScene : MonoBehaviour
     GameObject objTarget;
     GameObject objBGM;
     GameObject objTime;
-    string _FILE_HEADER; 
+    string _FILE_HEADER;
+    private bool moveStop = false;
 
     void Start()
     {
@@ -45,8 +46,8 @@ public class MapScene : MonoBehaviour
 
     void Update()
     {
-        intervalTime += Time.deltaTime; 
-        GetPos();
+        intervalTime += Time.deltaTime;
+        if (moveStop == false) { GetPos(); }
         if ((Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer) || Input.location.status == LocationServiceStatus.Running) { if (mapLoad==true) { IventCheck(); } }
         objBGM.GetComponent<Text>().text = longitude.ToString() + "," + latitude.ToString();
         //地図の更新は、マップ範囲から出た時かつ時間が相当経過している時に。（時間変数入れないと、場所によってはGPS誤差でマップ連続読込になりかねない）
@@ -69,7 +70,6 @@ public class MapScene : MonoBehaviour
         DateTime dt;
         dt = DateTime.UtcNow;
         dt=dt.AddHours(9);//アンドロイドがローカル時間周りで妙な動きをするので、UTCで出してからJSTに変換してやる。
-        char[] tempChar = {' ','　' };
 
         for (int i = 0; i < mapData.Length; i++)
         {
@@ -78,7 +78,7 @@ public class MapScene : MonoBehaviour
             string[] data;
             if (mapData[i] == "[END]") { break; }
             data =mapData[i].Replace("\r", "").Replace("\n", "").Split(',');
-            dataFlag=data[10].Split(tempChar);
+            dataFlag=data[10].Replace("　"," ").Split(' ');
             for (int j = 0; j < dataFlag.Length; j++) { if (dataFlag[j] != "" && PlayerPrefs.GetInt(dataFlag[j], 0) <= 0) { tempBool = true; } }
             if (data[5] != "" && data[9] != "" && int.Parse(data[9]) < int.Parse(data[5])) { if (dt.Minute >= int.Parse(data[5])) { data[9] = (int.Parse(data[9]) + 60).ToString();if (data[8] != "") { data[8] = (int.Parse(data[8]) - 1).ToString(); } } else { data[5] = (int.Parse(data[5]) - 60).ToString(); if (data[4] != "") { data[4] = (int.Parse(data[4]) + 1).ToString(); } } }
             if (data[4] != "" && data[8] != "" && int.Parse(data[8]) < int.Parse(data[4])) { if (dt.Hour >= int.Parse(data[4])) { data[8] = (int.Parse(data[8]) + 24).ToString(); if (data[7] != "") { data[7] = (int.Parse(data[7]) - 1).ToString();  } } else { data[4] = (int.Parse(data[4]) - 24).ToString(); if (data[3] != "") { data[3] = (int.Parse(data[3]) + 1).ToString(); } } }
@@ -171,6 +171,7 @@ public class MapScene : MonoBehaviour
     private IEnumerator GetStreetViewImage(double latitude, double longitude, double zoom)
     {
         string url="";
+        moveStop = true;
         if (Application.platform == RuntimePlatform.IPhonePlayer) { url = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&zoom=" + zoom + "&size=" + width + "x" + height + Secret.SecretString.iPhoneKey; }
         if (Application.platform == RuntimePlatform.Android) { url = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&zoom=" + zoom + "&size=" + width + "x" + height + Secret.SecretString.androidKey; }
         if(Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer) { url = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&zoom=" + zoom + "&size=" + width + "x" + height + Secret.SecretString.androidKey; ; }
@@ -183,9 +184,9 @@ public class MapScene : MonoBehaviour
         //地図の中心の緯度経度を保存
         longitudeMap = longitude;
         latitudeMap = latitude;
-
         //targetの位置を中心に
-        targetX = 0;targetY = 0;
+        targetX = 0; targetY = 0;
+        moveStop = false;
     }
 
     //目次ファイルを読み込み、進行度に合わせてファイルを拾ってくる。
