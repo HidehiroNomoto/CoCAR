@@ -85,8 +85,8 @@ public class MapScene : MonoBehaviour
             if (data[3] != "" && data[7] != "" && int.Parse(data[7]) < int.Parse(data[3])) { if (dt.Day >= int.Parse(data[3])) { data[7] = (int.Parse(data[7]) + 31).ToString(); if (data[6] != "") { data[6] = (int.Parse(data[6]) - 1).ToString(); } } else { data[3] = (int.Parse(data[3]) - 31).ToString(); if (data[4] != "") { data[2] = (int.Parse(data[2]) + 1).ToString(); } } }
             if (data[2]!= "" && data[6]!="" && int.Parse(data[6]) < int.Parse(data[2])) { if (dt.Month >= int.Parse(data[2])) { data[6] = (int.Parse(data[6]) + 12).ToString(); } else { data[2] = (int.Parse(data[2]) -12).ToString(); } }
 
-            if ((data[0] == "" || double.Parse(data[0]) > latitude - 0.0001 && double.Parse(data[0]) < latitude + 0.001) &&
-                (data[1] == "" || double.Parse(data[1]) > longitude - 0.0001 && double.Parse(data[1]) < longitude + 0.001) &&
+            if ((data[0] == "" || double.Parse(data[0]) > latitude - 0.0005 && double.Parse(data[0]) < latitude + 0.0005) &&
+                (data[1] == "" || double.Parse(data[1]) > longitude - 0.0005 && double.Parse(data[1]) < longitude + 0.0005) &&
                 (data[2] == "" || (int.Parse(data[2]) <= dt.Month)) &&
                 (data[3] == "" || (int.Parse(data[3]) <= dt.Day))  &&
                 (data[4] == "" || (int.Parse(data[4]) <= dt.Hour)) &&
@@ -172,6 +172,7 @@ public class MapScene : MonoBehaviour
     {
         string url="";
         moveStop = true;
+
         if (Application.platform == RuntimePlatform.IPhonePlayer) { url = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&zoom=" + zoom + "&size=" + width + "x" + height + Secret.SecretString.iPhoneKey; }
         if (Application.platform == RuntimePlatform.Android) { url = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&zoom=" + zoom + "&size=" + width + "x" + height + Secret.SecretString.androidKey; }
         if(Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer) { url = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&zoom=" + zoom + "&size=" + width + "x" + height + Secret.SecretString.androidKey; ; }
