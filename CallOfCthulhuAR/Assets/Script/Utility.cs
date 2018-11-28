@@ -50,12 +50,16 @@ public class Utility : MonoBehaviour {
     {
         while (fadeFlag == true) { yield return null; }//他でフェイドインフェイドアウト中なら待つ。
         fadeFlag = true;
-        for (int i = 0; i < time; i++)
+        if (time > 0)
         {
-            objBGM.GetComponent<AudioSource>().volume = PlayerPrefs.GetFloat("[system]BGMVolume",0.8f) * (1.0f-(float)i/time);
-            yield return null;
+            for (int i = 0; i < time; i++)
+            {
+                objBGM.GetComponent<AudioSource>().volume = PlayerPrefs.GetFloat("[system]BGMVolume", 0.8f) * (1.0f - (float)i / time);
+                yield return null;
+            }
         }
         objBGM.GetComponent<AudioSource>().volume = 0f;//最終的には０に。（for文をi<=timeにするとtime=0で０除算が発生しうる構造になるので、最後のvol=0のみfor文から隔離）
+        BGMStop();
         fadeFlag = false;
         yield return null;
     }
@@ -64,10 +68,13 @@ public class Utility : MonoBehaviour {
     {
         while (fadeFlag == true) { yield return null; }//他でフェイドインフェイドアウト中なら待つ。
         fadeFlag = true;
-        for (int i = 0; i < time; i++)
+        if (time > 0)
         {
-            objBGM.GetComponent<AudioSource>().volume = PlayerPrefs.GetFloat("[system]BGMVolume", 0.8f) * ((float)i / time);
-            yield return null;
+            for (int i = 0; i < time; i++)
+            {
+                objBGM.GetComponent<AudioSource>().volume = PlayerPrefs.GetFloat("[system]BGMVolume", 0.8f) * ((float)i / time);
+                yield return null;
+            }
         }
         objBGM.GetComponent<AudioSource>().volume = PlayerPrefs.GetFloat("[system]BGMVolume", 0.8f);//最終的には０に。（for文をi<=timeにするとtime=0で０除算が発生しうる構造になるので、最後のvol=BGMVolumeのみfor文から隔離）
         fadeFlag = false;

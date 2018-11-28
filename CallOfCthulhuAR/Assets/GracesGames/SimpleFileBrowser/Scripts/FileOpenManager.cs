@@ -82,7 +82,7 @@ namespace GracesGames.SimpleFileBrowser.Scripts
                 int[] status = new int[STATUSNUM];
                 int[] skills = new int[SKILLNUM];
                 string[] tmpstrs = new string[2];
-                int[] tmpints = new int[6];
+                int[] tmpints = new int[7];
                 if (path != null && path.Length != 0)
                 {
                     //フラグ情報の全消去（別シナリオのフラグが生きてると意図せぬバッティングなどバグの元）
@@ -103,6 +103,7 @@ namespace GracesGames.SimpleFileBrowser.Scripts
                     tmpints[3] = PlayerPrefs.GetInt("[system]アイデア");
                    tmpints[4] = PlayerPrefs.GetInt("[system]知識");
                    tmpints[5] = PlayerPrefs.GetInt("[system]幸運");
+                    tmpints[6] = PlayerPrefs.GetInt("[system]初発狂");
                     //セーブデータを全部消す
                     PlayerPrefs.DeleteAll();
                     //残す情報を再書き込み
@@ -122,6 +123,7 @@ namespace GracesGames.SimpleFileBrowser.Scripts
                     PlayerPrefs.SetInt("[system]アイデア", tmpints[3]);
                     PlayerPrefs.SetInt("[system]知識", tmpints[4]);
                     PlayerPrefs.SetInt("[system]幸運", tmpints[5]);
+                    PlayerPrefs.SetInt("[system]初発狂", tmpints[6]);
                     GameObject.Find("SelectText").GetComponent<Text>().text = "シナリオ選択<size=28>\n(DLしたファイルから選ぶ)</size>";
                     PlayerPrefs.SetString("[system]進行中シナリオ",path);
                     scenarionamePath = path.Split(new char[] { '\\', '.','/' });

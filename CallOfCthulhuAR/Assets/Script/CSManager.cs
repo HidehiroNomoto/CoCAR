@@ -382,6 +382,7 @@ public class CSManager : MonoBehaviour {
 
     private void CSButtonIn()
     {
+        SeeCharacter();
         if (objCS.activeSelf == false)
         {
             if (SceneManager.GetActiveScene().name == "NovelScene")

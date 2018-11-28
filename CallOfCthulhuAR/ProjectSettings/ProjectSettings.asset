@@ -145,6 +145,7 @@ PlayerSettings:
   resolutionScalingMode: 0
   applicationIdentifier:
     Android: com.brainmixer.CoCAR
+    Standalone: com.Brainmixer.CoCARScenarioMaker
     iOS: com.Brainmixer.CoCAR
   buildNumber: {}
   AndroidBundleVersionCode: 1
