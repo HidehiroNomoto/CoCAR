@@ -7,11 +7,11 @@ PlayerSettings:
   productGUID: 554f0bd07ff97cb4496098456b4d078b
   AndroidProfiler: 0
   defaultScreenOrientation: 0
-  targetDevice: 2
+  targetDevice: 0
   useOnDemandResources: 0
   accelerometerFrequency: 60
   companyName: "\u6C38\u4E45\u30D1\u30D4\u30EB\u30B9"
-  productName: "\u30AF\u30C8\u30A5\u30EB\u30D5\u795E\u8A71AR"
+  productName: "\u30AF\u30C8\u30A5\u30EB\u30D5\u795E\u8A71RPGAR"
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
   m_SplashScreenBackgroundColor: {r: 0.13725491, g: 0.12156863, b: 0.1254902, a: 1}
@@ -124,7 +124,7 @@ PlayerSettings:
     16:10: 1
     16:9: 1
     Others: 1
-  bundleVersion: 0.1
+  bundleVersion: 1.0
   preloadedAssets: []
   metroInputSource: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -147,8 +147,9 @@ PlayerSettings:
     Android: com.brainmixer.CoCAR
     Standalone: com.Brainmixer.CoCARScenarioMaker
     iOS: com.Brainmixer.CoCAR
-  buildNumber: {}
-  AndroidBundleVersionCode: 1
+  buildNumber:
+    iOS: 0
+  AndroidBundleVersionCode: 4
   AndroidMinSdkVersion: 16
   AndroidTargetSdkVersion: 0
   AndroidPreferredInstallLocation: 1
@@ -240,6 +241,80 @@ PlayerSettings:
       m_Icon: {fileID: 2800000, guid: 6d979362b1e437e49bb7102825cc8a17, type: 3}
       m_Width: 128
       m_Height: 128
+  - m_BuildTarget: iPhone
+    m_Icons:
+    - serializedVersion: 2
+      m_Icon: {fileID: 2800000, guid: ae4faa2d91b9a4543b080408afa5fe2f, type: 3}
+      m_Width: 180
+      m_Height: 180
+    - serializedVersion: 2
+      m_Icon: {fileID: 0}
+      m_Width: 167
+      m_Height: 167
+    - serializedVersion: 2
+      m_Icon: {fileID: 0}
+      m_Width: 152
+      m_Height: 152
+    - serializedVersion: 2
+      m_Icon: {fileID: 0}
+      m_Width: 144
+      m_Height: 144
+    - serializedVersion: 2
+      m_Icon: {fileID: 0}
+      m_Width: 120
+      m_Height: 120
+    - serializedVersion: 2
+      m_Icon: {fileID: 0}
+      m_Width: 114
+      m_Height: 114
+    - serializedVersion: 2
+      m_Icon: {fileID: 0}
+      m_Width: 76
+      m_Height: 76
+    - serializedVersion: 2
+      m_Icon: {fileID: 0}
+      m_Width: 72
+      m_Height: 72
+    - serializedVersion: 2
+      m_Icon: {fileID: 0}
+      m_Width: 57
+      m_Height: 57
+    - serializedVersion: 2
+      m_Icon: {fileID: 2800000, guid: ae4faa2d91b9a4543b080408afa5fe2f, type: 3}
+      m_Width: 120
+      m_Height: 120
+    - serializedVersion: 2
+      m_Icon: {fileID: 0}
+      m_Width: 80
+      m_Height: 80
+    - serializedVersion: 2
+      m_Icon: {fileID: 0}
+      m_Width: 40
+      m_Height: 40
+    - serializedVersion: 2
+      m_Icon: {fileID: 2800000, guid: ae4faa2d91b9a4543b080408afa5fe2f, type: 3}
+      m_Width: 87
+      m_Height: 87
+    - serializedVersion: 2
+      m_Icon: {fileID: 0}
+      m_Width: 58
+      m_Height: 58
+    - serializedVersion: 2
+      m_Icon: {fileID: 0}
+      m_Width: 29
+      m_Height: 29
+    - serializedVersion: 2
+      m_Icon: {fileID: 2800000, guid: ae4faa2d91b9a4543b080408afa5fe2f, type: 3}
+      m_Width: 60
+      m_Height: 60
+    - serializedVersion: 2
+      m_Icon: {fileID: 0}
+      m_Width: 40
+      m_Height: 40
+    - serializedVersion: 2
+      m_Icon: {fileID: 0}
+      m_Width: 20
+      m_Height: 20
   m_BuildTargetBatching: []
   m_BuildTargetGraphicsAPIs: []
   m_BuildTargetVRSettings: []
@@ -271,7 +346,7 @@ PlayerSettings:
   logObjCUncaughtExceptions: 1
   enableCrashReportAPI: 0
   cameraUsageDescription: 
-  locationUsageDescription: 
+  locationUsageDescription: This data is used for only this game.
   microphoneUsageDescription: 
   switchNetLibKey: 
   switchSocketMemoryPoolSize: 6144

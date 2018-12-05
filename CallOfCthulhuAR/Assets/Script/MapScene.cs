@@ -30,6 +30,8 @@ public class MapScene : MonoBehaviour
 
     void Start()
     {
+        GetComponent<Utility>().BGMFadeIn(2);
+        GetComponent<Utility>().BGMPlay(Resources.Load<AudioClip>("MapBGM"));
         _FILE_HEADER = PlayerPrefs.GetString("[system]進行中シナリオ","");                      //ファイル場所の頭
         if (_FILE_HEADER==null || _FILE_HEADER == "") { GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene"); }
         longitude=PlayerPrefs.GetFloat("[system]longitude",135.768738f); latitude = PlayerPrefs.GetFloat("[system]latitude", 35.010348f);
@@ -160,7 +162,7 @@ public class MapScene : MonoBehaviour
             obj.GetComponent<Text>().text = ("エラー。何らかの理由で位置情報が使用できません。");
             yield break;
         }
-        else
+        else if(Input.location.status == LocationServiceStatus.Running)
         {
             longitude = Input.location.lastData.longitude;
             latitude = Input.location.lastData.latitude;

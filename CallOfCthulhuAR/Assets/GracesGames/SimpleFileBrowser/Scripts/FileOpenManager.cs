@@ -125,6 +125,7 @@ namespace GracesGames.SimpleFileBrowser.Scripts
                     PlayerPrefs.SetInt("[system]幸運", tmpints[5]);
                     PlayerPrefs.SetInt("[system]初発狂", tmpints[6]);
                     GameObject.Find("SelectText").GetComponent<Text>().text = "シナリオ選択<size=28>\n(DLしたファイルから選ぶ)</size>";
+                    //if (Application.platform == RuntimePlatform.IPhonePlayer) { path = "/Documents/Inbox/" + System.IO.Path.GetFileName(path); }
                     PlayerPrefs.SetString("[system]進行中シナリオ",path);
                     scenarionamePath = path.Split(new char[] { '\\', '.','/' });
                     if (scenarionamePath.Length >= 2) { GameObject.Find("ScenarioName").GetComponent<Text>().text = "[シナリオ名]\n" + scenarionamePath[scenarionamePath.Length - 2]; }//アドレスからフォルダ名と拡張子を排除。.と\を区切り文字にすると拡張子が最後(Length-1)にあるので、その手前の(Length-2)が欲しい文字列。
@@ -136,6 +137,7 @@ namespace GracesGames.SimpleFileBrowser.Scripts
             }
             else if (GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]CharacterIllstPath")
             {
+                //if (Application.platform == RuntimePlatform.IPhonePlayer) { path = "/Documents/Inbox/" + System.IO.Path.GetFileName(path); }
                 PlayerPrefs.SetString("[system]CharacterIllstPath", path);
                 StartCoroutine(GetComponent<CSManager>().LoadChara(PlayerPrefs.GetString("[system]CharacterIllstPath", "")));
             }

@@ -30,6 +30,7 @@ public class ScenariosceneManager : MonoBehaviour
     GameObject[] objBox=new GameObject[4];
     GameObject objInput;
     GameObject objSkip;
+    GameObject objStatus;
     public AudioClip[] systemAudio = new AudioClip[10];
     public Sprite[] moveDice10Graphic = new Sprite[7];
     public Sprite[] dice10Graphic = new Sprite[10];
@@ -44,7 +45,7 @@ public class ScenariosceneManager : MonoBehaviour
     private int backNum=-1;
     private int logNum=0;
     string _FILE_HEADER;
-    const int CHARACTER_Y = -615;
+    const int CHARACTER_Y = 585;
     private int gNum = 0;
     private int sNum = 0;
     private bool pushButton;
@@ -69,10 +70,11 @@ public class ScenariosceneManager : MonoBehaviour
         for (int i = 0; i < 5; i++) { objCharacter[i] = GameObject.Find("Chara" + (i + 1).ToString()).gameObject as GameObject; objCharacter[i].gameObject.SetActive(false); }
         objInput= GameObject.Find("Input").gameObject as GameObject; objInput.gameObject.SetActive(false);
         objText = GameObject.Find("MainText").gameObject as GameObject;
-        objTextBox = GameObject.Find("TextBox").gameObject as GameObject;
+        objTextBox = GameObject.Find("TextBoxImage").gameObject as GameObject;
+        objStatus = GameObject.Find("TextBox").gameObject as GameObject;
         objBackImage = GameObject.Find("BackImage").gameObject as GameObject;
         objBackText = GameObject.Find("BackText").gameObject as GameObject; objBackText.gameObject.SetActive(false);
-        objCanvas = GameObject.Find("CanvasDraw").gameObject as GameObject;
+        objCanvas = GameObject.Find("BackImage").gameObject as GameObject;
         objBGM = GameObject.Find("BGMManager").gameObject as GameObject;
         for (int i = 0; i < 4; i++) { objBox[i] = GameObject.Find("select" + (i + 1).ToString()).gameObject as GameObject; objBox[i].gameObject.SetActive(false); }
         for (int i = 0; i < 2; i++) { objDice[i] = GameObject.Find("Dice" + (i + 1).ToString()).gameObject as GameObject; objDice[i].gameObject.SetActive(false); }
@@ -178,7 +180,7 @@ public class ScenariosceneManager : MonoBehaviour
                 }
             }
             if (tmp.Length > 1) { if (int.TryParse(tmp[1], out tmpint)) { if (tmpint >= 0) { dice[0] = dice[0].Replace("+", "+-"); } else { dice[0] = dice[0].Replace("+-", "+"); } } }
-            if (dice[0].Contains("D")) { str[1] = "-" + dice[0]; }
+            if (dice[0].Contains("D")) { str[1] = "-" + dice[0]; } else { str[1] = dice[0]; }
             StartCoroutine(StatusChange(str));
         }
         //失敗時の減少
@@ -194,7 +196,7 @@ public class ScenariosceneManager : MonoBehaviour
                 }
             }
             if (tmp.Length > 1) { if (int.TryParse(tmp[1], out tmpint)) { if (tmpint >= 0) { dice[1] = dice[1].Replace("+", "+-"); } else { dice[1] = dice[1].Replace("+-", "+"); } } }
-            if (dice[1].Contains("D")) { str[1] = "-" + dice[1]; }
+            if (dice[1].Contains("D")) { str[1] = "-" + dice[1]; } else { str[1] = dice[1]; }
             StartCoroutine(StatusChange(str));
         }
         while (sentenceEnd == false) { yield return null; }
@@ -872,20 +874,20 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         string color1="";
         string color2="";
         if(playerHP<=0){ color1 = "<color=red>";color2 = "</color>"; }else if (playerHP < 2) { color1 = "<color=orange>";color2 = "</color>"; }else if(playerHP<=maxHP/2){ color1="<color=yellow>"; color2 = "</color>"; } else { color1 = ""; color2 = ""; }
-        objTextBox.GetComponent<Text>().text = color1 + "耐久力：" + playerHP.ToString() + " ／ " + maxHP.ToString() + color2;
+        objStatus.GetComponent<Text>().text = color1 + "耐久力：" + playerHP.ToString() + " ／ " + maxHP.ToString() + color2;
         for (int i = 0; i < 6; i++) { yield return null; }
         while (damage > 0)
         {
             playerHP--; damage--;
             if (playerHP <= 0) { color1 = "<color=red>"; color2 = "</color>"; } else if (playerHP < 2) { color1 = "<color=orange>"; color2 = "</color>"; } else if (playerHP <= maxHP/2) { color1 = "<color=yellow>"; color2 = "</color>"; } else { color1 = "";color2 = ""; }
-            objTextBox.GetComponent<Text>().text =color1 + "耐久力：" + playerHP.ToString() + " ／ " + maxHP.ToString() + color2;
+            objStatus.GetComponent<Text>().text =color1 + "耐久力：" + playerHP.ToString() + " ／ " + maxHP.ToString() + color2;
             for (int i=0;i<6;i++) { yield return null; }
         }
         while (damage < 0 && playerHP<maxHP)
         {
             playerHP++; damage++;
             if (playerHP <= 0) { color1 = "<color=red>"; color2 = "</color>"; } else if (playerHP < 2) { color1 = "<color=orange>"; color2 = "</color>"; } else if (playerHP <= maxHP / 2) { color1 = "<color=yellow>"; color2 = "</color>"; } else { color1 = ""; color2 = ""; }
-            objTextBox.GetComponent<Text>().text = color1 + "耐久力：" + playerHP.ToString() + " ／ " + maxHP.ToString() + color2;
+            objStatus.GetComponent<Text>().text = color1 + "耐久力：" + playerHP.ToString() + " ／ " + maxHP.ToString() + color2;
             for (int i = 0; i < 6; i++) { yield return null; }
         }
     }

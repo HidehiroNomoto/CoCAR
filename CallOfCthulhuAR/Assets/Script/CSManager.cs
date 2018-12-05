@@ -195,17 +195,12 @@ public class CSManager : MonoBehaviour {
 
     private IEnumerator SkillMove()
     {
-        int localchange = 0;
-        if (SceneManager.GetActiveScene().name != "CharacterSheet")
-        {
-            localchange = 600;
-        }
         if (skill == false)
         {
             skill = true;
             for (int i = 0; i <= 20; i++)
             {
-                objSkillSheet2.GetComponent<RectTransform>().localPosition = new Vector3(800 - i * 40, localchange + 80, 0);
+                objSkillSheet2.GetComponent<RectTransform>().localPosition = new Vector3(800 - i * 40, 50, 0);
                 yield return null;
             }
             if (SceneManager.GetActiveScene().name == "CharacterSheet")
@@ -220,7 +215,7 @@ public class CSManager : MonoBehaviour {
             skill = false;
             for (int i = 0; i <= 20; i++)
             {
-                objSkillSheet2.GetComponent<RectTransform>().localPosition = new Vector3(i * 40, localchange + 80, 0);
+                objSkillSheet2.GetComponent<RectTransform>().localPosition = new Vector3(i * 40, 50, 0);
                 yield return null;
             }
             yield break;
