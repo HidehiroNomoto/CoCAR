@@ -148,8 +148,9 @@ PlayerSettings:
     Standalone: com.Brainmixer.CoCARScenarioMaker
     iOS: com.Brainmixer.CoCAR
   buildNumber:
+    Standalone: 7
     iOS: 0
-  AndroidBundleVersionCode: 4
+  AndroidBundleVersionCode: 7
   AndroidMinSdkVersion: 16
   AndroidTargetSdkVersion: 0
   AndroidPreferredInstallLocation: 1
@@ -346,7 +347,7 @@ PlayerSettings:
   logObjCUncaughtExceptions: 1
   enableCrashReportAPI: 0
   cameraUsageDescription: 
-  locationUsageDescription: This data is used for only this game.
+  locationUsageDescription: This data is used for getting your position in this game.
   microphoneUsageDescription: 
   switchNetLibKey: 
   switchSocketMemoryPoolSize: 6144

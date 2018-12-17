@@ -23,7 +23,6 @@ public class CSManager : MonoBehaviour {
     private int nowMP;
     private int nowSAN;
     private bool loadedChara = false;
-    public GameObject objIllustButton;
     const int STATUSNUM = 12;
     const int SKILLNUM = 54;
     // Use this for initialization
@@ -33,7 +32,6 @@ public class CSManager : MonoBehaviour {
         if (SceneManager.GetActiveScene().name == "CharacterSheet")
         {
             GameObject.Find("InputField").GetComponent<InputField>().text = PlayerPrefs.GetString("[system]PlayerCharacterName", "");
-            if (Application.platform == RuntimePlatform.IPhonePlayer) { objIllustButton.SetActive(false); }
         }
         else
         {
