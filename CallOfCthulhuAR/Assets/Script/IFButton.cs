@@ -26,6 +26,7 @@ public class IFButton : Button {
 
     void CreateKeyboard()
     {
+        if (!(Application.platform == RuntimePlatform.Android)) return;
         if (keyboard_ != null) return;
         if (!IsInteractable ())    return;
 
@@ -38,6 +39,7 @@ public class IFButton : Button {
 
     void DestroyKeyboard()
     {
+        if (!(Application.platform == RuntimePlatform.Android)) return;
         if (!inputField.textComponent || !inputField.IsInteractable ())
             return;            
 
@@ -54,6 +56,7 @@ public class IFButton : Button {
     }
 
     void LateUpdate() {
+        if (!(Application.platform == RuntimePlatform.Android)) return;
         if (keyboard_ == null) return;
 
         inputField.text = keyboard_.text;

@@ -1050,7 +1050,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         }
         else
         {
-            objBox[0].GetComponent<RectTransform>().localPosition = new Vector3(-200, -250, 0); objBox[1].GetComponent<RectTransform>().localPosition = new Vector3(-200, -400, 0); objBox[2].GetComponent<RectTransform>().localPosition = new Vector3(200, -250, 0); objBox[3].GetComponent<RectTransform>().localPosition = new Vector3(200, -400, 0);
+            objBox[0].GetComponent<RectTransform>().localPosition = new Vector3(-200, -300, 0); objBox[1].GetComponent<RectTransform>().localPosition = new Vector3(-200, -450, 0); objBox[2].GetComponent<RectTransform>().localPosition = new Vector3(200, -300, 0); objBox[3].GetComponent<RectTransform>().localPosition = new Vector3(200, -450, 0);
             for(int i=0;i<4;i++){ objBox[i].GetComponent<RectTransform>().sizeDelta = new Vector2(300, 100); }
         }
     }
