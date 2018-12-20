@@ -25,12 +25,14 @@ public class CSManager : MonoBehaviour {
     private bool loadedChara = false;
     const int STATUSNUM = 12;
     const int SKILLNUM = 54;
+    public GameObject inputBox;
     // Use this for initialization
     void Start() {
         DefaultMake();
         SeeCharacter();
         if (SceneManager.GetActiveScene().name == "CharacterSheet")
         {
+            if (Application.platform != RuntimePlatform.Android) { inputBox.GetComponent<Text>().raycastTarget = false; }
             GameObject.Find("InputField").GetComponent<InputField>().text = PlayerPrefs.GetString("[system]PlayerCharacterName", "");
         }
         else

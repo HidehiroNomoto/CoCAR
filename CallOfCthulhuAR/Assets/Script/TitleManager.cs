@@ -8,16 +8,20 @@ public class TitleManager : MonoBehaviour {
     private int timeCount;                                           //シーン開始からのフレーム数
     public GameObject FileBrowserPrefab;
     private string[] scenarionamePath;
+    public GameObject VButtonText;
+    public GameObject VButton;
 
     // Use this for initialization
     void Start()
     {
+        if (PlayerPrefs.GetInt("[system]VMode", 0) > 0) { VButtonText.GetComponent<Text>().text = "机上プレイ\nON"; }
         //PlayerPrefs.DeleteAll();
         if (Application.platform == RuntimePlatform.WindowsPlayer ||
 Application.platform == RuntimePlatform.OSXPlayer ||
 Application.platform == RuntimePlatform.LinuxPlayer)
         {
             Screen.SetResolution(400, 800, false);
+            VButton.SetActive(false);
         }
         scenarionamePath =PlayerPrefs.GetString("[system]進行中シナリオ","").Split(new char[] {'\\' ,'.', '/'});
         if (scenarionamePath.Length >= 2) { GameObject.Find("ScenarioName").GetComponent<Text>().text = "[シナリオ名]\n" + scenarionamePath[scenarionamePath.Length - 2]; }//アドレスからフォルダ名と拡張子を排除。.と\を区切り文字にすると拡張子が最後(Length-1)にあるので、その手前の(Length-2)が欲しい文字列。
@@ -55,10 +59,23 @@ Application.platform == RuntimePlatform.LinuxPlayer)
         GetComponent<GracesGames.SimpleFileBrowser.Scripts.FileOpenManager>().GetFilePathWithKey("[system]進行中シナリオ");
     }
 
+    public void PushVButton()
+    {
+        if (PlayerPrefs.GetInt("[system]VMode", 0) == 0)
+        {
+            PlayerPrefs.SetInt("[system]VMode", 1);
+            VButtonText.GetComponent<Text>().text = "机上プレイ\nON";
+        }
+        else
+        {
+            PlayerPrefs.SetInt("[system]VMode", 0);
+            VButtonText.GetComponent<Text>().text = "机上プレイ\nOFF";
+        }
+    }
+
     public void PushMaskButton()
     {
             StartCoroutine(GetComponent<Utility>().GoToURL("https://play.google.com/store/apps/details?id=com.brainmixer.", 0f));
     }
-
 
 }

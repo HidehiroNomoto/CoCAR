@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 using System.IO;
+using System.Collections.Generic;
 
 public class ScenariosceneManager : MonoBehaviour
 {
@@ -50,10 +51,14 @@ public class ScenariosceneManager : MonoBehaviour
     private int sNum = 0;
     private bool pushButton;
     private string sectionName="";
+    public List<string> flagname=new List<string>();
+    public List<string> flagvalue = new List<string>();
+    public GameObject inputBox;
 
     // Use this for initialization
     void Start()
     {
+        if (Application.platform != RuntimePlatform.Android) { inputBox.GetComponent<Text>().raycastTarget = false; }
         _FILE_HEADER = PlayerPrefs.GetString("[system]進行中シナリオ", "");                      //ファイル場所の頭
         if (_FILE_HEADER == null || _FILE_HEADER == "") {  GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene"); }
         logNum = PlayerPrefs.GetInt("[system]最新ログ番号", 0);
@@ -81,7 +86,6 @@ public class ScenariosceneManager : MonoBehaviour
         StartCoroutine(LoadPlayerChara(PlayerPrefs.GetString("[system]CharacterIllstPath", "")));
         StartCoroutine(MainCoroutine());
     }
-
 
     // Update is called once per frame
     void Update()
@@ -124,14 +128,14 @@ public class ScenariosceneManager : MonoBehaviour
             if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Hantei:") { separateText = scenarioText[i].Substring(7).Split(','); i += Hantei(separateText[0], int.Parse(separateText[1].Replace("\r", "").Replace("\n", ""))); while (sentenceEnd == false) { yield return null; };  for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }objRollText.gameObject.SetActive(false);PlayerPrefs.Save();skipFlag2 = false;sentenceEnd = false;StartCoroutine(PushWait()); while (sentenceEnd == false) { yield return null; } continue; }
             if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Battle:") { battleText = scenarioText[i].Substring(7).Split(','); battleFlag = -1; StartCoroutine(Battle(int.Parse(battleText[0]), int.Parse(battleText[1]), int.Parse(battleText[2]), int.Parse(battleText[3]), int.Parse(battleText[4]), int.Parse(battleText[5]), int.Parse(battleText[6]),bool.Parse(battleText[7]), battleText[8], battleText[9], int.Parse(battleText[10]), int.Parse(battleText[11]), bool.Parse(battleText[12].Replace("\r", "").Replace("\n", "")))); while (battleFlag == -1) { yield return null; }; i += battleFlag;sentenceEnd = false; StartCoroutine(PushWait()); while (sentenceEnd == false) { yield return null; }continue; }
             if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "FlagBranch:") { separateText = scenarioText[i].Substring(11).Replace("\r", "").Replace("\n", "").Split(','); if (PlayerPrefs.GetInt(separateText[0], 0) < int.Parse(separateText[1]) ) { i++; }continue; }
-            if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "FlagChange:"){ separate3Text = scenarioText[i].Substring(11).Replace("\r", "").Replace("\n","").Split(','); if (separate3Text[1]=="") { FlagChange(separate3Text[0],0,int.Parse(separate3Text[2]),true); } else { FlagChange(separate3Text[0], int.Parse(separate3Text[1]), 0,false); } sentenceEnd = true; }
+            if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "FlagChange:"){separate3Text = scenarioText[i].Substring(11).Replace("\r", "").Replace("\n","").Split(','); if (flagname.Contains(separate3Text[0])) { } else { flagname.Add(separate3Text[0]); flagvalue.Add(PlayerPrefs.GetInt(separate3Text[0]).ToString()); } if (separate3Text[1] == "") { FlagChange(separate3Text[0], 0, int.Parse(separate3Text[2]), true); } else { FlagChange(separate3Text[0], int.Parse(separate3Text[1]), 0, false); }  sentenceEnd = true; }
             if (scenarioText[i].Length > 8 && scenarioText[i].Substring(0, 8) == "GetTime:"){ dt = DateTime.Now; PlayerPrefs.SetInt("[system]Month", dt.Month); PlayerPrefs.SetInt("[system]Day", dt.Day); PlayerPrefs.SetInt("[system]Hour",dt.Hour); PlayerPrefs.SetInt("[system]Minute", dt.Minute); sentenceEnd = true; }
-            if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "FlagCopy:"){ separateText = scenarioText[i].Substring(9).Split(','); PlayerPrefs.SetInt(separateText[1].Replace("\r", "").Replace("\n", ""), PlayerPrefs.GetInt(separateText[0], 0)); sentenceEnd = true; }//フラグを別名で保存する
+            if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "FlagCopy:"){ separateText = scenarioText[i].Substring(9).Split(',');if (flagname.Contains(separateText[1].Replace("\r", "").Replace("\n", ""))) { } else { flagname.Add(separateText[1].Replace("\r", "").Replace("\n", "")); flagvalue.Add(PlayerPrefs.GetInt(separateText[1].Replace("\r", "").Replace("\n", "")).ToString()); } PlayerPrefs.SetInt(separateText[1].Replace("\r", "").Replace("\n", ""), PlayerPrefs.GetInt(separateText[0], 0));  sentenceEnd = true; }//フラグを別名で保存する
             if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "Difference:"){separate3Text = scenarioText[i].Substring(11).Split(',');i+=Difference(separate3Text);continue; }
-            if (scenarioText[i].Length > 13 && scenarioText[i].Substring(0, 13) == "StatusChange:"){separateText = scenarioText[i].Substring(13).Split(',');StartCoroutine(StatusChange(separateText));while (sentenceEnd == false) { yield return null; }; sentenceEnd = false; StartCoroutine(PushWait()); }//「StatusChange:正気度,-2D6」のように①変動ステータス、②変動値（○D○または固定値どちらでもプログラム側で適切な解釈をしてくれる）
-            if (scenarioText[i].Length > 6 && scenarioText[i].Substring(0, 6) == "Input:") { StartCoroutine(InputText(scenarioText[i].Substring(6).Replace("\r", "").Replace("\n", ""))); }
-            if (scenarioText[i].Length > 6 && scenarioText[i].Substring(0, 6) == "Equal:"){ int k; separateText = scenarioText[i].Substring(6).Split(',');if (PlayerPrefs.GetString(separateText[0], "[system]NotString")=="[system]NotString" && int.TryParse(separateText[1].Replace("０", "0").Replace("１", "1").Replace("２", "2").Replace("３", "3").Replace("４", "4").Replace("５", "5").Replace("６", "6").Replace("７", "7").Replace("８", "8").Replace("９", "9").Replace("．", ".").Replace("−", "-").Replace("－", "-").Replace("\r","").Replace("\n",""), out k)) { i += Equal(PlayerPrefs.GetInt(separateText[0], 0), k); } else { i += Equal(PlayerPrefs.GetString(separateText[0], ""), separateText[1].Replace("\r", "").Replace("\n", "")); } continue; }
-            if (scenarioText[i].Length > 12 && scenarioText[i].Substring(0, 12) == "PlaceChange:") { separateText = scenarioText[i].Substring(12).Split(','); PlayerPrefs.SetFloat("[system]latitude", float.Parse(separateText[0].Replace("\r", "").Replace("\n", ""))); PlayerPrefs.SetFloat("[system]longitude", float.Parse(separateText[1].Replace("\r", "").Replace("\n", ""))); sentenceEnd = true; }
+            if (scenarioText[i].Length > 13 && scenarioText[i].Substring(0, 13) == "StatusChange:"){separateText = scenarioText[i].Substring(13).Split(',');if (flagname.Contains(SkillList(separateText[0]))) { } else { flagname.Add(SkillList(separateText[0]));flagvalue.Add(PlayerPrefs.GetInt(SkillList(separateText[0])).ToString()); }  StartCoroutine(StatusChange(separateText)); while (sentenceEnd == false) { yield return null; }; sentenceEnd = false; StartCoroutine(PushWait());  }//「StatusChange:正気度,-2D6」のように①変動ステータス、②変動値（○D○または固定値どちらでもプログラム側で適切な解釈をしてくれる）
+            if (scenarioText[i].Length > 6 && scenarioText[i].Substring(0, 6) == "Input:") { if (flagname.Contains(scenarioText[i].Substring(6).Replace("\r", "").Replace("\n", ""))) { } else { flagname.Add(scenarioText[i].Substring(6).Replace("\r", "").Replace("\n", ""));flagvalue.Add("[system]String" + PlayerPrefs.GetString(scenarioText[i].Substring(6).Replace("\r", "").Replace("\n", ""), "")); } StartCoroutine(InputText(scenarioText[i].Substring(6).Replace("\r", "").Replace("\n", ""))); }
+            if (scenarioText[i].Length > 6 && scenarioText[i].Substring(0, 6) == "Equal:"){  separateText = scenarioText[i].Substring(6).Split(','); i += Equal(PlayerPrefs.GetString(separateText[0], ""), separateText[1].Replace("\r", "").Replace("\n", ""));  continue; }
+            if (scenarioText[i].Length > 12 && scenarioText[i].Substring(0, 12) == "PlaceChange:") { if (flagname.Contains("[system]latitude") && flagname.Contains("[system]longitude")) { } else { flagname.Add("[system]latitude"); flagname.Add("[system]longitude"); } flagvalue.Add(PlayerPrefs.GetFloat("[system]latitude",0).ToString()); flagvalue.Add(PlayerPrefs.GetFloat("[system]longitude",0).ToString()); separateText = scenarioText[i].Substring(12).Split(','); PlayerPrefs.SetFloat("[system]latitude", float.Parse(separateText[0].Replace("\r", "").Replace("\n", ""))); PlayerPrefs.SetFloat("[system]longitude", float.Parse(separateText[1].Replace("\r", "").Replace("\n", "")));  sentenceEnd = true; }
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Lost:") { StartCoroutine(CharaLost()); }
             if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "SANCheck:") { separateText = scenarioText[i].Substring(9).Replace("\r","").Replace("\n","").Split(',');SANCheckFlag = -1; StartCoroutine(SANCheck(separateText)); while (SANCheckFlag == -1) { yield return null; }i += SANCheckFlag;continue; }
             if (scenarioText[i].Length > 10 && scenarioText[i].Substring(0, 10) == "FlagReset:") { FlagReset(); sentenceEnd = true; }
@@ -147,7 +151,7 @@ public class ScenariosceneManager : MonoBehaviour
 
     private bool LostCheck()
     {
-        if (PlayerPrefs.GetInt("[system]正気度ポイント", 0)<=0 || PlayerPrefs.GetInt("[system]耐久力", 0) <= 0 || PlayerPrefs.GetInt("[system]Status0", 0) <= 0 || PlayerPrefs.GetInt("[system]Status1", 0) <= 0 || PlayerPrefs.GetInt("[system]Status2", 0) <= 0 || PlayerPrefs.GetInt("[system]Status3", 0) <= 0 || PlayerPrefs.GetInt("[system]Status6", 0) <= 0 || PlayerPrefs.GetInt("[system]Status7", 0) <= 0)
+        if (PlayerPrefs.GetInt("[system]正気度ポイント", 0)<=0 || PlayerPrefs.GetInt("[system]耐久力", 0) <= 2 || PlayerPrefs.GetInt("[system]Status0", 0) <= 0 || PlayerPrefs.GetInt("[system]Status1", 0) <= 0 || PlayerPrefs.GetInt("[system]Status2", 0) <= 0 || PlayerPrefs.GetInt("[system]Status3", 0) <= 0 || PlayerPrefs.GetInt("[system]Status6", 0) <= 0 || PlayerPrefs.GetInt("[system]Status7", 0) <= 0)
         {
             StartCoroutine(CharaLost());
             return false;
@@ -225,12 +229,6 @@ public class ScenariosceneManager : MonoBehaviour
                 SANCheckFlag = 1; }
         }
         sentenceEnd = true;
-    }
-
-    private int Equal(int a,int b)
-    {
-        if (a == b) { return 0; }
-        return 1;
     }
 
     private int Equal(string a,string b)
@@ -352,8 +350,6 @@ public class ScenariosceneManager : MonoBehaviour
 
     private IEnumerator InputText(string str)
     {
-        int x;
-        string inputField2;
         selectNum = -1;
         objInput.gameObject.SetActive(true);
         InputField inputField = objInput.GetComponent<InputField>();
@@ -363,8 +359,7 @@ public class ScenariosceneManager : MonoBehaviour
         objBox[3].GetComponentInChildren<Text>().text = "決定";
         SelectBoxMake(0, 0, 0, 2, false);
         while (selectNum==-1) { yield return null; }
-        inputField2 = inputField.text.Replace("０","0").Replace("１","1").Replace("２","2").Replace("３","3").Replace("４","4").Replace("５","5").Replace("６", "6").Replace("７", "7").Replace("８", "8").Replace("９", "9").Replace("．", ".").Replace("−", "-").Replace("－", "-");
-        if (int.TryParse(inputField2, out x)) { PlayerPrefs.SetString(str, "[system]NotString"); PlayerPrefs.SetInt(str, x); }else { PlayerPrefs.SetString(str, inputField.text); }
+        PlayerPrefs.SetString(str, inputField.text);
         objInput.gameObject.SetActive(false);
         objBox[3].gameObject.SetActive(false);
         sentenceEnd = true;
@@ -1694,5 +1689,13 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
     public void PushNextGo()
     {
         pushButton = true;
+    }
+
+    public void OnApplicationQuit()
+    {
+        int x;
+        float y;
+        for(int i=0;i<flagname.Count;i++){ if (int.TryParse(flagvalue[i], out x)) { PlayerPrefs.SetInt(flagname[i],x); } else if (float.TryParse(flagvalue[i], out y)) { PlayerPrefs.SetFloat(flagname[i],y); } else { PlayerPrefs.SetString(flagname[i], flagvalue[i].Replace("[system]String",""));  } }
+        PlayerPrefs.Save();
     }
 }
