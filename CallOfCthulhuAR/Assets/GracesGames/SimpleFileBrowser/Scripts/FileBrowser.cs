@@ -214,7 +214,17 @@ namespace GracesGames.SimpleFileBrowser.Scripts {
 		// Sends event on file browser close
 		// Then destroys the file browser
 		public void CloseFileBrowser() {
-			OnFileBrowserClose();
+            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "TitleScene")
+            {
+                GameObject.Find("TitleManager").GetComponent<TitleManager>().SelectButton.SetActive(true);
+                GameObject.Find("TitleManager").GetComponent<TitleManager>().DeleteButton.SetActive(true);
+            }
+            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "CharacterSheet")
+            {
+                GameObject.Find("CSManager").GetComponent<CSManager>().selectButton.SetActive(true);
+                GameObject.Find("CSManager").GetComponent<CSManager>().readButton.SetActive(true);
+            }
+            OnFileBrowserClose();
 			Destroy();
 		}
 

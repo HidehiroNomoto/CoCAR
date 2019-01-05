@@ -127,6 +127,8 @@ namespace GracesGames.SimpleFileBrowser.Scripts
                     PlayerPrefs.SetInt("[system]幸運", tmpints[5]);
                     PlayerPrefs.SetInt("[system]初発狂", tmpints[6]);
                     PlayerPrefs.SetInt("[system]VMode", VMode);
+                    GetComponent<TitleManager>().SelectButton.SetActive(true);
+                    GetComponent<TitleManager>().DeleteButton.SetActive(true);
                     GameObject.Find("SelectText").GetComponent<Text>().text = "シナリオ選択<size=28>\n(DLしたファイルから選ぶ)</size>";
                     //if (Application.platform == RuntimePlatform.IPhonePlayer) { path = "/Documents/Inbox/" + System.IO.Path.GetFileName(path); }
                     PlayerPrefs.SetString("[system]進行中シナリオ",path);
@@ -143,6 +145,28 @@ namespace GracesGames.SimpleFileBrowser.Scripts
                 //if (Application.platform == RuntimePlatform.IPhonePlayer) { path = "/Documents/Inbox/" + System.IO.Path.GetFileName(path); }
                 PlayerPrefs.SetString("[system]CharacterIllstPath", path);
                 StartCoroutine(GetComponent<CSManager>().LoadChara(PlayerPrefs.GetString("[system]CharacterIllstPath", "")));
+            }
+            else if (GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]消去ファイル")
+            {
+                if (path.Substring(path.Length - 4) == ".png" || path.Substring(path.Length - 4) == ".PNG" || path.Substring(path.Length - 4) == ".zip" || path.Substring(path.Length - 4) == ".ZIP" || path.Substring(path.Length - 4) == ".ccs")
+                {
+                    System.IO.File.Delete(path);
+                }
+            }
+            else if (GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]CharacterSheet")
+            {
+                PlayerPrefs.SetString("[system]CharacterSheet", path);
+            }
+
+            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "TitleScene")
+            {
+                GameObject.Find("TitleManager").GetComponent<TitleManager>().SelectButton.SetActive(true);
+                GameObject.Find("TitleManager").GetComponent<TitleManager>().DeleteButton.SetActive(true);
+            }
+            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "CharacterSheet")
+            {
+                GameObject.Find("CSManager").GetComponent<CSManager>().selectButton.SetActive(true);
+                GameObject.Find("CSManager").GetComponent<CSManager>().readButton.SetActive(true);
             }
         }
 

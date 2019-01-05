@@ -1714,7 +1714,6 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
 
     private void WriteMP3(string fileName,Stream zis)
     {
-
         //書き込み先のファイルを開く
         FileStream writer = new FileStream(
             fileName , FileMode.Create,

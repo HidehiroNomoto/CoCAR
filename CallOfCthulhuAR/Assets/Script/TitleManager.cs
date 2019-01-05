@@ -10,6 +10,12 @@ public class TitleManager : MonoBehaviour {
     private string[] scenarionamePath;
     public GameObject VButtonText;
     public GameObject VButton;
+    public GameObject StartButton;
+    public GameObject CharacterButton;
+    public GameObject SelectButton;
+    public GameObject HelpButton;
+    public GameObject JumpButton;
+    public GameObject DeleteButton;
 
     // Use this for initialization
     void Start()
@@ -55,7 +61,14 @@ Application.platform == RuntimePlatform.LinuxPlayer)
 
     public void PushSelectButton()
     {
+        SelectButton.SetActive(false);DeleteButton.SetActive(false);
         GetComponent<GracesGames.SimpleFileBrowser.Scripts.FileOpenManager>().GetFilePathWithKey("[system]進行中シナリオ");
+    }
+
+    public void PushDeleteButton()
+    {
+        SelectButton.SetActive(false); DeleteButton.SetActive(false);
+        GetComponent<GracesGames.SimpleFileBrowser.Scripts.FileOpenManager>().GetFilePathWithKey("[system]消去ファイル");
     }
 
     public void PushVButton()
@@ -72,9 +85,14 @@ Application.platform == RuntimePlatform.LinuxPlayer)
         }
     }
 
-    public void PushMaskButton()
+    public void PushHelpButton()
     {
-            StartCoroutine(GetComponent<Utility>().GoToURL("https://play.google.com/store/apps/details?id=com.brainmixer.", 0f));
+        StartCoroutine(GetComponent<Utility>().GoToURL("http://www.brainmixer.net/CoCAR/CoCARguide.pdf", 0f));
+    }
+
+    public void PushJumpButton()
+    {
+            StartCoroutine(GetComponent<Utility>().GoToURL("http://www1366uj.sakura.ne.jp/public_html/scenario/upload/upload.cgi", 0f));
     }
 
 }

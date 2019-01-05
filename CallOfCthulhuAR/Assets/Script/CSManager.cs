@@ -26,6 +26,10 @@ public class CSManager : MonoBehaviour {
     const int STATUSNUM = 12;
     const int SKILLNUM = 54;
     public GameObject inputBox;
+    public GameObject selectButton;
+    public GameObject decideText;
+    public GameObject readButton;
+    public string test1;
     // Use this for initialization
     void Start() {
         DefaultMake();
@@ -34,11 +38,15 @@ public class CSManager : MonoBehaviour {
         {
             if (Application.platform != RuntimePlatform.Android) { inputBox.GetComponent<Text>().raycastTarget = false; }
             GameObject.Find("InputField").GetComponent<InputField>().text = PlayerPrefs.GetString("[system]PlayerCharacterName", "");
+            if (loadedChara == true)
+            {
+                decideText.GetComponent<Text>().text = "決定済";
+            }
         }
         else
         {
             GameObject.Find("PlayerCharacterName").GetComponent<Text>().text = PlayerPrefs.GetString("[system]PlayerCharacterName", "――");
-            objCS=GameObject.Find("CS") as GameObject;
+            objCS = GameObject.Find("CS") as GameObject;
             objCS.gameObject.SetActive(false);
         }
     }
@@ -124,7 +132,7 @@ public class CSManager : MonoBehaviour {
             objSkill[i].GetComponent<Text>().text = str2[0] + '：' + skills[i].ToString();
         }
         //キャラがいなければ作成
-        if (status[0] == 0) { MakeCharacter(); } else { loadedChara = true; }
+        if (status[0] == 0) { MakeCharacter(); } else { loadedChara = true;  }
     }
 
 
@@ -207,7 +215,14 @@ public class CSManager : MonoBehaviour {
             }
             if (SceneManager.GetActiveScene().name == "CharacterSheet")
             {
-                objBuyPoint.GetComponent<Text>().text = "残：" + buyPoint.ToString() + "P";
+                if (loadedChara == false)
+                {
+                    objBuyPoint.GetComponent<Text>().text = "残：" + buyPoint.ToString() + "P";
+                }
+                else
+                {
+                    objBuyPoint.GetComponent<Text>().text = "決定済";
+                }
             }
             yield break;
         }
@@ -358,6 +373,7 @@ public class CSManager : MonoBehaviour {
 
     private void PushRediceButtonIn()
     {
+        decideText.GetComponent<Text>().text = "";
         int adnum;
         adnum=Random.Range(0,5);
         if (adnum == 0) { Application.OpenURL("https://www.melonbooks.com/index.php?main_page=maker_affiliate_go&affiliate_id=AF0000028251"); }
@@ -404,7 +420,111 @@ public class CSManager : MonoBehaviour {
 
     public void CharacterIllustButton()
     {
+        selectButton.SetActive(false);readButton.SetActive(false);
         GetComponent<GracesGames.SimpleFileBrowser.Scripts.FileOpenManager>().GetFilePathWithKey("[system]CharacterIllstPath");
+    }
+
+    public void PushReadButton()
+    {
+        string path;
+        selectButton.SetActive(false); readButton.SetActive(false);
+        GetComponent<GracesGames.SimpleFileBrowser.Scripts.FileOpenManager>().GetFilePathWithKey("[system]CharacterSheet");
+        path = PlayerPrefs.GetString("[system]CharacterSheet", "");
+        if (path != "")
+        {
+            try
+            {
+                System.IO.StreamReader sr = new System.IO.StreamReader(path);
+                //内容をすべて読み込む
+                string text = sr.ReadToEnd();
+                //閉じる
+                sr.Close();
+                string[] texts = text.Split('\n');
+                int j = 0;
+                for (int i = 0; i < STATUSNUM; i++)
+                {
+                    int x;
+                    if (int.TryParse(texts[j], out x)) { status[i] = x; } else { status[i] = 3; }
+                    j++;
+                }
+                for (int i = 0; i < SKILLNUM; i++)
+                {
+                    int x;
+                    if (int.TryParse(texts[j], out x)) { skills[i] = x; } else { skills[i] = 0; }
+                    j++;
+                }
+                int y;
+                if (int.TryParse(texts[j], out y)) { nowHP = y; } else { nowHP = 3; }
+                j++;
+                if (int.TryParse(texts[j], out y)) { nowMP = y; } else { nowMP = 1; }
+                j++;
+                if (int.TryParse(texts[j], out y)) { nowSAN = y; } else { nowSAN = 1; }
+                j++;
+                GameObject.Find("PlayerCharacterName").GetComponent<Text>().text = texts[j];
+                GameObject.Find("InputField").GetComponent<InputField>().text = texts[j];
+                j++;
+                PlayerPrefs.SetString("[system]CharacterIllstPath", texts[j]);
+                StartCoroutine(LoadChara(PlayerPrefs.GetString("[system]CharacterIllstPath", "")));
+
+                //数字を表示に適用。
+                string[][] str = new string[STATUSNUM][];
+                string[] str2;
+                string str3 = "";
+                for (int i = 0; i < STATUSNUM; i++)
+                {
+                    str[i] = statusObj[i].GetComponent<Text>().text.Split(':');
+                    if (i == 8)
+                    {
+                        if (status[8] > 0) { str3 = "+1D"; }
+                        if (status[8] < 0) { str3 = "-1D"; }
+                    }
+                    if (i == 9) { str3 = nowHP.ToString() + "/"; }
+                    if (i == 10) { str3 = nowMP.ToString() + "/"; }
+                    if (i == 11) { str3 = nowSAN.ToString() + "/"; }
+                    statusObj[i].GetComponent<Text>().text = str[i][0] + ':' + str3 + Mathf.Abs(status[i]);
+                    if (i == 11) { statusObj[i].GetComponent<Text>().text = str[i][0] + ':' + str3 + (99 - skills[53]).ToString(); }
+                    str3 = "";
+                }
+                for (int i = 0; i < SKILLNUM; i++)
+                {
+                    str2 = objSkill[i].GetComponent<Text>().text.Split('：');
+                    objSkill[i].GetComponent<Text>().text = str2[0] + '：' + skills[i].ToString();
+                }
+                loadedChara = true;
+                decideText.GetComponent<Text>().text = "決定済";
+            }
+            catch { }
+        }
+    }
+
+    public void PushWriteButton()
+    {
+        string tmp="";
+        string filename = "";
+        for (int i = 0; i < STATUSNUM; i++)
+        {
+            tmp+= status[i] + "\n";
+        }
+        for (int i = 0; i < SKILLNUM; i++)
+        {
+            tmp+=skills[i] + "\n";
+        }
+        tmp+=nowHP+"\n";
+        tmp+=nowMP+"\n";
+        tmp+=nowSAN+"\n";
+        if (GameObject.Find("PlayerCharacterName").GetComponent<Text>().text == "") { filename = "未決定"; } else { filename = GameObject.Find("PlayerCharacterName").GetComponent<Text>().text; }
+        tmp +=filename + "\n";
+        tmp+=PlayerPrefs.GetString("[system]CharacterIllstPath", "");
+        try
+        {
+            System.IO.StreamWriter sw = new System.IO.StreamWriter(System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal) + "/" + filename + ".ccs", false);
+            test1 = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal) + "/" + filename + ".ccs";
+            //TextBox1.Textの内容を書き込む
+            sw.Write(tmp);
+            //閉じる
+            sw.Close();
+        }
+        catch { }
     }
 
     // Update is called once per frame
