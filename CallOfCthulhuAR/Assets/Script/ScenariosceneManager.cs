@@ -54,6 +54,8 @@ public class ScenariosceneManager : MonoBehaviour
     public List<string> flagname=new List<string>();
     public List<string> flagvalue = new List<string>();
     public GameObject inputBox;
+    public AudioClip mp3Dammy;
+    public string mp3tmpDir="";
 
     // Use this for initialization
     void Start()
@@ -264,6 +266,7 @@ public class ScenariosceneManager : MonoBehaviour
         int[] skills=new int[SKILLNUM];
         string[] tmpstrs=new string[2];
         int[] tmpints = new int[7];
+        int VMode = 0;
         string nowPlay;
         //残す情報を一時避難
         for(int i=0;i<STATUSNUM;i++)
@@ -284,6 +287,7 @@ public class ScenariosceneManager : MonoBehaviour
         tmpints[4] = PlayerPrefs.GetInt("[system]知識");
         tmpints[5] = PlayerPrefs.GetInt("[system]幸運");
         tmpints[6] = PlayerPrefs.GetInt("[system]初発狂");
+        VMode = PlayerPrefs.GetInt("[system]VMode");
         //セーブデータを全部消す
         PlayerPrefs.DeleteAll();
         //残す情報を再書き込み
@@ -304,6 +308,7 @@ public class ScenariosceneManager : MonoBehaviour
         PlayerPrefs.SetInt("[system]知識", tmpints[4]);
         PlayerPrefs.SetInt("[system]幸運", tmpints[5]);
         PlayerPrefs.SetInt("[system]初発狂", tmpints[6]);
+        PlayerPrefs.SetInt("[system]VMode",VMode);
         logNum = 0;
         PlayerPrefs.SetString("[system]進行中シナリオ",nowPlay);
         if (skipFlag == true) { PlayerPrefs.SetInt("[system]skipFlag", 1); }
@@ -1442,7 +1447,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             string extractFile = path;
             ICSharpCode.SharpZipLib.Zip.ZipFile zf;
             //ZipFileオブジェクトの作成
-            zf = new ICSharpCode.SharpZipLib.Zip.ZipFile(PlayerPrefs.GetString("[system]進行中シナリオ", ""));//説明に書かれてる以外のエラーが出てる。
+            zf = new ICSharpCode.SharpZipLib.Zip.ZipFile(_FILE_HEADER);//説明に書かれてる以外のエラーが出てる。
 
             zf.Password = Secret.SecretString.zipPass;
             //展開するエントリを探す
@@ -1481,7 +1486,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         }
         catch
         {
-            obj.GetComponent<Text>().text = ("エラーZIP。シナリオファイルの形式が不適合です。" + PlayerPrefs.GetString("[system]進行中シナリオ", "") + "\\" + path);
+            obj.GetComponent<Text>().text = ("エラーZIP。シナリオファイルの形式が不適合です。" + _FILE_HEADER + "\\" + path);
             GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
         }
     }
@@ -1492,7 +1497,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         // 目次ファイルが無かったら終わる
         if (!File.Exists(_FILE_HEADER))
         {
-            obj.GetComponent<Text>().text = ("エラー。シナリオファイルが見当たりません。" + PlayerPrefs.GetString("[system]進行中シナリオ", "") + "\\" + path);
+            obj.GetComponent<Text>().text = ("エラー。シナリオファイルが見当たりません。" + _FILE_HEADER + "\\" + path);
             GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
         }
         try
@@ -1502,7 +1507,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
 
             //ZipFileオブジェクトの作成
             ICSharpCode.SharpZipLib.Zip.ZipFile zf =
-                new ICSharpCode.SharpZipLib.Zip.ZipFile(PlayerPrefs.GetString("[system]進行中シナリオ", ""));
+                new ICSharpCode.SharpZipLib.Zip.ZipFile(_FILE_HEADER);
             zf.Password = Secret.SecretString.zipPass;
             //展開するエントリを探す
             ICSharpCode.SharpZipLib.Zip.ZipEntry ze = zf.GetEntry(extractFile);
@@ -1575,13 +1580,14 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                 }
 
                 //pngファイルの場合
-                if (path.Substring(path.Length - 4) == ".png")
+                if (path.Substring(path.Length - 4) == ".png" || path.Substring(path.Length - 4) == ".PNG")
                 {
                     //閲覧するZIPエントリのStreamを取得
                     Stream fs = zf.GetInputStream(ze);
                     buffer = ReadBinaryData(fs);//bufferにbyte[]になったファイルを読み込み
 
                     // 画像を取り出す
+                    /*
                     //横サイズ
                     int pos = 16;
                     int width = 0;
@@ -1595,8 +1601,44 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                     {
                         height = height * 256 + buffer[pos++];
                     }
+                    */
                     //byteからTexture2D作成
-                    Texture2D texture = new Texture2D(width, height);
+                    Texture2D texture = new Texture2D(1,1);
+                    texture.LoadImage(buffer);
+
+                    // 読み込んだ画像からSpriteを作成する
+                    scenarioGraphic[gNum] = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+                    scenarioGraphicToPath[gNum] = path;
+                    //閉じる
+                    fs.Close();
+                    gNum++;
+                }
+
+                //jpgファイルの場合
+                if (path.Substring(path.Length - 4) == ".jpg" || path.Substring(path.Length - 4) == ".JPG" || path.Substring(path.Length - 5) == ".jpeg" || path.Substring(path.Length - 5) == ".JPEG")
+                {
+                    //閲覧するZIPエントリのStreamを取得
+                    Stream fs = zf.GetInputStream(ze);
+                    buffer = ReadBinaryData(fs);//bufferにbyte[]になったファイルを読み込み
+
+                    // 画像を取り出す
+                    /*
+                    //横サイズ
+                    int pos = 16;
+                    int width = 0;
+                    for (int i = 0; i < 4; i++)
+                    {
+                        width = width * 256 + buffer[pos++];
+                    }
+                    //縦サイズ
+                    int height = 0;
+                    for (int i = 0; i < 4; i++)
+                    {
+                        height = height * 256 + buffer[pos++];
+                    }
+                    */
+                    //byteからTexture2D作成
+                    Texture2D texture = new Texture2D(1, 1);
                     texture.LoadImage(buffer);
 
                     // 読み込んだ画像からSpriteを作成する
@@ -1608,7 +1650,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                 }
 
                 //wavファイルの場合
-                if (path.Substring(path.Length - 4) == ".wav")
+                if (path.Substring(path.Length - 4) == ".wav" || path.Substring(path.Length - 4) == ".WAV")
                 {
                     //閲覧するZIPエントリのStreamを取得
                     Stream fs = zf.GetInputStream(ze);
@@ -1618,6 +1660,35 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                     fs.Close();
                     sNum++;
                 }
+
+                //mp3ファイルの場合
+                if (path.Substring(path.Length - 4) == ".mp3" || path.Substring(path.Length - 4) == ".MP3")
+                {
+                    if (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer) {
+                        //閲覧するZIPエントリのStreamを取得
+                        Stream fs = zf.GetInputStream(ze);
+                        string mp3path;
+                        if (Directory.Exists(Path.GetDirectoryName(_FILE_HEADER) + "/" + "CoCARtmpdir"))
+                        {
+                        }
+                        else
+                        {
+                            DirectoryInfo di = Directory.CreateDirectory(Path.GetDirectoryName(_FILE_HEADER) + "/" + "CoCARtmpdir");
+                        }
+                        mp3tmpDir = Path.GetDirectoryName(_FILE_HEADER) + "/" + "CoCARtmpdir";
+                        mp3path = mp3tmpDir + "/" + path;
+                        WriteMP3(mp3path, fs);
+                        StartCoroutine(ReadMP3(mp3path));
+                        //閉じる
+                        fs.Close();
+                    }
+                    else
+                    {
+                        scenarioAudio[sNum] = mp3Dammy;
+                    }
+                    sNum++;
+                }
+
             }
             else
             {
@@ -1638,6 +1709,35 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         {
             st.CopyTo(ms);
             return ms.ToArray();
+        }
+    }
+
+    private void WriteMP3(string fileName,Stream zis)
+    {
+
+        //書き込み先のファイルを開く
+        FileStream writer = new FileStream(
+            fileName , FileMode.Create,
+            FileAccess.Write);
+        //展開するファイルを読み込む
+        byte[] buffer = new byte[2048];
+        int len;
+        while ((len = zis.Read(buffer, 0, buffer.Length)) > 0)
+        {
+            //ファイルに書き込む
+            writer.Write(buffer, 0, len);
+        }
+        //閉じる
+        writer.Close();
+    }
+
+    private IEnumerator ReadMP3(string fileName)
+    {
+        using (WWW www = new WWW("file://" + fileName))
+        {
+            //読み込み完了まで待機
+            yield return www;
+             scenarioAudio[sNum]= www.GetAudioClip(true, true);
         }
     }
 
@@ -1695,7 +1795,8 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
     {
         int x;
         float y;
-        for(int i=0;i<flagname.Count;i++){ if (int.TryParse(flagvalue[i], out x)) { PlayerPrefs.SetInt(flagname[i],x); } else if (float.TryParse(flagvalue[i], out y)) { PlayerPrefs.SetFloat(flagname[i],y); } else { PlayerPrefs.SetString(flagname[i], flagvalue[i].Replace("[system]String",""));  } }
+        try { Directory.Delete(mp3tmpDir, true); } catch { }
+        for (int i=0;i<flagname.Count;i++){ if (int.TryParse(flagvalue[i], out x)) { PlayerPrefs.SetInt(flagname[i],x); } else if (float.TryParse(flagvalue[i], out y)) { PlayerPrefs.SetFloat(flagname[i],y); } else { PlayerPrefs.SetString(flagname[i], flagvalue[i].Replace("[system]String",""));  } }
         PlayerPrefs.Save();
     }
 }

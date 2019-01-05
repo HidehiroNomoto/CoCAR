@@ -45,7 +45,10 @@ public class MapScene : MonoBehaviour
         if (VMode == 0) { VStick.SetActive(false); } else { stick = VStick.GetComponent<FixedJoystick>(); }
         zoomPow = Math.Pow(2, zoom);
         GetComponent<Utility>().BGMFadeIn(2);
-        GetComponent<Utility>().BGMPlay(Resources.Load<AudioClip>("MapBGM"));
+        if ((VMode == 0) && (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer))
+        { GetComponent<Utility>().BGMStop(); }
+        else
+        { GetComponent<Utility>().BGMPlay(Resources.Load<AudioClip>("MapBGM")); }
         _FILE_HEADER = PlayerPrefs.GetString("[system]進行中シナリオ","");                      //ファイル場所の頭
         if (_FILE_HEADER==null || _FILE_HEADER == "") { GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene"); }
         longitude=PlayerPrefs.GetFloat("[system]longitude",135.768738f); latitude = PlayerPrefs.GetFloat("[system]latitude", 35.010348f);

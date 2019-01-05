@@ -15,7 +15,6 @@ public class TitleManager : MonoBehaviour {
     void Start()
     {
         if (PlayerPrefs.GetInt("[system]VMode", 0) > 0) { VButtonText.GetComponent<Text>().text = "机上プレイ\nON"; }
-        //PlayerPrefs.DeleteAll();
         if (Application.platform == RuntimePlatform.WindowsPlayer ||
 Application.platform == RuntimePlatform.OSXPlayer ||
 Application.platform == RuntimePlatform.LinuxPlayer)
