@@ -12,9 +12,11 @@ public class Utility : MonoBehaviour {
     public bool selectFlag;                                     //選択待ち中、どれかが選択されたか否かの判定
 
     // Use this for initialization
-    void Start () {
+    void Start()
+    {
         objBGM = GameObject.Find("BGMManager").gameObject as GameObject;
         pushObjectFlag = false;
+        if (Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.WindowsEditor) { GameObject.Find("TweetButton").SetActive(false); }
     }
 
 	
@@ -145,7 +147,16 @@ public class Utility : MonoBehaviour {
     {
         string name;
         if (PlayerPrefs.GetString("[system]ScenarioName", "") == "") { name = ""; } else { name = "シナリオ/" + PlayerPrefs.GetString("[system]ScenarioName", ""); }
-        SocialConnector.SocialConnector.Share("[iPhone/Android用アプリ『クトゥルフ神話AR』]" + name, "http://www.brainmixer.net/CoCAR/index.html", null);
+        StartCoroutine(TweetCoroutine(name));
+    }
+
+    private IEnumerator TweetCoroutine(string name)
+    {
+        ScreenCapture.CaptureScreenshot("CoCARcapture.png");
+        yield return null;
+        string imagePath = Application.persistentDataPath + "/CoCARcapture.png";
+
+        SocialConnector.SocialConnector.Share("[iPhone/Android用アプリ『クトゥルフ神話AR』]" + name, "http://www.brainmixer.net/CoCAR/index.html", imagePath);
     }
 
 }

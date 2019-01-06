@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-using UnityEngine.Advertisements;
 
 public class CSManager : MonoBehaviour {
     private int[] status = new int[STATUSNUM];
@@ -29,32 +28,16 @@ public class CSManager : MonoBehaviour {
     public GameObject selectButton;
     public GameObject decideText;
     public GameObject readButton;
-    public string test1;
+    private string[] mapData;
+    string _FILE_HEADER;
+    List<GameObject> objFI = new List<GameObject>();
+    public GameObject parentObject;
+    public GameObject objFreeIvent;
+    public GameObject objFIField;
+    public GameObject objFIOpenButton;
+
     // Use this for initialization
     void Start() {
-        DefaultMake();
-        SeeCharacter();
-        if (SceneManager.GetActiveScene().name == "CharacterSheet")
-        {
-            if (Application.platform != RuntimePlatform.Android) { inputBox.GetComponent<Text>().raycastTarget = false; }
-            GameObject.Find("InputField").GetComponent<InputField>().text = PlayerPrefs.GetString("[system]PlayerCharacterName", "");
-            if (loadedChara == true)
-            {
-                decideText.GetComponent<Text>().text = "決定済";
-            }
-        }
-        else
-        {
-            GameObject.Find("PlayerCharacterName").GetComponent<Text>().text = PlayerPrefs.GetString("[system]PlayerCharacterName", "――");
-            objCS = GameObject.Find("CS") as GameObject;
-            objCS.gameObject.SetActive(false);
-        }
-    }
-
-
-    public void DefaultMake()
-    {
-        skill = false;
         objSkillSheet1 = GameObject.Find("SkillSheet1/2").gameObject as GameObject;
         objSkillSheet2 = GameObject.Find("SkillSheet2/2").gameObject as GameObject;
         objChara = GameObject.Find("CharacterImage").gameObject as GameObject;
@@ -75,6 +58,36 @@ public class CSManager : MonoBehaviour {
         {
             objSkill[i] = GameObject.Find("2Skill" + (i - SKILLNUM / 2 + 1).ToString()).gameObject as GameObject;
         }
+        objCS = GameObject.Find("CS") as GameObject;
+        DefaultMake();
+        SeeCharacter();
+        if (SceneManager.GetActiveScene().name == "CharacterSheet")
+        {
+            if (Application.platform != RuntimePlatform.Android) { inputBox.GetComponent<Text>().raycastTarget = false; }
+            GameObject.Find("InputField").GetComponent<InputField>().text = PlayerPrefs.GetString("[system]PlayerCharacterName", "");
+            if (loadedChara == true)
+            {
+                decideText.GetComponent<Text>().text = "決定済";
+            }
+        }
+        else
+        {
+            _FILE_HEADER = PlayerPrefs.GetString("[system]進行中シナリオ", "");
+            GameObject.Find("PlayerCharacterName").GetComponent<Text>().text = PlayerPrefs.GetString("[system]PlayerCharacterName", "――");
+            objCS.gameObject.SetActive(false);
+            if (SceneManager.GetActiveScene().name == "MapScene")
+            {
+                objFIOpenButton.SetActive(false);
+                GetFreeIvent("[system]mapdata[system].txt");
+            }
+            objFIField.SetActive(false);
+        }
+    }
+
+
+    public void DefaultMake()
+    {
+        skill = false;
         StartCoroutine(LoadChara(PlayerPrefs.GetString("[system]CharacterIllstPath", "")));
 
         //技能初期値設定
@@ -400,8 +413,12 @@ public class CSManager : MonoBehaviour {
         {
             if (SceneManager.GetActiveScene().name == "NovelScene")
             {
- 
+
                 GameObject.Find("NovelManager").gameObject.GetComponent<ScenariosceneManager>().backLogCSFlag = true;
+            }
+            else if(SceneManager.GetActiveScene().name == "MapScene")
+            {
+                objFIOpenButton.SetActive(true);
             }
             objCS.gameObject.SetActive(true);
             transform.GetChild(0).gameObject.GetComponent<Text>().text = "戻る";
@@ -412,6 +429,10 @@ public class CSManager : MonoBehaviour {
             {
                 GameObject.Find("NovelManager").gameObject.GetComponent<ScenariosceneManager>().backLogCSFlag = false;
                
+            }
+            else if (SceneManager.GetActiveScene().name == "MapScene")
+            {
+                objFIOpenButton.SetActive(false);
             }
             objCS.gameObject.SetActive(false);
             transform.GetChild(0).gameObject.GetComponent<Text>().text = "Character\nsheet";
@@ -518,7 +539,6 @@ public class CSManager : MonoBehaviour {
         try
         {
             System.IO.StreamWriter sw = new System.IO.StreamWriter(System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal) + "/" + filename + ".ccs", false);
-            test1 = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal) + "/" + filename + ".ccs";
             //TextBox1.Textの内容を書き込む
             sw.Write(tmp);
             //閉じる
@@ -526,6 +546,114 @@ public class CSManager : MonoBehaviour {
         }
         catch { }
     }
+
+    //startのタイミングでフリーイベントの一覧表を取得し、条件を満たしているものはボタンを作成（Mapシーン限定）
+    private void GetFreeIvent(string path)
+    {
+        try
+        {
+            //閲覧するエントリ
+            string extractFile = path;
+
+            //ZipFileオブジェクトの作成
+            ICSharpCode.SharpZipLib.Zip.ZipFile zf =
+                new ICSharpCode.SharpZipLib.Zip.ZipFile(PlayerPrefs.GetString("[system]進行中シナリオ", ""));
+            zf.Password = Secret.SecretString.zipPass;
+            //展開するエントリを探す
+            ICSharpCode.SharpZipLib.Zip.ZipEntry ze = zf.GetEntry(extractFile);
+
+            if (ze != null)
+            {
+                //閲覧するZIPエントリのStreamを取得
+                System.IO.Stream reader = zf.GetInputStream(ze);
+                //文字コードを指定してStreamReaderを作成
+                System.IO.StreamReader sr = new System.IO.StreamReader(
+                    reader, System.Text.Encoding.GetEncoding("UTF-8"));
+                // テキストを取り出す
+                string text = sr.ReadToEnd();
+                text = text.Replace("[system]任意イベント", "[system]任意イベントCS");
+                // 読み込んだ目次テキストファイルからstring配列を作成する
+                mapData = text.Split('\n');
+                //閉じる
+                sr.Close();
+                reader.Close();
+            }
+            else
+            {
+                SceneManager.LoadScene("TitleScene");
+            }
+            //閉じる
+            zf.Close();
+        }
+        catch
+        {
+        }
+    }
+
+
+    public void PushFreeIventButton()
+    {
+        if (objFIField.activeSelf == true)
+        {
+            objFIField.SetActive(false);
+        }
+        else
+        {
+            objFIField.SetActive(true);
+            PlayerPrefs.SetInt("[system]任意イベントCS", 1);
+            System.DateTime dt;
+            dt = System.DateTime.UtcNow;
+            dt = dt.AddHours(9);//アンドロイドがローカル時間周りで妙な動きをするので、UTCで出してからJSTに変換してやる。
+            double latitude = GameObject.Find("MapSceneManager").GetComponent<MapScene>().latitude;
+            double longitude = GameObject.Find("MapSceneManager").GetComponent<MapScene>().longitude;
+            for (int i = 0; i < objFI.Count; i++) { Destroy(objFI[i]); }
+            objFI.Clear();
+            for (int i = 0; i < mapData.Length; i++)
+            {
+                bool tempBool = false;
+                string[] dataFlag;
+                string[] data;
+                if (mapData[i] == "[END]") { break; }
+                data = mapData[i].Replace("\r", "").Replace("\n", "").Split(',');
+                dataFlag = data[10].Replace("　", " ").Split(' ');
+                for (int j = 0; j < dataFlag.Length; j++) { if (dataFlag[j] != "" && PlayerPrefs.GetInt(dataFlag[j], 0) <= 0) { tempBool = true; } }
+                if (data[5] != "" && data[9] != "" && int.Parse(data[9]) < int.Parse(data[5])) { if (dt.Minute >= int.Parse(data[5])) { data[9] = (int.Parse(data[9]) + 60).ToString(); if (data[8] != "") { data[8] = (int.Parse(data[8]) - 1).ToString(); } } else { data[5] = (int.Parse(data[5]) - 60).ToString(); if (data[4] != "") { data[4] = (int.Parse(data[4]) + 1).ToString(); } } }
+                if (data[4] != "" && data[8] != "" && int.Parse(data[8]) < int.Parse(data[4])) { if (dt.Hour >= int.Parse(data[4])) { data[8] = (int.Parse(data[8]) + 24).ToString(); if (data[7] != "") { data[7] = (int.Parse(data[7]) - 1).ToString(); } } else { data[4] = (int.Parse(data[4]) - 24).ToString(); if (data[3] != "") { data[3] = (int.Parse(data[3]) + 1).ToString(); } } }
+                if (data[3] != "" && data[7] != "" && int.Parse(data[7]) < int.Parse(data[3])) { if (dt.Day >= int.Parse(data[3])) { data[7] = (int.Parse(data[7]) + 31).ToString(); if (data[6] != "") { data[6] = (int.Parse(data[6]) - 1).ToString(); } } else { data[3] = (int.Parse(data[3]) - 31).ToString(); if (data[4] != "") { data[2] = (int.Parse(data[2]) + 1).ToString(); } } }
+                if (data[2] != "" && data[6] != "" && int.Parse(data[6]) < int.Parse(data[2])) { if (dt.Month >= int.Parse(data[2])) { data[6] = (int.Parse(data[6]) + 12).ToString(); } else { data[2] = (int.Parse(data[2]) - 12).ToString(); } }
+
+                if ((data[0] == "" || double.Parse(data[0]) > latitude - 0.0005 && double.Parse(data[0]) < latitude + 0.0005) &&
+                    (data[1] == "" || double.Parse(data[1]) > longitude - 0.0005 && double.Parse(data[1]) < longitude + 0.0005) &&
+                    (data[2] == "" || (int.Parse(data[2]) <= dt.Month)) &&
+                    (data[3] == "" || (int.Parse(data[3]) <= dt.Day)) &&
+                    (data[4] == "" || (int.Parse(data[4]) <= dt.Hour)) &&
+                    (data[5] == "" || (int.Parse(data[5]) <= dt.Minute)) &&
+                    (data[6] == "" || (int.Parse(data[6]) >= dt.Month)) &&
+                    (data[7] == "" || (int.Parse(data[7]) >= dt.Day)) &&
+                    (data[8] == "" || (int.Parse(data[8]) >= dt.Hour)) &&
+                    (data[9] == "" || (int.Parse(data[9]) >= dt.Minute)) &&
+                    (tempBool == false) &&
+                    (PlayerPrefs.GetInt(data[11].Substring(0, data[11].Length - 4) + "Flag", 0) == 0))
+                {
+                    //ボタン追加
+                    //イベントをボタンとして一覧に放り込む。
+                    for (int j = 0; j < mapData.Length; j++)
+                    {
+                        string iventName = data[11].Substring(0, data[11].Length - 4);
+                        objFI.Add(Instantiate(objFreeIvent) as GameObject);
+                        objFI[j].transform.SetParent(parentObject.transform, false);
+                        objFI[j].GetComponentInChildren<Text>().text = iventName;
+                        objFI[j].GetComponent<FIButton>().buttonName = iventName + ".txt";
+                        objFI[j].GetComponent<FIButton>().latitude = latitude;
+                        objFI[j].GetComponent<FIButton>().longitude = longitude;
+                    }
+                    return;
+                }
+            }
+        }
+    }
+
+
 
     // Update is called once per frame
     void Update () {

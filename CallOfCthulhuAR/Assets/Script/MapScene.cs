@@ -10,15 +10,15 @@ public class MapScene : MonoBehaviour
     Sprite mapImage;
     private int width = 640;
     private int height = 640;
-    private double longitude;
-    private double latitude;
+    public double longitude;
+    public double latitude;
     private double longitudeMap;
     private double latitudeMap;
     private int zoom = 16;
     private float targetX=0;
     private float targetY=0;
     private string[] mapData;
-    private bool sceneChange = false;
+    public bool sceneChange = false;
     private bool mapLoad = false;
     public GameObject mapImageObj;
     GameObject obj;
