@@ -114,7 +114,7 @@ public class MapScene : MonoBehaviour
                     (PlayerPrefs.GetInt(data[11].Substring(0, data[11].Length - 4) + "Flag", 0) == 0))
                 {
                     objBGM.GetComponent<BGMManager>().chapterName = data[11];
-                    objTime.GetComponent<Text>().text = "<color=red>[★イベント発生]</color>";
+                    objTime.GetComponent<Text>().text = "　　　<color=red>[★イベント発生]</color>";
                     sceneChange = true;
                     if ((Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer) && (!Input.location.isEnabledByUser)) { Input.location.Stop(); }
                     PlayerPrefs.SetFloat("[system]longitude", (float)longitude - 0.0011f); PlayerPrefs.SetFloat("[system]latitude", (float)latitude);
@@ -123,7 +123,7 @@ public class MapScene : MonoBehaviour
                 }
             }
         }
-        if (sceneChange == false) { objTime.GetComponent<Text>().text = dt.ToString("MM/dd  HH:mm") + "\n" + "<size=48>緯度：" + Math.Round(latitude, 4).ToString() + "　,　経度：" + Math.Round(longitude, 4).ToString().ToString() + "</size>"; }
+        if (sceneChange == false) { objTime.GetComponent<Text>().text ="　　　" + dt.ToString("MM/dd  HH:mm") + "\n" + "<size=48>緯度：" + Math.Round(latitude, 4).ToString() + "　,　経度：" + Math.Round(longitude, 4).ToString().ToString() + "</size>"; }
     }
 
     void GetPos()

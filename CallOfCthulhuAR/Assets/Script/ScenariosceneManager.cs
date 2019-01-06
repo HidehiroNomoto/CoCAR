@@ -874,20 +874,20 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         string color1="";
         string color2="";
         if(playerHP<=0){ color1 = "<color=red>";color2 = "</color>"; }else if (playerHP < 2) { color1 = "<color=orange>";color2 = "</color>"; }else if(playerHP<=maxHP/2){ color1="<color=yellow>"; color2 = "</color>"; } else { color1 = ""; color2 = ""; }
-        objStatus.GetComponent<Text>().text = color1 + "耐久力：" + playerHP.ToString() + " ／ " + maxHP.ToString() + color2;
+        objStatus.GetComponent<Text>().text = color1 + "　　耐久力：" + playerHP.ToString() + " ／ " + maxHP.ToString() + color2;
         for (int i = 0; i < 6; i++) { yield return null; }
         while (damage > 0)
         {
             playerHP--; damage--;
             if (playerHP <= 0) { color1 = "<color=red>"; color2 = "</color>"; } else if (playerHP < 2) { color1 = "<color=orange>"; color2 = "</color>"; } else if (playerHP <= maxHP/2) { color1 = "<color=yellow>"; color2 = "</color>"; } else { color1 = "";color2 = ""; }
-            objStatus.GetComponent<Text>().text =color1 + "耐久力：" + playerHP.ToString() + " ／ " + maxHP.ToString() + color2;
+            objStatus.GetComponent<Text>().text =color1 + "　　耐久力：" + playerHP.ToString() + " ／ " + maxHP.ToString() + color2;
             for (int i=0;i<6;i++) { yield return null; }
         }
         while (damage < 0 && playerHP<maxHP)
         {
             playerHP++; damage++;
             if (playerHP <= 0) { color1 = "<color=red>"; color2 = "</color>"; } else if (playerHP < 2) { color1 = "<color=orange>"; color2 = "</color>"; } else if (playerHP <= maxHP / 2) { color1 = "<color=yellow>"; color2 = "</color>"; } else { color1 = ""; color2 = ""; }
-            objStatus.GetComponent<Text>().text = color1 + "耐久力：" + playerHP.ToString() + " ／ " + maxHP.ToString() + color2;
+            objStatus.GetComponent<Text>().text = color1 + "　　耐久力：" + playerHP.ToString() + " ／ " + maxHP.ToString() + color2;
             for (int i = 0; i < 6; i++) { yield return null; }
         }
     }

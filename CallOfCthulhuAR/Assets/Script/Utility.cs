@@ -140,4 +140,12 @@ public class Utility : MonoBehaviour {
         yield return new WaitForSeconds(waitTime);
         Application.OpenURL(URL);
     }
+
+    public void PushTweetButton()
+    {
+        string name;
+        if (PlayerPrefs.GetString("[system]ScenarioName", "") == "") { name = ""; } else { name = "シナリオ/" + PlayerPrefs.GetString("[system]ScenarioName", ""); }
+        SocialConnector.SocialConnector.Share("[iPhone/Android用アプリ『クトゥルフ神話AR』]" + name, "http://www.brainmixer.net/CoCAR/index.html", null);
+    }
+
 }
