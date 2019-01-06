@@ -79,8 +79,8 @@ public class CSManager : MonoBehaviour {
             {
                 objFIOpenButton.SetActive(false);
                 GetFreeIvent("[system]mapdata[system].txt");
-            }
-            objFIField.SetActive(false);
+                objFIField.SetActive(false);
+            }           
         }
     }
 
@@ -433,6 +433,7 @@ public class CSManager : MonoBehaviour {
             else if (SceneManager.GetActiveScene().name == "MapScene")
             {
                 objFIOpenButton.SetActive(false);
+                objFIField.SetActive(false);
             }
             objCS.gameObject.SetActive(false);
             transform.GetChild(0).gameObject.GetComponent<Text>().text = "Character\nsheet";
@@ -608,6 +609,7 @@ public class CSManager : MonoBehaviour {
             double longitude = GameObject.Find("MapSceneManager").GetComponent<MapScene>().longitude;
             for (int i = 0; i < objFI.Count; i++) { Destroy(objFI[i]); }
             objFI.Clear();
+            int k = 0;
             for (int i = 0; i < mapData.Length; i++)
             {
                 bool tempBool = false;
@@ -636,18 +638,14 @@ public class CSManager : MonoBehaviour {
                     (PlayerPrefs.GetInt(data[11].Substring(0, data[11].Length - 4) + "Flag", 0) == 0))
                 {
                     //ボタン追加
-                    //イベントをボタンとして一覧に放り込む。
-                    for (int j = 0; j < mapData.Length; j++)
-                    {
                         string iventName = data[11].Substring(0, data[11].Length - 4);
                         objFI.Add(Instantiate(objFreeIvent) as GameObject);
-                        objFI[j].transform.SetParent(parentObject.transform, false);
-                        objFI[j].GetComponentInChildren<Text>().text = iventName;
-                        objFI[j].GetComponent<FIButton>().buttonName = iventName + ".txt";
-                        objFI[j].GetComponent<FIButton>().latitude = latitude;
-                        objFI[j].GetComponent<FIButton>().longitude = longitude;
-                    }
-                    return;
+                        objFI[k].transform.SetParent(parentObject.transform, false);
+                        objFI[k].GetComponentInChildren<Text>().text = iventName;
+                        objFI[k].GetComponent<FIButton>().buttonName = iventName + ".txt";
+                        objFI[k].GetComponent<FIButton>().latitude = latitude;
+                        objFI[k].GetComponent<FIButton>().longitude = longitude;
+                    k++;
                 }
             }
         }

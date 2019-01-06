@@ -35,7 +35,7 @@ public class FIButton : MonoBehaviour
         objMapSceneManager.GetComponent<MapScene>().sceneChange = true;
     if ((Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer) && (!Input.location.isEnabledByUser)) { Input.location.Stop(); }
     PlayerPrefs.SetFloat("[system]longitude", (float)longitude); PlayerPrefs.SetFloat("[system]latitude", (float)latitude);
-    GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "NovelScene");
+        objMapSceneManager.GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "NovelScene");
     return;
     }
 
