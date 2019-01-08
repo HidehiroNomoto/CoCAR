@@ -539,11 +539,22 @@ public class CSManager : MonoBehaviour {
         tmp+=PlayerPrefs.GetString("[system]CharacterIllstPath", "");
         try
         {
-            System.IO.StreamWriter sw = new System.IO.StreamWriter(System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal) + "/" + filename + ".ccs", false);
-            //TextBox1.Textの内容を書き込む
-            sw.Write(tmp);
-            //閉じる
-            sw.Close();
+            if (Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer)
+            {
+                System.IO.StreamWriter sw = new System.IO.StreamWriter(System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal) + "/" + filename + ".ccs", false);
+                //TextBox1.Textの内容を書き込む
+                sw.Write(tmp);
+                //閉じる
+                sw.Close();
+            }
+            else
+            {
+                System.IO.StreamWriter sw = new System.IO.StreamWriter(Application.persistentDataPath + "/" + filename + ".ccs", false);
+                //TextBox1.Textの内容を書き込む
+                sw.Write(tmp);
+                //閉じる
+                sw.Close();
+            }
         }
         catch { }
     }
@@ -638,11 +649,10 @@ public class CSManager : MonoBehaviour {
                     (PlayerPrefs.GetInt(data[11].Substring(0, data[11].Length - 4) + "Flag", 0) == 0))
                 {
                     //ボタン追加
-                        string iventName = data[11].Substring(0, data[11].Length - 4);
                         objFI.Add(Instantiate(objFreeIvent) as GameObject);
                         objFI[k].transform.SetParent(parentObject.transform, false);
-                        objFI[k].GetComponentInChildren<Text>().text = iventName;
-                        objFI[k].GetComponent<FIButton>().buttonName = iventName + ".txt";
+                        objFI[k].GetComponentInChildren<Text>().text = data[11].Substring(8,data[11].Length - 12);
+                        objFI[k].GetComponent<FIButton>().buttonName = data[11];
                         objFI[k].GetComponent<FIButton>().latitude = latitude;
                         objFI[k].GetComponent<FIButton>().longitude = longitude;
                     k++;

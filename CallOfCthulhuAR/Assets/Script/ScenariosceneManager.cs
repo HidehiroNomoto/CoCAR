@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using System;
 using System.IO;
 using System.Collections.Generic;
+using UnityEngine.Networking;
 
 public class ScenariosceneManager : MonoBehaviour
 {
@@ -55,7 +56,7 @@ public class ScenariosceneManager : MonoBehaviour
     public List<string> flagvalue = new List<string>();
     public GameObject inputBox;
     public AudioClip mp3Dammy;
-    public string mp3tmpDir="";
+    public List<string> tmpMP3Path = new List<string>();
 
     // Use this for initialization
     void Start()
@@ -1441,8 +1442,8 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
         }
 
-        try
-        {
+        //try
+        //{
             //閲覧するエントリ
             string extractFile = path;
             ICSharpCode.SharpZipLib.Zip.ZipFile zf;
@@ -1483,12 +1484,12 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             }
             //閉じる
             zf.Close();
-        }
-        catch
-        {
-            obj.GetComponent<Text>().text = ("エラーZIP。シナリオファイルの形式が不適合です。" + _FILE_HEADER + "\\" + path);
-            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
-        }
+        //}
+        //catch
+        //{
+        //    obj.GetComponent<Text>().text = ("エラーZIP。シナリオファイルの形式が不適合です。" + _FILE_HEADER + "\\" + path);
+        //    GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
+        //}
     }
 
     //引数pathのみのバージョン。テキストデータの読み込みのみ対応。（スクリプトからの直呼び出し『NextFile:』用）
@@ -1500,8 +1501,8 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             obj.GetComponent<Text>().text = ("エラー。シナリオファイルが見当たりません。" + _FILE_HEADER + "\\" + path);
             GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
         }
-        try
-        {
+        //try
+        //{
             //閲覧するエントリ
             string extractFile = path;
 
@@ -1536,12 +1537,12 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             }
             //閉じる
             zf.Close();
-        }
-        catch
-        {
-            obj.GetComponent<Text>().text = ("エラー。シナリオファイルの形式が不適合です。" + _FILE_HEADER + "\\" + path);
-            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
-        }
+        //}
+        //catch
+        //{
+        //    obj.GetComponent<Text>().text = ("エラー。シナリオファイルの形式が不適合です。" + _FILE_HEADER + "\\" + path);
+        //    GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
+        //}
 
     }
 
@@ -1550,8 +1551,8 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         byte[] buffer;
         if (path.Replace("\r", "").Replace("\n", "") == "g") { gNum++;return; }
         if (path.Replace("\r", "").Replace("\n", "") == "s") { sNum++;return; }
-        try
-        {
+        //try
+        //{
             //閲覧するエントリ
             string extractFile = path;
             //展開するエントリを探す
@@ -1667,24 +1668,10 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                     if (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer) {
                         //閲覧するZIPエントリのStreamを取得
                         Stream fs = zf.GetInputStream(ze);
-                        string mp3path;
-                        if (Directory.Exists(Path.GetDirectoryName(_FILE_HEADER) + "/" + "CoCARtmpdir"))
-                        {
-                        }
-                        else
-                        {
-                            DirectoryInfo di = Directory.CreateDirectory(Path.GetDirectoryName(_FILE_HEADER) + "/" + "CoCARtmpdir");
-                        }
-                        mp3tmpDir = Path.GetDirectoryName(_FILE_HEADER) + "/" + "CoCARtmpdir";
-                        mp3path = mp3tmpDir + "/" + path;
-                        WriteMP3(mp3path, fs);
-                        StartCoroutine(ReadMP3(mp3path));
-                        //閉じる
-                        fs.Close();
+                        ReadMP3(fs);
                     }
                     else
                     {
-                        scenarioAudio[sNum] = mp3Dammy;
                     }
                     sNum++;
                 }
@@ -1694,12 +1681,12 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             {
                 GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
             }
-        }
-        catch
-        {
-            obj.GetComponent<Text>().text = ("エラー。シナリオファイルの形式が不適合です。" + _FILE_HEADER + "\\" + path);
-            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
-        }
+        //}
+        //catch
+        //{
+        //    obj.GetComponent<Text>().text = ("エラー。シナリオファイルの形式が不適合です。" + _FILE_HEADER + "\\" + path);
+        //    GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
+        //}
     }
 
     // ストリームからデータを読み込み、バイト配列に格納
@@ -1712,32 +1699,11 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         }
     }
 
-    private void WriteMP3(string fileName,Stream zis)
+    private byte[] ReadMP3(Stream st)
     {
-        //書き込み先のファイルを開く
-        FileStream writer = new FileStream(
-            fileName , FileMode.Create,
-            FileAccess.Write);
-        //展開するファイルを読み込む
-        byte[] buffer = new byte[2048];
-        int len;
-        while ((len = zis.Read(buffer, 0, buffer.Length)) > 0)
-        {
-            //ファイルに書き込む
-            writer.Write(buffer, 0, len);
-        }
-        //閉じる
-        writer.Close();
-    }
+        byte[] wavByte;
 
-    private IEnumerator ReadMP3(string fileName)
-    {
-        using (WWW www = new WWW("file://" + fileName))
-        {
-            //読み込み完了まで待機
-            yield return www;
-             scenarioAudio[sNum]= www.GetAudioClip(true, true);
-        }
+        return wavByte;
     }
 
     //画像サイズに合わせて立ち絵サイズを変更
@@ -1794,7 +1760,6 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
     {
         int x;
         float y;
-        try { Directory.Delete(mp3tmpDir, true); } catch { }
         for (int i=0;i<flagname.Count;i++){ if (int.TryParse(flagvalue[i], out x)) { PlayerPrefs.SetInt(flagname[i],x); } else if (float.TryParse(flagvalue[i], out y)) { PlayerPrefs.SetFloat(flagname[i],y); } else { PlayerPrefs.SetString(flagname[i], flagvalue[i].Replace("[system]String",""));  } }
         PlayerPrefs.Save();
     }

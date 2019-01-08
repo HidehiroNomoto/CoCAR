@@ -28,14 +28,6 @@ public class Utility : MonoBehaviour {
 
     public IEnumerator LoadSceneCoroutine(string scene)
     {
-        if (SceneManager.GetActiveScene().name == "NovelScene")
-        {
-            string deletemp3 = GameObject.Find("NovelManager").GetComponent<ScenariosceneManager>().mp3tmpDir;
-            if (deletemp3 != null && deletemp3 != "")
-            {
-                try { System.IO.Directory.Delete(deletemp3, true); } catch { }
-            }
-        }
         SceneManager.LoadScene(scene);
         yield return null;
     }
