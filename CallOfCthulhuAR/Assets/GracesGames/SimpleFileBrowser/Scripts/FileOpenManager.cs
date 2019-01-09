@@ -40,12 +40,14 @@ namespace GracesGames.SimpleFileBrowser.Scripts
         // Open a file browser to save and load files
         private void OpenFileBrowser(FileBrowserMode fileBrowserMode)
         {
+            string startFolder="";
+            if (Application.platform == RuntimePlatform.Android && GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]CharacterSheet") { startFolder = Application.persistentDataPath; }
             // Create the file browser and name it
             GameObject fileBrowserObject = Instantiate(FileBrowserPrefab, transform);
             fileBrowserObject.name = "FileBrowser";
             // Set the mode to save or load
             FileBrowser fileBrowserScript = fileBrowserObject.GetComponent<FileBrowser>();
-            fileBrowserScript.SetupFileBrowser(PortraitMode ? ViewMode.Portrait : ViewMode.Landscape);
+            fileBrowserScript.SetupFileBrowser(PortraitMode ? ViewMode.Portrait : ViewMode.Landscape,startFolder);
             if (fileBrowserMode == FileBrowserMode.Save)
             {
                 fileBrowserScript.SaveFilePanel("NoName", FileExtensions);

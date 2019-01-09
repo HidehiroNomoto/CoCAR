@@ -1662,20 +1662,6 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                     sNum++;
                 }
 
-                //mp3ファイルの場合
-                if (path.Substring(path.Length - 4) == ".mp3" || path.Substring(path.Length - 4) == ".MP3")
-                {
-                    if (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer) {
-                        //閲覧するZIPエントリのStreamを取得
-                        Stream fs = zf.GetInputStream(ze);
-                        ReadMP3(fs);
-                    }
-                    else
-                    {
-                    }
-                    sNum++;
-                }
-
             }
             else
             {
@@ -1697,13 +1683,6 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             st.CopyTo(ms);
             return ms.ToArray();
         }
-    }
-
-    private byte[] ReadMP3(Stream st)
-    {
-        byte[] wavByte;
-
-        return wavByte;
     }
 
     //画像サイズに合わせて立ち絵サイズを変更

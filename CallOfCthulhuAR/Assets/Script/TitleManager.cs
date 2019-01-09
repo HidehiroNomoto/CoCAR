@@ -51,8 +51,20 @@ Application.platform == RuntimePlatform.LinuxPlayer)
 
     public void PushStartButton()
     {
-            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "MapScene");
+        StartCoroutine(Anten());
+            
     }
+    private IEnumerator Anten()
+    {
+        GameObject anten= GameObject.Find("Anten");
+        for (int i = 0; i < 30; i++)
+        {
+            anten.GetComponent<Image>().color = new Color(1, 1, 1, (float)i / 30);
+            yield return null;
+        }
+        GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "MapScene");
+    }
+
 
     public void PushCharacterButton()
     {

@@ -81,36 +81,6 @@ public class WavUtility
 		return audioClip;
 	}
 
-    public static AudioClip ToAudioClipPCM(byte[] fileBytes, int offsetSamples = 0, string name = "wav")
-    {
-        //string riff = Encoding.ASCII.GetString (fileBytes, 0, 4);
-        //string wave = Encoding.ASCII.GetString (fileBytes, 8, 4);
-        int subchunk1 = BitConverter.ToInt32(fileBytes, 16);
-        UInt16 audioFormat = BitConverter.ToUInt16(fileBytes, 20);
-
-        // NB: Only uncompressed PCM wav files are supported.
-        string formatCode = FormatCode(audioFormat);
-        Debug.AssertFormat(audioFormat == 1 || audioFormat == 65534, "Detected format code '{0}' {1}, but only PCM and WaveFormatExtensable uncompressed formats are currently supported.", audioFormat, formatCode);
-
-        UInt16 channels = BitConverter.ToUInt16(fileBytes, 22);
-        int sampleRate = BitConverter.ToInt32(fileBytes, 24);
-        //int byteRate = BitConverter.ToInt32 (fileBytes, 28);
-        //UInt16 blockAlign = BitConverter.ToUInt16 (fileBytes, 32);
-
-        int headerOffset = 0;
-        int subchunk2 = BitConverter.ToInt32(fileBytes, headerOffset);
-        //Debug.LogFormat ("riff={0} wave={1} subchunk1={2} format={3} channels={4} sampleRate={5} byteRate={6} blockAlign={7} bitDepth={8} headerOffset={9} subchunk2={10} filesize={11}", riff, wave, subchunk1, formatCode, channels, sampleRate, byteRate, blockAlign, bitDepth, headerOffset, subchunk2, fileBytes.Length);
-
-        float[] data;
-
-                data = Convert16BitByteArrayToAudioClipData(fileBytes, headerOffset, subchunk2);
-
-        AudioClip audioClip = AudioClip.Create(name, data.Length, (int)channels, sampleRate, false);
-        audioClip.SetData(data, 0);
-        return audioClip;
-    }
-
-
 
     #region wav file bytes to Unity AudioClip conversion methods
 
