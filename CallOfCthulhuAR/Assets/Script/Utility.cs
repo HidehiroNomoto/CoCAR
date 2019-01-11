@@ -17,6 +17,13 @@ public class Utility : MonoBehaviour {
         objBGM = GameObject.Find("BGMManager").gameObject as GameObject;
         pushObjectFlag = false;
         if (Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.WindowsEditor) { GameObject.Find("TweetButton").SetActive(false); }
+        if (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer) {
+            float x;
+            float y;
+            float xy = (float)Screen.height/Screen.width;
+            x= GameObject.Find("ScreenSizeChanger").GetComponent<RectTransform>().sizeDelta.x;
+            if (xy >= 1.6) { y =x*(float)1.6 ; } else { y = x*xy; }
+            GameObject.Find("ScreenSizeChanger").GetComponent<RectTransform>().sizeDelta = new Vector2(x,y); }
     }
 
 	

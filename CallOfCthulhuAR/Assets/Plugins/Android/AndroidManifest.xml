@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+         xmlns:tools="http://schemas.android.com/tools" >
     <application
         android:theme="@style/UnityThemeSelector"
         android:icon="@drawable/app_icon"
@@ -20,7 +21,7 @@
         </activity>
         <provider
             android:name="android.support.v4.content.FileProvider"
-            android:authorities="com.kyusyukeigo.socialconnector.fileprovider"
+            android:authorities="com.brainmixer.CoCAR.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

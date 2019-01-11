@@ -57,6 +57,8 @@ public class ScenariosceneManager : MonoBehaviour
     public GameObject inputBox;
     public AudioClip mp3Dammy;
     public List<string> tmpMP3Path = new List<string>();
+    public GameObject objReview;
+    private int ask = 0;
 
     // Use this for initialization
     void Start()
@@ -141,7 +143,7 @@ public class ScenariosceneManager : MonoBehaviour
             if (scenarioText[i].Length > 12 && scenarioText[i].Substring(0, 12) == "PlaceChange:") { if (flagname.Contains("[system]latitude") && flagname.Contains("[system]longitude")) { } else { flagname.Add("[system]latitude"); flagname.Add("[system]longitude"); } flagvalue.Add(PlayerPrefs.GetFloat("[system]latitude",0).ToString()); flagvalue.Add(PlayerPrefs.GetFloat("[system]longitude",0).ToString()); separateText = scenarioText[i].Substring(12).Split(','); PlayerPrefs.SetFloat("[system]latitude", float.Parse(separateText[0].Replace("\r", "").Replace("\n", ""))); PlayerPrefs.SetFloat("[system]longitude", float.Parse(separateText[1].Replace("\r", "").Replace("\n", "")));  sentenceEnd = true; }
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Lost:") { StartCoroutine(CharaLost()); }
             if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "SANCheck:") { separateText = scenarioText[i].Substring(9).Replace("\r","").Replace("\n","").Split(',');SANCheckFlag = -1; StartCoroutine(SANCheck(separateText)); while (SANCheckFlag == -1) { yield return null; }i += SANCheckFlag;continue; }
-            if (scenarioText[i].Length > 10 && scenarioText[i].Substring(0, 10) == "FlagReset:") { FlagReset(); sentenceEnd = true; }
+            if (scenarioText[i].Length > 10 && scenarioText[i].Substring(0, 10) == "FlagReset:") { FlagReset();}
             if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "BlackOut:") { buttonText = scenarioText[i].Substring(9).Split(','); StartCoroutine(BlackOut(int.Parse(buttonText[0]),int.Parse(buttonText[1]),int.Parse(buttonText[2]),int.Parse(buttonText[3].Replace("\r", "").Replace("\n", ""))));}
             if (scenarioText[i].Length > 6 && scenarioText[i].Substring(0, 6) == "Title:") { if (LostCheck()) { GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene"); } }
             if (scenarioText[i].Length > 4 && scenarioText[i].Substring(0, 4) == "Map:") { if (LostCheck()) { if (scenarioText[i].Substring(4, 4).Replace("\r", "").Replace("\n", "") == "Once") { PlayerPrefs.SetInt(objBGM.GetComponent<BGMManager>().chapterName.Substring(0, objBGM.GetComponent<BGMManager>().chapterName.Length - 4) + "Flag", 1); } GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "MapScene"); } }
@@ -313,6 +315,46 @@ public class ScenariosceneManager : MonoBehaviour
         logNum = 0;
         PlayerPrefs.SetString("[system]進行中シナリオ",nowPlay);
         if (skipFlag == true) { PlayerPrefs.SetInt("[system]skipFlag", 1); }
+        sentenceEnd=false;
+        StartCoroutine(Review());
+    }
+
+    private IEnumerator Review()
+    {
+        ask = 0;
+#if UNITY_IOS
+        {
+            if (!UnityEngine.iOS.Device.RequestStoreReview())
+            {
+                objReview.SetActive(true);
+                while (ask==0) { yield return null; }
+                if (ask == 1)
+                {
+                    string url = "itms-apps://itunes.apple.com/jp/app/id1445032217?mt=8&action=write-review";
+                    Application.OpenURL(url);
+                }
+            }
+        }
+#endif
+#if UNITY_ANDROID
+        objReview.SetActive(true);
+            while (ask == 0) { yield return null; }
+            if (ask == 1)
+            {
+                string url = "market://details?id=com.brainmixer.CoCAR";
+                Application.OpenURL(url);
+            }
+#endif
+        objReview.SetActive(false);
+        sentenceEnd = true;
+        yield return null;
+
+
+    }
+
+    public void ReviewButton(int asknum)
+    {
+        ask = asknum;
     }
 
     private IEnumerator CharaLost()
@@ -1442,8 +1484,8 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
         }
 
-        //try
-        //{
+        try
+        {
             //閲覧するエントリ
             string extractFile = path;
             ICSharpCode.SharpZipLib.Zip.ZipFile zf;
@@ -1484,12 +1526,12 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             }
             //閉じる
             zf.Close();
-        //}
-        //catch
-        //{
-        //    obj.GetComponent<Text>().text = ("エラーZIP。シナリオファイルの形式が不適合です。" + _FILE_HEADER + "\\" + path);
-        //    GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
-        //}
+        }
+        catch
+        {
+            obj.GetComponent<Text>().text = ("エラーZIP。シナリオファイルの形式が不適合です。" + _FILE_HEADER + "\\" + path);
+            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
+        }
     }
 
     //引数pathのみのバージョン。テキストデータの読み込みのみ対応。（スクリプトからの直呼び出し『NextFile:』用）
@@ -1501,8 +1543,8 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             obj.GetComponent<Text>().text = ("エラー。シナリオファイルが見当たりません。" + _FILE_HEADER + "\\" + path);
             GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
         }
-        //try
-        //{
+        try
+        {
             //閲覧するエントリ
             string extractFile = path;
 
@@ -1537,12 +1579,12 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             }
             //閉じる
             zf.Close();
-        //}
-        //catch
-        //{
-        //    obj.GetComponent<Text>().text = ("エラー。シナリオファイルの形式が不適合です。" + _FILE_HEADER + "\\" + path);
-        //    GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
-        //}
+        }
+        catch
+        {
+            obj.GetComponent<Text>().text = ("エラー。シナリオファイルの形式が不適合です。" + _FILE_HEADER + "\\" + path);
+            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
+        }
 
     }
 
@@ -1551,8 +1593,8 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         byte[] buffer;
         if (path.Replace("\r", "").Replace("\n", "") == "g") { gNum++;return; }
         if (path.Replace("\r", "").Replace("\n", "") == "s") { sNum++;return; }
-        //try
-        //{
+        try
+        {
             //閲覧するエントリ
             string extractFile = path;
             //展開するエントリを探す
@@ -1662,17 +1704,17 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                     sNum++;
                 }
 
-            }
+                }
             else
             {
                 GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
             }
-        //}
-        //catch
-        //{
-        //    obj.GetComponent<Text>().text = ("エラー。シナリオファイルの形式が不適合です。" + _FILE_HEADER + "\\" + path);
-        //    GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
-        //}
+        }
+        catch
+        {
+            obj.GetComponent<Text>().text = ("エラー。シナリオファイルの形式が不適合です。" + _FILE_HEADER + "\\" + path);
+            GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
+        }
     }
 
     // ストリームからデータを読み込み、バイト配列に格納
