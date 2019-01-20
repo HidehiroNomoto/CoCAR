@@ -15,8 +15,8 @@ public class MapScene : MonoBehaviour
     private double longitudeMap;
     private double latitudeMap;
     private int zoom = 16;
-    private float targetX=0;
-    private float targetY=0;
+    private float targetX = 0;
+    private float targetY = 0;
     private string[] mapData;
     public bool sceneChange = false;
     private bool mapLoad = false;
@@ -30,18 +30,19 @@ public class MapScene : MonoBehaviour
     public GameObject parentObject;
     string _FILE_HEADER;
     private bool moveStop = false;
-    private bool imageChange=false;
+    private bool imageChange = false;
     private double zoomPow = 1;
     private int VMode = 0;
     public GameObject VStick;
     FixedJoystick stick;
     private bool zoomNow = false;
+    public GameObject objErrorBack;
 
     void Start()
     {
         PlayerPrefs.Save();
         zoom = PlayerPrefs.GetInt("[system]Zoom", 16);
-        VMode = PlayerPrefs.GetInt("[system]VMode",0);
+        VMode = PlayerPrefs.GetInt("[system]VMode", 0);
         if (VMode == 0) { VStick.SetActive(false); } else { stick = VStick.GetComponent<FixedJoystick>(); }
         zoomPow = Math.Pow(2, zoom);
         GetComponent<Utility>().BGMFadeIn(2);
@@ -49,14 +50,14 @@ public class MapScene : MonoBehaviour
         { GetComponent<Utility>().BGMStop(); }
         else
         { GetComponent<Utility>().BGMPlay(Resources.Load<AudioClip>("MapBGM")); }
-        _FILE_HEADER = PlayerPrefs.GetString("[system]進行中シナリオ","");                      //ファイル場所の頭
-        if (_FILE_HEADER==null || _FILE_HEADER == "") { GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene"); }
-        longitude=PlayerPrefs.GetFloat("[system]longitude",135.768738f); latitude = PlayerPrefs.GetFloat("[system]latitude", 35.010348f);
+        _FILE_HEADER = PlayerPrefs.GetString("[system]進行中シナリオ", "");                      //ファイル場所の頭
+        if (_FILE_HEADER == null || _FILE_HEADER == "") { GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene"); }
+        longitude = PlayerPrefs.GetFloat("[system]longitude", 135.768738f); latitude = PlayerPrefs.GetFloat("[system]latitude", 35.010348f);
         obj = GameObject.Find("error").gameObject as GameObject;
-        objBGM= GameObject.Find("BGMManager").gameObject as GameObject;
+        objBGM = GameObject.Find("BGMManager").gameObject as GameObject;
         objTime = GameObject.Find("TimeText").gameObject as GameObject;
         LoadMapData("[system]mapdata[system].txt");
-        if ((VMode==0) && (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer)) { Input.location.Start(); }
+        if ((VMode == 0) && (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer)) { Input.location.Start(); }
         GetPos();
         GetMap();
     }
@@ -64,13 +65,13 @@ public class MapScene : MonoBehaviour
     void Update()
     {
         if (moveStop == false) { GetPos(); }
-        if ((Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer) || Input.location.status == LocationServiceStatus.Running || VMode>0) { if (mapLoad==true) { IventCheck(); } }
+        if ((Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer) || Input.location.status == LocationServiceStatus.Running || VMode > 0) { if (mapLoad == true) { IventCheck(); } }
         objBGM.GetComponent<Text>().text = longitude.ToString() + "," + latitude.ToString();
         //地図の更新は、マップ範囲から出た時かつ時間が相当経過している時に。（時間変数入れないと、場所によってはGPS誤差でマップ連続読込になりかねない）
-            if (((longitude>longitudeMap+196/zoomPow) ||
-            (longitude < longitudeMap - 196/ zoomPow) ||
-            (latitude < latitudeMap - 262/zoomPow) ||
-            (latitude > latitudeMap + 262/zoomPow)))
+        if (((longitude > longitudeMap + 196 / zoomPow) ||
+        (longitude < longitudeMap - 196 / zoomPow) ||
+        (latitude < latitudeMap - 262 / zoomPow) ||
+        (latitude > latitudeMap + 262 / zoomPow)))
         {
             GetMap();
         }
@@ -82,7 +83,7 @@ public class MapScene : MonoBehaviour
     {
         DateTime dt;
         dt = DateTime.UtcNow;
-        dt=dt.AddHours(9);//アンドロイドがローカル時間周りで妙な動きをするので、UTCで出してからJSTに変換してやる。
+        dt = dt.AddHours(9);//アンドロイドがローカル時間周りで妙な動きをするので、UTCで出してからJSTに変換してやる。
 
         for (int i = 0; i < mapData.Length; i++)
         {
@@ -123,30 +124,30 @@ public class MapScene : MonoBehaviour
                 }
             }
         }
-        if (sceneChange == false) { objTime.GetComponent<Text>().text ="　　　" + dt.ToString("MM/dd  HH:mm") + "\n" + "<size=48>緯度：" + Math.Round(latitude, 4).ToString() + "　,　経度：" + Math.Round(longitude, 4).ToString().ToString() + "</size>"; }
+        if (sceneChange == false) { objTime.GetComponent<Text>().text = "　　　" + dt.ToString("MM/dd  HH:mm") + "\n" + "<size=48>緯度：" + Math.Round(latitude, 4).ToString() + "　,　経度：" + Math.Round(longitude, 4).ToString().ToString() + "</size>"; }
     }
 
     void GetPos()
     {
         //★①スマートフォン版（ＧＰＳから位置情報を拾う）
-        if((VMode==0) && (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer))
+        if ((VMode == 0) && (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer))
         {
-        //GPSで取得した緯度経度を変数に代入
-        StartCoroutine(GetGPS());
+            //GPSで取得した緯度経度を変数に代入
+            StartCoroutine(GetGPS());
         }
         //★②PC版（キー入力で動かす）
         if (Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer)
         {
-                if (Input.GetKey(KeyCode.DownArrow)) { latitude -= 0.65536 / zoomPow; }
-                if (Input.GetKey(KeyCode.UpArrow)) { latitude += 0.65536 / zoomPow; }
-                if (Input.GetKey(KeyCode.LeftArrow)) { longitude -= 0.65536 / zoomPow; }
-                if (Input.GetKey(KeyCode.RightArrow)) { longitude += 0.65536 / zoomPow; }
+            if (Input.GetKey(KeyCode.DownArrow)) { latitude -= 0.65536 / zoomPow; }
+            if (Input.GetKey(KeyCode.UpArrow)) { latitude += 0.65536 / zoomPow; }
+            if (Input.GetKey(KeyCode.LeftArrow)) { longitude -= 0.65536 / zoomPow; }
+            if (Input.GetKey(KeyCode.RightArrow)) { longitude += 0.65536 / zoomPow; }
         }
         //★③机上プレイ（バーチャルスティックから）
         if (VMode > 0)
         {
-                longitude += stick.Horizontal * 0.65536 / zoomPow;
-                latitude += stick.Vertical * 0.65536 / zoomPow;      
+            longitude += stick.Horizontal * 0.65536 / zoomPow;
+            latitude += stick.Vertical * 0.65536 / zoomPow;
         }
         targetX = (float)((longitude - longitudeMap) * 2.05993652344 * zoomPow * Math.Cos(latitude * (Math.PI / 180)));
         targetY = (float)((latitude - latitudeMap) * 2.05993652344 * zoomPow);
@@ -163,10 +164,10 @@ public class MapScene : MonoBehaviour
     {
         if (!Input.location.isEnabledByUser)
         {
-            obj.GetComponent<Text>().text = ("エラー。位置情報の使用が許可されていません。スマホの「設定」にて位置情報機能の使用を許可してください。");
+            obj.GetComponent<Text>().text = ("[エラー]\n位置情報の使用が許可されていません");
             yield break;
         }
-            int maxWait = 120;
+        int maxWait = 120;
         while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
         {
             yield return new WaitForSeconds(1);
@@ -174,15 +175,15 @@ public class MapScene : MonoBehaviour
         }
         if (maxWait < 1)
         {
-            obj.GetComponent<Text>().text = ("エラー。タイムアウトが発生しました。");
+            obj.GetComponent<Text>().text = ("[エラー]\nタイムアウトが発生しました");
             yield break;
         }
         if (Input.location.status == LocationServiceStatus.Failed)
         {
-            obj.GetComponent<Text>().text = ("エラー。何らかの理由で位置情報が使用できません。");
+            obj.GetComponent<Text>().text = ("[エラー]\n位置情報が使用できません");
             yield break;
         }
-        else if(Input.location.status == LocationServiceStatus.Running)
+        else if (Input.location.status == LocationServiceStatus.Running)
         {
             longitude = Input.location.lastData.longitude;
             latitude = Input.location.lastData.latitude;
@@ -191,17 +192,17 @@ public class MapScene : MonoBehaviour
 
     public void ZoomUpButton()
     {
-        if (imageChange==true || zoom >= 21) { return; }
+        if (imageChange == true || zoom >= 21) { return; }
         if (zoomNow == true) { return; }
         zoomNow = true;
         zoom++;
-        PlayerPrefs.SetInt("[system]Zoom",zoom);
+        PlayerPrefs.SetInt("[system]Zoom", zoom);
         zoomPow = Math.Pow(2, zoom);
         StartCoroutine(ZoomEffect(true));
     }
     public void ZoomDownButton()
     {
-        if (imageChange==true || zoom <= 10) { return; }
+        if (imageChange == true || zoom <= 10) { return; }
         if (zoomNow == true) { return; }
         zoom--;
         PlayerPrefs.SetInt("[system]Zoom", zoom);
@@ -222,7 +223,7 @@ public class MapScene : MonoBehaviour
         }
         else
         {
-            for (int i = 1500; i > 750; i-=10)
+            for (int i = 1500; i > 750; i -= 10)
             {
                 mapImageObj.GetComponent<RectTransform>().sizeDelta = new Vector2(i, i);
                 yield return null;
@@ -237,19 +238,19 @@ public class MapScene : MonoBehaviour
 
     private IEnumerator GetStreetViewImage(double latitude, double longitude, double zoom)
     {
-        string url="";
+        string url = "";
         moveStop = true;
         //地図の中心の緯度経度を保存
         longitudeMap = longitude;
         latitudeMap = latitude;
         if (Application.platform == RuntimePlatform.IPhonePlayer) { url = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&zoom=" + zoom + "&size=" + width + "x" + height + Secret.SecretString.iPhoneKey; }
         if (Application.platform == RuntimePlatform.Android) { url = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&zoom=" + zoom + "&size=" + width + "x" + height + Secret.SecretString.androidKey; }
-        if(Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer) { url = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&zoom=" + zoom + "&size=" + width + "x" + height + Secret.SecretString.androidKey; ; }
+        if (Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer) { url = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&zoom=" + zoom + "&size=" + width + "x" + height + Secret.SecretString.androidKey; ; }
         WWW www = new WWW(url);
         yield return www;
         //マップの画像をTextureからspriteに変換して貼り付ける
         mapImage = Sprite.Create(www.texture, new Rect(0, 0, 640, 640), Vector2.zero);
-        mapImageObj.GetComponent<Image>().sprite=mapImage;
+        mapImageObj.GetComponent<Image>().sprite = mapImage;
         //targetの位置を中心に
         targetX = 0; targetY = 0;
         moveStop = false;
@@ -274,13 +275,13 @@ public class MapScene : MonoBehaviour
             data = mapData[i].Replace("\r", "").Replace("\n", "").Split(',');
             dataFlag = data[10].Replace("　", " ").Split(' ');
             for (int j = 0; j < dataFlag.Length; j++) { if (dataFlag[j] != "" && PlayerPrefs.GetInt(dataFlag[j], 0) <= 0) { tempBool = true; } }
-            if ((tempBool == false) &&(PlayerPrefs.GetInt(data[11].Substring(0, data[11].Length - 4) + "Flag", 0) == 0))
+            if ((tempBool == false) && (PlayerPrefs.GetInt(data[11].Substring(0, data[11].Length - 4) + "Flag", 0) == 0))
             {
                 objSP.Insert(0, Instantiate(objPreSP) as GameObject);
                 objSP[0].transform.SetParent(parentObject.transform, false);
-                    x = (float)((float.Parse(data[1]) - longitudeMap) * 2.05993652344 * zoomPow * Math.Cos(latitude * (Math.PI / 180)));
-                    y = (float)((float.Parse(data[0]) - latitudeMap) * 2.05993652344 * zoomPow);
-                objSP[0].GetComponent<RectTransform>().localPosition = new Vector3(x,y,0);
+                x = (float)((float.Parse(data[1]) - longitudeMap) * 2.05993652344 * zoomPow * Math.Cos(latitude * (Math.PI / 180)));
+                y = (float)((float.Parse(data[0]) - latitudeMap) * 2.05993652344 * zoomPow);
+                objSP[0].GetComponent<RectTransform>().localPosition = new Vector3(x, y, 0);
                 objSP[0].GetComponent<RectTransform>().sizeDelta = new Vector2((float)(0.0015258789 * zoomPow), (float)(0.0015258789 * zoomPow));
             }
         }
@@ -291,46 +292,60 @@ public class MapScene : MonoBehaviour
     {
         try
         {
-        //閲覧するエントリ
-        string extractFile = path;
+            //閲覧するエントリ
+            string extractFile = path;
 
-        //ZipFileオブジェクトの作成
-        ICSharpCode.SharpZipLib.Zip.ZipFile zf =
-            new ICSharpCode.SharpZipLib.Zip.ZipFile(PlayerPrefs.GetString("[system]進行中シナリオ",""));
-        zf.Password = Secret.SecretString.zipPass;
-        //展開するエントリを探す
-        ICSharpCode.SharpZipLib.Zip.ZipEntry ze = zf.GetEntry(extractFile);
+            //ZipFileオブジェクトの作成
+            ICSharpCode.SharpZipLib.Zip.ZipFile zf =
+                new ICSharpCode.SharpZipLib.Zip.ZipFile(PlayerPrefs.GetString("[system]進行中シナリオ", ""));
+            zf.Password = Secret.SecretString.zipPass;
+            //展開するエントリを探す
+            ICSharpCode.SharpZipLib.Zip.ZipEntry ze = zf.GetEntry(extractFile);
 
-        if (ze != null)
-        {
-            //閲覧するZIPエントリのStreamを取得
-            System.IO.Stream reader = zf.GetInputStream(ze);
-            //文字コードを指定してStreamReaderを作成
-            System.IO.StreamReader sr = new System.IO.StreamReader(
-                reader, System.Text.Encoding.GetEncoding("UTF-8"));
-            // テキストを取り出す
-            string text = sr.ReadToEnd();
+            if (ze != null)
+            {
+                //閲覧するZIPエントリのStreamを取得
+                System.IO.Stream reader = zf.GetInputStream(ze);
+                //文字コードを指定してStreamReaderを作成
+                System.IO.StreamReader sr = new System.IO.StreamReader(
+                    reader, System.Text.Encoding.GetEncoding("UTF-8"));
+                // テキストを取り出す
+                string text = sr.ReadToEnd();
 
-            // 読み込んだ目次テキストファイルからstring配列を作成する
-            mapData = text.Split('\n');
+                // 読み込んだ目次テキストファイルからstring配列を作成する
+                mapData = text.Split('\n');
+                //閉じる
+                sr.Close();
+                reader.Close();
+                mapLoad = true;
+            }
+            else
+            {
+                obj.GetComponent<Text>().text = ("[エラー]\nシナリオファイルの異常");
+                ErrorBack();
+                mapData = new string[0];
+            }
             //閉じる
-            sr.Close();
-            reader.Close();
-            mapLoad = true;
-        }
-        else
-        {
-                SceneManager.LoadScene("TitleScene");
-        }
-        //閉じる
-        zf.Close();
+            zf.Close();
         }
         catch
         {
-            obj.GetComponent<Text>().text = ("エラー。シナリオファイルの形式が不適合です。" + _FILE_HEADER + "\\" + path);
-            SceneManager.LoadScene("TitleScene");
+            obj.GetComponent<Text>().text = ("[エラー]\nシナリオファイルの異常");
+            ErrorBack();
+            mapData = new string[0];
         }
     }
+
+    private void ErrorBack()
+    {
+        objErrorBack.SetActive(true);
+    }
+
+    public void TitleBack()
+    {
+        SceneManager.LoadScene("TitleScene");
+    }
+
 }
 
 
