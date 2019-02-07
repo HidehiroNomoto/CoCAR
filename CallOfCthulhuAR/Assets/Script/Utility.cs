@@ -155,7 +155,6 @@ public class Utility : MonoBehaviour {
         yield return null;
         string imagePath = Application.persistentDataPath + "/CoCARcapture.png";
 
-        SocialConnector.SocialConnector.Share("\n[iPhone/Android用アプリ『クトゥルフ神話AR』]" + name, "\nhttp://www.brainmixer.net/CoCAR/index.html", imagePath);
+        SocialConnector.SocialConnector.Share("\n[TRPG型ADVゲーム『クトゥルフ神話AR』] #クトゥルフ神話AR #" + name, "\nbrainmixer.net/CoCAR/linker/", imagePath);
     }
-
 }

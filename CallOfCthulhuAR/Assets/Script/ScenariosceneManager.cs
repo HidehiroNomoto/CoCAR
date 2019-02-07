@@ -118,8 +118,8 @@ public class ScenariosceneManager : MonoBehaviour
             sentenceEnd = false;
             if (scenarioText[i].Replace("\r", "").Replace("\n", "") == "[END]" || scenarioText[i].Replace("\r","").Replace("\n","") == "" || scenarioText[i] == null) { break; }
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Wait:"){ for (int k = 0; k <double.Parse(scenarioText[i].Substring(5).Replace("\r", "").Replace("\n", "")) * 60; k++) { yield return null; }sentenceEnd = true; }
-            if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Text:") { separate3Text = scenarioText[i].Substring(5).Replace("\r","").Replace("\n","").Split(','); TextDraw(separate3Text[0], separate3Text[1]);if (PlayerPrefs.GetInt("[system]" + sectionName + i.ToString(), 0)==1) { skipFlag2 = true; } if (separate3Text[2] == "true") { StartCoroutine(PushWait()); } else { sentenceEnd = true; } PlayerPrefs.SetInt("[system]" + sectionName + i.ToString(),1);if (skipFlag2 == false) {   PlayerPrefs.SetString("[system]バックログ" + logNum.ToString(), scenarioText[i].Substring(5).Replace(",false","").Replace(",true","").Replace("[system]改行", "").Replace(',', ':')); logNum++; if (logNum >= 1000) { logNum = 0; } PlayerPrefs.SetInt("[system]最新ログ番号", logNum); skipFlag2 = false; } }
-            if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "BackText:") {separateText=scenarioText[i].Substring(9).Replace("\r","").Replace("\n","").Split(','); BackTextDraw(separateText[0]); if (PlayerPrefs.GetInt("[system]" + sectionName + i.ToString(), 0) == 1) { skipFlag2 = true; } if (separateText[1] == "true") { StartCoroutine(PushWait()); } else { sentenceEnd = true; }  PlayerPrefs.SetInt("[system]" + sectionName + i.ToString(), 1);if (skipFlag2 == false) {  PlayerPrefs.SetString("[system]バックログ" + logNum.ToString(), separateText[0].Replace(",false", "").Replace(",true", "").Replace("[system]改行", "").Replace(',', ':')); logNum++; if (logNum >= 1000) { logNum = 0; } PlayerPrefs.SetInt("[system]最新ログ番号", logNum); skipFlag2 = false; }  }
+            if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Text:") { separate3Text = scenarioText[i].Substring(5).Replace("\r","").Replace("\n","").Split(','); TextDraw(separate3Text[0], separate3Text[1]);if (PlayerPrefs.GetInt("[system]" + sectionName + i.ToString(), 0)==1) { skipFlag2 = true; } if (separate3Text[2] == "true") { StartCoroutine(PushWait()); } else { sentenceEnd = true; } PlayerPrefs.SetInt("[system]" + sectionName + i.ToString(),1);if (skipFlag2 == false) {   PlayerPrefs.SetString("[system]バックログ" + logNum.ToString(), scenarioText[i].Substring(5).Replace(",false","").Replace(",true","").Replace("[system]改行", "").Replace(',', ':')); logNum++; if (logNum >= 1000) { logNum = 0; } PlayerPrefs.SetInt("[system]最新ログ番号", logNum); skipFlag2 = false; }}
+            if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "BackText:") {separateText=scenarioText[i].Substring(9).Replace("\r","").Replace("\n","").Split(','); BackTextDraw(separateText[0]); if (PlayerPrefs.GetInt("[system]" + sectionName + i.ToString(), 0) == 1) { skipFlag2 = true; } if (separateText[1] == "true") { StartCoroutine(PushWait()); } else { sentenceEnd = true; }  PlayerPrefs.SetInt("[system]" + sectionName + i.ToString(), 1);if (skipFlag2 == false) {  PlayerPrefs.SetString("[system]バックログ" + logNum.ToString(), separateText[0].Replace(",false", "").Replace(",true", "").Replace("[system]改行", "").Replace(',', ':')); logNum++; if (logNum >= 1000) { logNum = 0; } PlayerPrefs.SetInt("[system]最新ログ番号", logNum); skipFlag2 = false; }}
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Back:") { BackDraw(int.Parse(scenarioText[i].Substring(5))); sentenceEnd = true; }
             if (scenarioText[i].Length > 4 && scenarioText[i].Substring(0, 4) == "BGM:") { separateText = scenarioText[i].Substring(4).Split(','); BGMIn(int.Parse(separateText[1].Replace("\r", "").Replace("\n", ""))); BGMPlay(int.Parse(separateText[0])); sentenceEnd = true; }
             if (scenarioText[i].Length > 8 && scenarioText[i].Substring(0, 8) == "BGMStop:") { BGMOut(int.Parse(scenarioText[i].Substring(8))); sentenceEnd = true; }
@@ -148,6 +148,7 @@ public class ScenariosceneManager : MonoBehaviour
             if (scenarioText[i].Length > 6 && scenarioText[i].Substring(0, 6) == "Title:") { if (LostCheck()) { GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene"); } }
             if (scenarioText[i].Length > 4 && scenarioText[i].Substring(0, 4) == "Map:") { if (LostCheck()) { if (scenarioText[i].Substring(4, 4).Replace("\r", "").Replace("\n", "") == "Once") { PlayerPrefs.SetInt(objBGM.GetComponent<BGMManager>().chapterName.Substring(0, objBGM.GetComponent<BGMManager>().chapterName.Length - 4) + "Flag", 1); } GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "MapScene"); } }
             while (sentenceEnd == false) { yield return null; }
+            StoreLink(scenarioText[i]);
         }
         GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
 
@@ -356,6 +357,20 @@ public class ScenariosceneManager : MonoBehaviour
     {
         ask = asknum;
     }
+
+    public void StoreLink(string str)
+    {
+        str = str.Replace("：",":");
+        if (str.Contains("https://booth.pm/"))
+        {
+            System.Text.RegularExpressions.Match matche = System.Text.RegularExpressions.Regex.Match(str, "https://booth.pm/" + "[ -~]*");
+            Application.OpenURL(matche.Value);
+        }
+    }
+
+
+
+
 
     private IEnumerator CharaLost()
     {
