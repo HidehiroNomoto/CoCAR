@@ -16,6 +16,9 @@ public class TitleManager : MonoBehaviour {
     public GameObject HelpButton;
     public GameObject JumpButton;
     public GameObject DeleteButton;
+    public GameObject makumaObj;
+    public GameObject titleText;
+    GameObject objBGM;
 
     // Use this for initialization
     void Start()
@@ -28,6 +31,7 @@ Application.platform == RuntimePlatform.LinuxPlayer)
             Screen.SetResolution(400, 800, false);
             VButton.SetActive(false);
         }
+        objBGM = GameObject.Find("BGMManager");
         scenarionamePath =PlayerPrefs.GetString("[system]進行中シナリオ","").Split(new char[] {'\\' ,'.', '/'});
         if (scenarionamePath.Length >= 2) { GameObject.Find("ScenarioName").GetComponent<Text>().text = "[シナリオ名]\n" + scenarionamePath[scenarionamePath.Length - 2];PlayerPrefs.SetString("[system]ScenarioName", scenarionamePath[scenarionamePath.Length - 2]); }//アドレスからフォルダ名と拡張子を排除。.と\を区切り文字にすると拡張子が最後(Length-1)にあるので、その手前の(Length-2)が欲しい文字列。
         if (PlayerPrefs.GetString("[system]進行中シナリオ", "") != "") { GameObject.Find("SelectText").GetComponent<Text>().text = "シナリオ選択<size=28>\n(DLしたファイルから選ぶ)</size>"; }
@@ -36,18 +40,43 @@ Application.platform == RuntimePlatform.LinuxPlayer)
         GameObject.Find("SliderBGM").GetComponent<Slider>().value = PlayerPrefs.GetFloat("[system]BGMVolume", 0.8f);
         GameObject.Find("SliderSE").GetComponent<Slider>().value = PlayerPrefs.GetFloat("[system]SEVolume", 0.8f);
         //BGM再生
-        DontDestroyOnLoad(GameObject.Find("BGMManager"));//BGMマネージャーのオブジェクトはタイトル画面で作ってゲーム終了までそれを使用。
-        GameObject.Find("BGMManager").GetComponent<AudioSource>().volume = PlayerPrefs.GetFloat("[system]BGMVolume", 0.8f);
+        objBGM.GetComponent<AudioSource>().volume = PlayerPrefs.GetFloat("[system]BGMVolume", 0.8f);
         GetComponent<Utility>().BGMPlay(Resources.Load<AudioClip>("TitleBGM"));
-        GameObject.Find("BGMManager").GetComponent<BGMManager>().bgmChange(true, 0);//BGMManager内部変数の初期化
+        objBGM.GetComponent<BGMManager>().bgmChange(true, 0);//BGMManager内部変数の初期化
         if (PlayerPrefs.GetInt("[system]Status0", 0) ==0) { GameObject.Find("StartButton").SetActive(false); }
+        if (objBGM.GetComponent<BGMManager>().makuma == 1 && (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer)) {makumaObj.SetActive(true); }
+        StartCoroutine(SlideTitle());
     }
 
     // Update is called once per frame
     void Update()
     {
         timeCount++;
+        if (timeCount % 100 > 90) { if (timeCount % 100 < 95) { makumaObj.GetComponent<RectTransform>().sizeDelta = new Vector2(700 + 10 * (timeCount % 100 - 90), 156 + 10 * (timeCount % 100 - 90)); } else { makumaObj.GetComponent<RectTransform>().sizeDelta = new Vector2(700 + 10 * (100 - timeCount % 100), 156 + 10 * (100 - timeCount % 100)); } }
     }
+
+    public IEnumerator SlideTitle()
+    {
+        for (int i = 0; i < 100; i++)
+        {
+            titleText.GetComponent<RectTransform>().localPosition = new Vector2(50+i,100);
+            yield return null;
+        }
+        titleText.GetComponent<RectTransform>().localPosition = new Vector2(150, 100);
+        for (int i = 0; i < 5; i++)
+        {
+            titleText.GetComponent<RectTransform>().rotation = Quaternion.Euler(0, 0, 30+i);
+            yield return null;
+        }
+        for (int i = 0; i < 5; i++)
+        {
+            titleText.GetComponent<RectTransform>().rotation = Quaternion.Euler(0, 0, 35-i);
+            yield return null;
+        }
+        titleText.GetComponent<RectTransform>().rotation = Quaternion.Euler(0, 0, 30);
+    }
+
+
 
     public void PushStartButton()
     {

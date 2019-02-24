@@ -33,6 +33,7 @@ public class ScenariosceneManager : MonoBehaviour
     GameObject objInput;
     GameObject objSkip;
     GameObject objStatus;
+    public GameObject objTitleBack;
     public AudioClip[] systemAudio = new AudioClip[10];
     public Sprite[] moveDice10Graphic = new Sprite[7];
     public Sprite[] dice10Graphic = new Sprite[10];
@@ -259,6 +260,10 @@ public class ScenariosceneManager : MonoBehaviour
             bo.color = new Color((float)r/255,(float)g/255,(float)b/255,(float)i/(time*60));
             yield return null;
         }
+        for (int i = 0; i < 5; i++)
+        {
+            objCharacter[i].gameObject.SetActive(false);
+        }
         bo.enabled = false;
         sentenceEnd = true;
     }
@@ -272,6 +277,7 @@ public class ScenariosceneManager : MonoBehaviour
         int[] tmpints = new int[7];
         int VMode = 0;
         string nowPlay;
+        objBGM.GetComponent<BGMManager>().makuma = 1;
         //残す情報を一時避難
         for(int i=0;i<STATUSNUM;i++)
         {
@@ -972,8 +978,9 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                 objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
                 objCharacter[y].GetComponent<Image>().color = new Color(1, 1, 1);
                 y++;
+                if (catcher == 0) { catcherNum+=99;break; }
                 if (catcher == 2) { break; }
-                if (catcher == 1) { catcherNum++; break; }
+                if (catcher == 1) { continue; }
             }
             if (enemyNum - sleep - kill <= catcherNum) { for (int i = 0; i < enemyNum; i++) { if (enemyHP[i] > 3) { enemyHP[i] = 2; } } }//全員捕獲した場合のみ、それらのHPを２にして戦闘終了処理へ
             else
@@ -1314,6 +1321,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                 objDice[dicenum].GetComponent<Image>().sprite = moveDice10Graphic[i];
                 for (int j = 0; j < 6; j++) { yield return null; }
             }
+            if (num == 10) { num = 0; }
             objDice[dicenum].GetComponent<Image>().sprite = dice10Graphic[num];
         }
         if (dicetype == 6)
@@ -1342,7 +1350,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         string yourName;
         objBackText.gameObject.SetActive(false);
         objTextBox.gameObject.SetActive(true);
-        if (PlayerPrefs.GetString("[system]PlayerCharacterName", "あなた") == "") { yourName = "あなた"; } else { yourName = PlayerPrefs.GetString("[system]PlayerCharacterName", "あなた"); }
+        if (PlayerPrefs.GetString("[system]PlayerCharacterName", "●●") == "") { yourName = "●●"; } else { yourName = PlayerPrefs.GetString("[system]PlayerCharacterName", "●●"); }
         text = text.Replace("[system]改行", "\r\n").Replace("[PC]",yourName);
         objText.GetComponent<Text>().text = text;
         if (name == "[PC]")
@@ -1360,7 +1368,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         //背景テキスト表示の際は通常テキスト欄は消す
         objTextBox.gameObject.SetActive(false);
         objBackText.gameObject.SetActive(true);
-        text = text.Replace("[system]改行", "\r\n").Replace("[PC]", PlayerPrefs.GetString("[system]PlayerCharacterName", "あなた"));
+        text = text.Replace("[system]改行", "\r\n").Replace("[PC]", PlayerPrefs.GetString("[system]PlayerCharacterName", "●●"));
         objBackText.GetComponent<Text>().text = text;
     }
 
@@ -1790,6 +1798,23 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
     public void PushNextGo()
     {
         pushButton = true;
+    }
+
+    public void TitleBackButton()
+    {
+        backLogCSFlag = true;
+        objTitleBack.SetActive(true);
+    }
+
+    public void TitleBackDecide()
+    {
+        GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
+    }
+
+    public void TitleBackCancel()
+    {
+        objTitleBack.SetActive(false);
+        backLogCSFlag = false;
     }
 
     public void OnApplicationQuit()

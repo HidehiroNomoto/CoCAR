@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 using System.IO;
 
 public class BackLog : MonoBehaviour {
-    public GameObject obj,obj2,obj3,obj4,obj5,obj6,obj7;
+    public GameObject obj,obj2,obj3,obj4,obj5,obj6,obj7,obj8;
     GameObject objGame;
     private bool backLog = false;
     private bool itemFlag = false;
@@ -90,6 +90,7 @@ public class BackLog : MonoBehaviour {
             obj.gameObject.SetActive(true);
             obj2.gameObject.SetActive(true);
             obj4.gameObject.SetActive(true);
+            obj8.gameObject.SetActive(false);
             obj2.GetComponent<Text>().text = "";
             logNum2 = PlayerPrefs.GetInt("[system]最新ログ番号", 0);
             obj3.GetComponent<Text>().text = "戻る";
@@ -110,6 +111,7 @@ public class BackLog : MonoBehaviour {
             obj.gameObject.SetActive(false);
             obj2.gameObject.SetActive(false);
             obj4.gameObject.SetActive(false);
+            obj8.gameObject.SetActive(true);
             obj3.GetComponent<Text>().text = "BackLog";
             backLog = false;
         }
