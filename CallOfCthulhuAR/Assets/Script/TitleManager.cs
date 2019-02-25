@@ -43,7 +43,7 @@ Application.platform == RuntimePlatform.LinuxPlayer)
         objBGM.GetComponent<AudioSource>().volume = PlayerPrefs.GetFloat("[system]BGMVolume", 0.8f);
         GetComponent<Utility>().BGMPlay(Resources.Load<AudioClip>("TitleBGM"));
         objBGM.GetComponent<BGMManager>().bgmChange(true, 0);//BGMManager内部変数の初期化
-        if (PlayerPrefs.GetInt("[system]Status0", 0) ==0) { GameObject.Find("StartButton").SetActive(false); }
+        if (PlayerPrefs.GetInt("[system]Status0", 0) ==0 || (PlayerPrefs.GetString("[system]進行中シナリオ", "").Contains(".zip")==false)) { StartButton.SetActive(false); GameObject.Find("ScenarioName").GetComponent<Text>().text = "[シナリオ名]\n"; }
         if (objBGM.GetComponent<BGMManager>().makuma == 1 && (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer)) {makumaObj.SetActive(true); }
         StartCoroutine(SlideTitle());
     }

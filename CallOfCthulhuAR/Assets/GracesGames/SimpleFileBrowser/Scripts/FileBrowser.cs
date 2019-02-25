@@ -221,6 +221,7 @@ namespace GracesGames.SimpleFileBrowser.Scripts {
             }
             if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "CharacterSheet")
             {
+                PlayerPrefs.SetString("[system]CharacterSheet", "error");
                 GameObject.Find("CSManager").GetComponent<CSManager>().selectButton.SetActive(true);
                 GameObject.Find("CSManager").GetComponent<CSManager>().readButton.SetActive(true);
             }

@@ -206,6 +206,7 @@ public class Utility : MonoBehaviour {
                 text.text = "<color=blue>＜幕間の回復＞</color>\n\n\n\n\n\n\n\n\n\n";
                 text.text=text.text + separateText[0].Substring(8) + "が<color=red>" + changeValue.ToString() + "</color>点上昇した。" + "\n（" + separateText[0].Substring(8) + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）";
                 text.text = text.text + "\n耐久力が<color=red>全回復</color>した。";
+                PlayerPrefs.SetInt("[system]耐久力", PlayerPrefs.GetInt("[system]Status9", 0));
             }
             else
             {

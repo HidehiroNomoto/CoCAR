@@ -376,6 +376,7 @@ public class CSManager : MonoBehaviour {
         PlayerPrefs.SetInt("[system]マジック・ポイント", nowMP);
         PlayerPrefs.SetInt("[system]正気度ポイント", nowSAN);
         PlayerPrefs.SetString("[system]PlayerCharacterName", GameObject.Find("PlayerCharacterName").GetComponent<Text>().text);
+        PlayerPrefs.SetString("[system]PlayerCharacterNickName", GameObject.Find("PlayerCharacterNickName").GetComponent<Text>().text);
         GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
     }
 
@@ -448,11 +449,21 @@ public class CSManager : MonoBehaviour {
 
     public void PushReadButton()
     {
-        string path;
         selectButton.SetActive(false); readButton.SetActive(false);
         GetComponent<GracesGames.SimpleFileBrowser.Scripts.FileOpenManager>().GetFilePathWithKey("[system]CharacterSheet");
+        StartCoroutine(ReadButtonIn());
+
+    }
+    public IEnumerator ReadButtonIn()
+    {
+        string path;
+        while (PlayerPrefs.GetString("[system]CharacterSheet", "") == "")
+        {
+            yield return null;
+        }
         path = PlayerPrefs.GetString("[system]CharacterSheet", "");
-        if (path != "")
+        PlayerPrefs.SetString("[system]CharacterSheet", "");
+        if (path != "error")
         {
             try
             {
@@ -487,7 +498,17 @@ public class CSManager : MonoBehaviour {
                 j++;
                 PlayerPrefs.SetString("[system]CharacterIllstPath", texts[j]);
                 StartCoroutine(LoadChara(PlayerPrefs.GetString("[system]CharacterIllstPath", "")));
-
+                j++;
+                if (texts.Length > j)
+                {
+                    GameObject.Find("PlayerCharacterNickName").GetComponent<Text>().text = texts[j];
+                    GameObject.Find("InputFieldPN").GetComponent<InputField>().text = texts[j];
+                }
+                else
+                {
+                    GameObject.Find("PlayerCharacterNickName").GetComponent<Text>().text = "";
+                    GameObject.Find("InputFieldPN").GetComponent<InputField>().text = "";
+                }
                 //数字を表示に適用。
                 string[][] str = new string[STATUSNUM][];
                 string[] str2;
@@ -517,7 +538,9 @@ public class CSManager : MonoBehaviour {
             }
             catch { }
         }
+
     }
+
 
     public void PushWriteButton()
     {
@@ -536,7 +559,8 @@ public class CSManager : MonoBehaviour {
         tmp+=nowSAN+"\n";
         if (GameObject.Find("PlayerCharacterName").GetComponent<Text>().text == "") { filename = "未決定"; } else { filename = GameObject.Find("PlayerCharacterName").GetComponent<Text>().text; }
         tmp +=filename + "\n";
-        tmp+=PlayerPrefs.GetString("[system]CharacterIllstPath", "");
+        tmp+=PlayerPrefs.GetString("[system]CharacterIllstPath", "") + "\n";
+        tmp += GameObject.Find("PlayerCharacterNickName").GetComponent<Text>().text;
         try
         {
             if (Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer)

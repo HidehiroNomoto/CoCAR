@@ -136,6 +136,7 @@ namespace GracesGames.SimpleFileBrowser.Scripts
                     PlayerPrefs.SetString("[system]進行中シナリオ",path);
                     scenarionamePath = path.Split(new char[] { '\\', '.','/' });
                     if (scenarionamePath.Length >= 2) { GameObject.Find("ScenarioName").GetComponent<Text>().text = "[シナリオ名]\n" + scenarionamePath[scenarionamePath.Length - 2]; PlayerPrefs.SetString("[system]ScenarioName", scenarionamePath[scenarionamePath.Length - 2]); }//アドレスからフォルダ名と拡張子を排除。.と\を区切り文字にすると拡張子が最後(Length-1)にあるので、その手前の(Length-2)が欲しい文字列。
+                    if (PlayerPrefs.GetString("[system]進行中シナリオ", "").Contains(".zip") == false) { GameObject.Find("TitleManager").GetComponent<TitleManager>().StartButton.SetActive(false); GameObject.Find("ScenarioName").GetComponent<Text>().text = "[シナリオ名]\n<color=red>シナリオファイルではありません</color>"; } else { GameObject.Find("TitleManager").GetComponent<TitleManager>().StartButton.SetActive(true); }
                 }
                 else
                 {
@@ -157,7 +158,14 @@ namespace GracesGames.SimpleFileBrowser.Scripts
             }
             else if (GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]CharacterSheet")
             {
-                PlayerPrefs.SetString("[system]CharacterSheet", path);
+                if (path.Contains(".ccs"))
+                {
+                    PlayerPrefs.SetString("[system]CharacterSheet", path);
+                }
+                else
+                {
+                    PlayerPrefs.SetString("[system]CharacterSheet", "error");
+                }
             }
 
             if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "TitleScene")

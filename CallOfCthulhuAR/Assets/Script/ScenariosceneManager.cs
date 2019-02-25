@@ -1321,7 +1321,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                 objDice[dicenum].GetComponent<Image>().sprite = moveDice10Graphic[i];
                 for (int j = 0; j < 6; j++) { yield return null; }
             }
-            if (num == 10) { num = 0; }
+            if (num >= 10) { num = 0; }
             objDice[dicenum].GetComponent<Image>().sprite = dice10Graphic[num];
         }
         if (dicetype == 6)
@@ -1348,10 +1348,12 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
     private void TextDraw(string name,string text)
     {
         string yourName;
+        string yourNickName;
         objBackText.gameObject.SetActive(false);
         objTextBox.gameObject.SetActive(true);
-        if (PlayerPrefs.GetString("[system]PlayerCharacterName", "●●") == "") { yourName = "●●"; } else { yourName = PlayerPrefs.GetString("[system]PlayerCharacterName", "●●"); }
-        text = text.Replace("[system]改行", "\r\n").Replace("[PC]",yourName);
+        if (PlayerPrefs.GetString("[system]PlayerCharacterName", "○○") == "") { yourName = "○○"; } else { yourName = PlayerPrefs.GetString("[system]PlayerCharacterName", "○○"); }
+        if (PlayerPrefs.GetString("[system]PlayerCharacterNickName", "○○") == "") { yourNickName = "○○"; } else { yourNickName = PlayerPrefs.GetString("[system]PlayerCharacterNickName", "○○"); }
+        text = text.Replace("[system]改行", "\r\n").Replace("[PC]",yourNickName);
         objText.GetComponent<Text>().text = text;
         if (name == "[PC]")
         {
@@ -1368,7 +1370,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         //背景テキスト表示の際は通常テキスト欄は消す
         objTextBox.gameObject.SetActive(false);
         objBackText.gameObject.SetActive(true);
-        text = text.Replace("[system]改行", "\r\n").Replace("[PC]", PlayerPrefs.GetString("[system]PlayerCharacterName", "●●"));
+        text = text.Replace("[system]改行", "\r\n").Replace("[PC]", PlayerPrefs.GetString("[system]PlayerCharacterNickName", "○○"));
         objBackText.GetComponent<Text>().text = text;
     }
 
