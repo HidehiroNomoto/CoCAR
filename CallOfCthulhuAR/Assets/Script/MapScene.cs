@@ -8,8 +8,8 @@ using System.Collections.Generic;
 public class MapScene : MonoBehaviour
 {
     Sprite mapImage;
-    private int width = 640;
-    private int height = 640;
+    private int width = 2000;
+    private int height = 2000;
     public double longitude;
     public double latitude;
     private double longitudeMap;
@@ -22,23 +22,22 @@ public class MapScene : MonoBehaviour
     private bool mapLoad = false;
     public GameObject mapImageObj;
     GameObject obj;
-    public GameObject objTarget;
     GameObject objBGM;
     GameObject objTime;
     List<GameObject> objSP = new List<GameObject>();
     public GameObject objPreSP;
     public GameObject parentObject;
     string _FILE_HEADER;
-    private bool moveStop = false;
-    private bool imageChange = false;
     private double zoomPow = 1;
     private int VMode = 0;
     public GameObject VStick;
     FixedJoystick stick;
     private bool zoomNow = false;
     public GameObject objErrorBack;
-    private double beforeLatitude;
+    private double beforeLatitude;//イベント直前に保存する用
     private double beforeLongitude;
+    private bool mapMoveNow = false;
+
     public GameObject objTitleBack;
 
     void Start()
@@ -47,7 +46,7 @@ public class MapScene : MonoBehaviour
         zoom = PlayerPrefs.GetInt("[system]Zoom", 16);
         VMode = PlayerPrefs.GetInt("[system]VMode", 0);
         if (VMode == 0) { VStick.SetActive(false); } else { stick = VStick.GetComponent<FixedJoystick>(); }
-        zoomPow = Math.Pow(2, zoom);
+        zoomPow = Math.Pow(2, zoom)*0.4266666666;
         GetComponent<Utility>().BGMFadeIn(2);
         if ((VMode == 0) && (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer))
         { GetComponent<Utility>().BGMStop(); }
@@ -63,24 +62,41 @@ public class MapScene : MonoBehaviour
         if ((VMode == 0) && (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer)) { Input.location.Start(); }
         beforeLongitude = longitude;
         beforeLatitude = latitude;
+        longitudeMap = longitude;
+        latitudeMap = latitude;
         GetPos();
-        GetMap();
-    }
-
-    void Update()
-    {
-        if (moveStop == false) { GetPos(); }
-        if ((Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer) || Input.location.status == LocationServiceStatus.Running || VMode > 0) { if (mapLoad == true) { IventCheck(); } }
-        objBGM.GetComponent<Text>().text = longitude.ToString() + "," + latitude.ToString();
-        //地図の更新は、マップ範囲から出た時かつ時間が相当経過している時に。（時間変数入れないと、場所によってはGPS誤差でマップ連続読込になりかねない）
-        if (((longitude > longitudeMap + 196 / zoomPow) ||
-        (longitude < longitudeMap - 196 / zoomPow) ||
-        (latitude < latitudeMap - 262 / zoomPow) ||
-        (latitude > latitudeMap + 262 / zoomPow)))
+        if (objBGM.GetComponent<BGMManager>().map!=null)
+        {
+            latitudeMap = objBGM.GetComponent<BGMManager>().latitudeMap;
+            longitudeMap = objBGM.GetComponent<BGMManager>().longitudeMap;
+            mapImage= objBGM.GetComponent<BGMManager>().map;
+            mapImageObj.GetComponent<Image>().sprite = mapImage;
+            targetX = (float)((longitude - longitudeMap) * 2.05993652344 * zoomPow * Math.Cos(latitude * (Math.PI / 180)));
+            targetY = (float)((latitude - latitudeMap) * 2.05993652344 * zoomPow);
+            mapImageObj.GetComponent<RectTransform>().localPosition = new Vector2(-targetX, -targetY);
+            StartCoroutine(SpotMakeCo());
+        }
+        else
         {
             GetMap();
         }
     }
+
+    void Update()
+    {
+        if (!zoomNow) { GetPos(); }
+        if ((Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer) || Input.location.status == LocationServiceStatus.Running || VMode > 0) { if (mapLoad == true) { IventCheck(); } }
+        objBGM.GetComponent<Text>().text = longitude.ToString() + "," + latitude.ToString();
+        //地図の更新は、マップ範囲から出た時かつ時間が相当経過している時に。（時間変数入れないと、場所によってはGPS誤差でマップ連続読込になりかねない）
+        if (((longitude > longitudeMap + 750 / zoomPow) ||
+        (longitude < longitudeMap - 750 / zoomPow) ||
+        (latitude < latitudeMap - 600 / zoomPow) ||
+        (latitude > latitudeMap + 600 / zoomPow)))
+        {
+            GetMap();
+        }
+    }
+
 
 
     //マップデータテキストを読み込んで、現在位置と時刻が一致するイベントがあれば読込。
@@ -119,6 +135,9 @@ public class MapScene : MonoBehaviour
                     (tempBool == false) &&
                     (PlayerPrefs.GetInt(data[11].Substring(0, data[11].Length - 4) + "Flag", 0) == 0))
                 {
+                    objBGM.GetComponent<BGMManager>().latitudeMap= latitudeMap;
+                    objBGM.GetComponent<BGMManager>().longitudeMap= longitudeMap;
+                    objBGM.GetComponent<BGMManager>().map = mapImage;
                     objBGM.GetComponent<BGMManager>().chapterName = data[11];
                     objTime.GetComponent<Text>().text = "　　　<color=red>[★イベント発生]</color>";
                     sceneChange = true;
@@ -158,13 +177,17 @@ public class MapScene : MonoBehaviour
         }
         targetX = (float)((longitude - longitudeMap) * 2.05993652344 * zoomPow * Math.Cos(latitude * (Math.PI / 180)));
         targetY = (float)((latitude - latitudeMap) * 2.05993652344 * zoomPow);
-        objTarget.GetComponent<RectTransform>().localPosition = new Vector3(targetX, targetY, 0);
+        mapImageObj.GetComponent<RectTransform>().localPosition = new Vector3(-targetX, -targetY, 0);
     }
 
     void GetMap()
     {
         //マップを取得
-        StartCoroutine(GetStreetViewImage(latitude, longitude, zoom));
+        if (mapMoveNow == false)
+        {
+            mapMoveNow = true;
+            StartCoroutine(GetStreetViewImage(latitude, longitude, zoom));
+        }
     }
 
     private IEnumerator GetGPS()
@@ -197,74 +220,92 @@ public class MapScene : MonoBehaviour
         }
     }
 
+    private IEnumerator ZoomWait(bool UPFlag)
+    {
+        while (mapMoveNow) { yield return null; }
+        if (UPFlag == true)
+        {
+            ZoomUpButton();
+        }
+        else
+        {
+            ZoomDownButton();
+        }
+    }
+
     public void ZoomUpButton()
     {
-        if (imageChange == true || zoom >= 21) { return; }
+        if (zoom >= 21) { return; }
         if (zoomNow == true) { return; }
+        if (mapMoveNow == true) { StartCoroutine(ZoomWait(true)); return; }
         zoomNow = true;
         zoom++;
         PlayerPrefs.SetInt("[system]Zoom", zoom);
-        zoomPow = Math.Pow(2, zoom);
+        zoomPow = Math.Pow(2, zoom) * 0.4266666666;
+        for (int i = 0; i < objSP.Count; i++) { Destroy(objSP[i]); }
+        objSP.Clear();
         StartCoroutine(ZoomEffect(true));
     }
     public void ZoomDownButton()
     {
-        if (imageChange == true || zoom <= 10) { return; }
+        if (zoom <= 10) { return; }
         if (zoomNow == true) { return; }
+        if (mapMoveNow == true) { StartCoroutine(ZoomWait(false)); return; }
         zoom--;
         PlayerPrefs.SetInt("[system]Zoom", zoom);
         zoomNow = true;
-        zoomPow = Math.Pow(2, zoom);
+        zoomPow = Math.Pow(2, zoom) * 0.4266666666;
+        for (int i = 0; i < objSP.Count; i++) { Destroy(objSP[i]); }
+        objSP.Clear();
         StartCoroutine(ZoomEffect(false));
     }
 
     private IEnumerator ZoomEffect(bool UPFlag)
     {
+        StartCoroutine(GetStreetViewImage(latitude, longitude, zoom));
         if (UPFlag)
         {
-            for (int i = 1500; i < 3000; i += 20)
+            for (int i = 4000; i < 8000; i += 40)
             {
                 mapImageObj.GetComponent<RectTransform>().sizeDelta = new Vector2(i, i);
+                mapImageObj.GetComponent<RectTransform>().localPosition = new Vector2(-targetX*i/4000, -targetY*i/4000);
                 yield return null;
             }
         }
         else
         {
-            for (int i = 1500; i > 750; i -= 10)
+            for (int i = 4000; i > 2000; i -= 20)
             {
                 mapImageObj.GetComponent<RectTransform>().sizeDelta = new Vector2(i, i);
+                mapImageObj.GetComponent<RectTransform>().localPosition = new Vector2(-targetX * i / 4000, -targetY * i / 4000);
                 yield return null;
             }
         }
-        imageChange = false;
-        StartCoroutine(GetStreetViewImage(latitude, longitude, zoom));
-        while (!imageChange) { yield return null; }
-        mapImageObj.GetComponent<RectTransform>().sizeDelta = new Vector2(1500, 1500);
+        mapImageObj.GetComponent<RectTransform>().sizeDelta = new Vector2(4000, 4000);
         zoomNow = false;
     }
 
     private IEnumerator GetStreetViewImage(double latitude, double longitude, double zoom)
     {
         string url = "";
-        moveStop = true;
+        //map中心の確定
+        double longitudeM = longitude;
+        double latitudeM = latitude;
         //地図の中心の緯度経度を保存
-        longitudeMap = longitude;
-        latitudeMap = latitude;
-        if (Application.platform == RuntimePlatform.IPhonePlayer) { url = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&zoom=" + zoom + "&size=" + width + "x" + height + Secret.SecretString.iPhoneKey; }
-        if (Application.platform == RuntimePlatform.Android) { url = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&zoom=" + zoom + "&size=" + width + "x" + height + Secret.SecretString.androidKey; }
-        if (Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer) { url = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&zoom=" + zoom + "&size=" + width + "x" + height + Secret.SecretString.androidKey; ; }
+        url = "https://map.yahooapis.jp/map/V1/static?" + Secret.SecretString.yahooKey + "&lat=" + latitudeM.ToString() + "&lon=" + longitudeM.ToString() + "&z=" + ((int)zoom).ToString() + "&width=" + width.ToString() + "&height=" + height.ToString();
         WWW www = new WWW(url);
         yield return www;
         //マップの画像をTextureからspriteに変換して貼り付ける
-        mapImage = Sprite.Create(www.texture, new Rect(0, 0, 640, 640), Vector2.zero);
+        mapImage = Sprite.Create(www.texture, new Rect(0, 0, width, height), Vector2.zero);
+        while (zoomNow) { yield return null; }
         mapImageObj.GetComponent<Image>().sprite = mapImage;
-        //targetの位置を中心に
-        targetX = 0; targetY = 0;
-        moveStop = false;
-        imageChange = true;
+        longitudeMap = longitudeM;
+        latitudeMap = latitudeM;
+        targetX = (float)((longitude - longitudeMap) * 2.05993652344 * zoomPow * Math.Cos(latitude * (Math.PI / 180)));
+        targetY = (float)((latitude - latitudeMap) * 2.05993652344 * zoomPow);
+        mapImageObj.GetComponent<RectTransform>().localPosition = new Vector2(-targetX,-targetY);
         SpotMake();
-        yield return null;
-        imageChange = false;
+        mapMoveNow = false;
     }
 
     private void SpotMake()
@@ -368,6 +409,11 @@ public class MapScene : MonoBehaviour
         objTitleBack.SetActive(false);
     }
 
+    private IEnumerator SpotMakeCo()
+    {
+        yield return null;
+        SpotMake();
+    }
 }
 
 

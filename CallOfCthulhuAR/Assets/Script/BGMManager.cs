@@ -11,6 +11,9 @@ public class BGMManager : MonoBehaviour {
     //マルチプレイのフラグ
     public int multiPlay = 0;
     public int makuma = 0;
+    public Sprite map=null;
+    public double latitudeMap=0;
+    public double longitudeMap=0;
 
     public struct bgmFlag
     {

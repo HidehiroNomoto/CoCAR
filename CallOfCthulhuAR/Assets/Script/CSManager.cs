@@ -65,6 +65,7 @@ public class CSManager : MonoBehaviour {
         {
             if (Application.platform != RuntimePlatform.Android) { inputBox.GetComponent<Text>().raycastTarget = false; }
             GameObject.Find("InputField").GetComponent<InputField>().text = PlayerPrefs.GetString("[system]PlayerCharacterName", "");
+            GameObject.Find("InputFieldPN").GetComponent<InputField>().text = PlayerPrefs.GetString("[system]PlayerCharacterNickName", "");
             if (loadedChara == true)
             {
                 decideText.GetComponent<Text>().text = "決定済";

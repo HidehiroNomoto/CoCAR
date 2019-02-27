@@ -273,7 +273,7 @@ public class ScenariosceneManager : MonoBehaviour
     {
         int[] status=new int[STATUSNUM];
         int[] skills=new int[SKILLNUM];
-        string[] tmpstrs=new string[2];
+        string[] tmpstrs=new string[3];
         int[] tmpints = new int[7];
         int VMode = 0;
         string nowPlay;
@@ -290,6 +290,7 @@ public class ScenariosceneManager : MonoBehaviour
         nowPlay= PlayerPrefs.GetString("[system]進行中シナリオ", "");
         tmpstrs[0] = PlayerPrefs.GetString("[system]CharacterIllstPath", "");
         tmpstrs[1] = PlayerPrefs.GetString("[system]PlayerCharacterName", "");
+        tmpstrs[2] = PlayerPrefs.GetString("[system]PlayerCharacterNickName", "");
         tmpints[0] = PlayerPrefs.GetInt("[system]マジック・ポイント");
         tmpints[1] = PlayerPrefs.GetInt("[system]耐久力");
         tmpints[2] = PlayerPrefs.GetInt("[system]正気度ポイント");
@@ -311,6 +312,7 @@ public class ScenariosceneManager : MonoBehaviour
         }
         PlayerPrefs.SetString("[system]CharacterIllstPath", tmpstrs[0]);
         PlayerPrefs.SetString("[system]PlayerCharacterName", tmpstrs[1]);
+        PlayerPrefs.SetString("[system]PlayerCharacterNickName", tmpstrs[2]);
         PlayerPrefs.SetInt("[system]マジック・ポイント", tmpints[0]);
         PlayerPrefs.SetInt("[system]耐久力", tmpints[1]);
         PlayerPrefs.SetInt("[system]正気度ポイント", tmpints[2]);
