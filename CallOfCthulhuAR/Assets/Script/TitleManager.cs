@@ -18,12 +18,15 @@ public class TitleManager : MonoBehaviour {
     public GameObject DeleteButton;
     public GameObject makumaObj;
     public GameObject titleText;
+    public GameObject VButtonImage;
+    public Sprite pad;
+    public Sprite walk;
     GameObject objBGM;
 
     // Use this for initialization
     void Start()
     {
-        if (PlayerPrefs.GetInt("[system]VMode", 0) > 0) { VButtonText.GetComponent<Text>().text = "机上プレイ\nON"; }
+        if (PlayerPrefs.GetInt("[system]VMode", 0) > 0) { VButtonText.GetComponent<Text>().text = "机上プレイ\nON"; VButtonImage.GetComponent<Image>().sprite = pad; }
         if (Application.platform == RuntimePlatform.WindowsPlayer ||
 Application.platform == RuntimePlatform.OSXPlayer ||
 Application.platform == RuntimePlatform.LinuxPlayer)
@@ -119,11 +122,13 @@ Application.platform == RuntimePlatform.LinuxPlayer)
         {
             PlayerPrefs.SetInt("[system]VMode", 1);
             VButtonText.GetComponent<Text>().text = "机上プレイ\nON";
+            VButtonImage.GetComponent<Image>().sprite = pad;
         }
         else
         {
             PlayerPrefs.SetInt("[system]VMode", 0);
             VButtonText.GetComponent<Text>().text = "机上プレイ\nOFF";
+            VButtonImage.GetComponent<Image>().sprite = walk;
         }
     }
 

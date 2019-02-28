@@ -41,6 +41,9 @@ public class ScenariosceneManager : MonoBehaviour
     public Sprite[] dice6Graphic = new Sprite[6];
     public Sprite[] moveDice4Graphic = new Sprite[7];
     public Sprite[] dice4Graphic = new Sprite[4];
+    public Sprite skip;
+    public Sprite play;
+    public GameObject objSkipImage;
     public bool skipFlag = false;
     public bool skipFlag2 = false;
     public bool backLogCSFlag = false;
@@ -69,7 +72,7 @@ public class ScenariosceneManager : MonoBehaviour
         if (_FILE_HEADER == null || _FILE_HEADER == "") {  GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene"); }
         logNum = PlayerPrefs.GetInt("[system]最新ログ番号", 0);
         objSkip = GameObject.Find("SkipText").gameObject as GameObject;
-        if (PlayerPrefs.GetInt("[system]skipFlag", 0) == 1) { skipFlag = true; objSkip.GetComponent<Text>().text = "<color=red>既読Skip\n<ON></color>"; }
+        if (PlayerPrefs.GetInt("[system]skipFlag", 0) == 1) { skipFlag = true; objSkip.GetComponent<Text>().text = "<color=red>既読Skip\n<ON></color>";objSkipImage.GetComponent<Image>().sprite = skip; }
         systemAudio[0] = Resources.Load<AudioClip>("kan"); systemAudio[1] = Resources.Load<AudioClip>("correct1");
         systemAudio[2] = Resources.Load<AudioClip>("incorrect1"); systemAudio[3] = Resources.Load<AudioClip>("switch1");
         systemAudio[4] = Resources.Load<AudioClip>("gun1"); systemAudio[5] = Resources.Load<AudioClip>("punch-high1");
@@ -260,10 +263,6 @@ public class ScenariosceneManager : MonoBehaviour
             bo.color = new Color((float)r/255,(float)g/255,(float)b/255,(float)i/(time*60));
             yield return null;
         }
-        for (int i = 0; i < 5; i++)
-        {
-            objCharacter[i].gameObject.SetActive(false);
-        }
         bo.enabled = false;
         sentenceEnd = true;
     }
@@ -410,12 +409,14 @@ public class ScenariosceneManager : MonoBehaviour
             skipFlag = true;
             PlayerPrefs.SetInt("[system]skipFlag", 1);
             objSkip.GetComponent<Text>().text = "<color=red>既読Skip\n<ON></color>";
+            objSkipImage.GetComponent<Image>().sprite = skip;
         }
         else
         {
             skipFlag = false;
             PlayerPrefs.SetInt("[system]skipFlag", 0);
             objSkip.GetComponent<Text>().text = "既読Skip\n<OFF>";
+            objSkipImage.GetComponent<Image>().sprite = play;
         }
     }
 
@@ -1353,8 +1354,8 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         string yourNickName;
         objBackText.gameObject.SetActive(false);
         objTextBox.gameObject.SetActive(true);
-        if (PlayerPrefs.GetString("[system]PlayerCharacterName", "○○") == "") { yourName = "○○"; } else { yourName = PlayerPrefs.GetString("[system]PlayerCharacterName", "○○"); }
-        if (PlayerPrefs.GetString("[system]PlayerCharacterNickName", "○○") == "") { yourNickName = "○○"; } else { yourNickName = PlayerPrefs.GetString("[system]PlayerCharacterNickName", "○○"); }
+        if (PlayerPrefs.GetString("[system]PlayerCharacterName", "") == "") { yourName = "名無し"; } else { yourName = PlayerPrefs.GetString("[system]PlayerCharacterName", "名無し"); }
+        if (PlayerPrefs.GetString("[system]PlayerCharacterNickName", "") == "") { yourNickName=yourName;  } else { yourNickName = PlayerPrefs.GetString("[system]PlayerCharacterNickName", "名無し"); }
         text = text.Replace("[system]改行", "\r\n").Replace("[PC]",yourNickName);
         objText.GetComponent<Text>().text = text;
         if (name == "[PC]")
@@ -1369,10 +1370,13 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
 
     private void BackTextDraw(string text)
     {
+        string yourName, yourNickName;
         //背景テキスト表示の際は通常テキスト欄は消す
         objTextBox.gameObject.SetActive(false);
         objBackText.gameObject.SetActive(true);
-        text = text.Replace("[system]改行", "\r\n").Replace("[PC]", PlayerPrefs.GetString("[system]PlayerCharacterNickName", "○○"));
+        if (PlayerPrefs.GetString("[system]PlayerCharacterName", "") == "") { yourName = "名無し"; } else { yourName = PlayerPrefs.GetString("[system]PlayerCharacterName", "名無し"); }
+        if (PlayerPrefs.GetString("[system]PlayerCharacterNickName", "") == "") { yourNickName = yourName; } else { yourNickName = PlayerPrefs.GetString("[system]PlayerCharacterNickName", "名無し"); }
+        text = text.Replace("[system]改行", "\r\n").Replace("[PC]", yourNickName);
         objBackText.GetComponent<Text>().text = text;
     }
 

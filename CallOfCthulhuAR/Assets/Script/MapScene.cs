@@ -8,8 +8,8 @@ using System.Collections.Generic;
 public class MapScene : MonoBehaviour
 {
     Sprite mapImage;
-    private int width = 2000;
-    private int height = 2000;
+    private int width = 1000;
+    private int height = 1000;
     public double longitude;
     public double latitude;
     private double longitudeMap;
@@ -292,7 +292,7 @@ public class MapScene : MonoBehaviour
         double longitudeM = longitude;
         double latitudeM = latitude;
         //地図の中心の緯度経度を保存
-        url = "https://map.yahooapis.jp/map/V1/static?" + Secret.SecretString.yahooKey + "&lat=" + latitudeM.ToString() + "&lon=" + longitudeM.ToString() + "&z=" + ((int)zoom).ToString() + "&width=" + width.ToString() + "&height=" + height.ToString();
+        url = "https://map.yahooapis.jp/map/V1/static?" + Secret.SecretString.yahooKey + "&lat=" + latitudeM.ToString() + "&lon=" + longitudeM.ToString() + "&z=" + ((int)zoom-1).ToString() + "&width=" + width.ToString() + "&height=" + height.ToString();
         WWW www = new WWW(url);
         yield return www;
         //マップの画像をTextureからspriteに変換して貼り付ける
