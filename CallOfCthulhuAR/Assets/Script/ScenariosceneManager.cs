@@ -32,9 +32,13 @@ public class ScenariosceneManager : MonoBehaviour
     GameObject[] objBox=new GameObject[4];
     GameObject objInput;
     GameObject objSkip;
-    GameObject objStatus;
     public GameObject objTitleBack;
+    public GameObject objStatusHP;
+    public GameObject objStatusSAN;
+    public GameObject objStatusName;
+    public GameObject objMad;
     public AudioClip[] systemAudio = new AudioClip[10];
+    public AudioClip mad;
     public Sprite[] moveDice10Graphic = new Sprite[7];
     public Sprite[] dice10Graphic = new Sprite[10];
     public Sprite[] moveDice6Graphic = new Sprite[8];
@@ -72,6 +76,7 @@ public class ScenariosceneManager : MonoBehaviour
         if (_FILE_HEADER == null || _FILE_HEADER == "") {  GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene"); }
         logNum = PlayerPrefs.GetInt("[system]最新ログ番号", 0);
         objSkip = GameObject.Find("SkipText").gameObject as GameObject;
+        objStatusName.GetComponent<Text>().text = PlayerPrefs.GetString("[system]PlayerCharacterName", "名無し");
         if (PlayerPrefs.GetInt("[system]skipFlag", 0) == 1) { skipFlag = true; objSkip.GetComponent<Text>().text = "<color=red>既読Skip\n<ON></color>";objSkipImage.GetComponent<Image>().sprite = skip; }
         systemAudio[0] = Resources.Load<AudioClip>("kan"); systemAudio[1] = Resources.Load<AudioClip>("correct1");
         systemAudio[2] = Resources.Load<AudioClip>("incorrect1"); systemAudio[3] = Resources.Load<AudioClip>("switch1");
@@ -85,7 +90,6 @@ public class ScenariosceneManager : MonoBehaviour
         objInput= GameObject.Find("Input").gameObject as GameObject; objInput.gameObject.SetActive(false);
         objText = GameObject.Find("MainText").gameObject as GameObject;
         objTextBox = GameObject.Find("TextBoxImage").gameObject as GameObject;
-        objStatus = GameObject.Find("TextBox").gameObject as GameObject;
         objBackImage = GameObject.Find("BackImage").gameObject as GameObject;
         objBackText = GameObject.Find("BackText").gameObject as GameObject; objBackText.gameObject.SetActive(false);
         objCanvas = GameObject.Find("BackImage").gameObject as GameObject;
@@ -112,6 +116,7 @@ public class ScenariosceneManager : MonoBehaviour
         string[] separate3Text = new string[3];
         DateTime dt;
         StartCoroutine(Status(PlayerPrefs.GetInt("[system]耐久力", 0), 0));
+        StartCoroutine(StatusSAN(PlayerPrefs.GetInt("[system]正気度ポイント", 0), 0));
         for (int i = 1; i < 100; i++)
         {
             for (int j = 0; j < 4; j++) { buttonText[j] = null; }
@@ -228,6 +233,7 @@ public class ScenariosceneManager : MonoBehaviour
             if (kekka == 2) { SANCheckFlag = 0; }
             //成功なら発狂へ
             if (kekka < 2) {
+                StartCoroutine(Mad());
                 if (PlayerPrefs.GetInt("[system]初発狂", 0) == 0)
                 {
                     str[0] = "クトゥルフ神話";
@@ -240,6 +246,17 @@ public class ScenariosceneManager : MonoBehaviour
         }
         sentenceEnd = true;
     }
+    private IEnumerator Mad()
+    {
+        objMad.SetActive(true);
+        SystemSEPlay(mad);
+        for (int i=0; i < 600; i++)
+        {
+            yield return null;
+        }
+        objMad.SetActive(false);
+    }
+
 
     private int Equal(string a,string b)
     {
@@ -450,6 +467,7 @@ int beforeValue=0;
         string[] separate3Text;
         targetStr=SkillList(separateText[0]);
 if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]耐久力", 0);}
+        if (targetStr == "[system]正気度ポイント") { beforeValue = PlayerPrefs.GetInt("[system]正気度ポイント", 0); }
         if (int.TryParse(separateText[1].Replace("\r", "").Replace("\n", "").Replace("+",""), out x1))
         {
             x2 = x1;
@@ -462,11 +480,13 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             if (x2 > 0)
             {
                 if (targetStr == "[system]耐久力") { StartCoroutine(Status(beforeValue,beforeValue-PlayerPrefs.GetInt("[system]耐久力", 0))); }
-                    TextDraw("", separateText[0] + "の能力が" + x2.ToString() + "点上昇した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）");
+                if (targetStr == "[system]正気度ポイント") { StartCoroutine(StatusSAN(beforeValue, beforeValue - PlayerPrefs.GetInt("[system]正気度ポイント", 0))); }
+                TextDraw("", separateText[0] + "の能力が" + x2.ToString() + "点上昇した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）");
             }
             else
             {
                 if (targetStr == "[system]耐久力") { StartCoroutine(Status(beforeValue,beforeValue-PlayerPrefs.GetInt("[system]耐久力", 0))); }
+                if (targetStr == "[system]正気度ポイント") { StartCoroutine(StatusSAN(beforeValue, beforeValue - PlayerPrefs.GetInt("[system]正気度ポイント", 0))); }
                 TextDraw("", separateText[0] + "の能力が" + (-1*x2).ToString() + "点減少した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）");
             }
             for (int v = 0; v < 60; v++) { yield return null; }
@@ -493,11 +513,13 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                 if (y2 > 0)
                 {
                 if (targetStr == "[system]耐久力") { StartCoroutine(Status(beforeValue,beforeValue-PlayerPrefs.GetInt("[system]耐久力", 0))); }
+                    if (targetStr == "[system]正気度ポイント") { StartCoroutine(StatusSAN(beforeValue, beforeValue - PlayerPrefs.GetInt("[system]正気度ポイント", 0))); }
                     TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "+" + changeValue2.ToString() + cvtext + "=" + (changeValue + changeValue2 + changeValue3).ToString() + "点上昇した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）");
                 }
                 else
                 {
                 if (targetStr == "[system]耐久力") { StartCoroutine(Status(beforeValue,beforeValue-PlayerPrefs.GetInt("[system]耐久力", 0))); }
+                    if (targetStr == "[system]正気度ポイント") { StartCoroutine(StatusSAN(beforeValue, beforeValue - PlayerPrefs.GetInt("[system]正気度ポイント", 0))); }
                     TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "+" + changeValue2.ToString() + cvtext + "=" + (changeValue + changeValue2 + changeValue3).ToString() + "点減少した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）");
                 }
                 for (int v = 0; v < 60; v++) { yield return null; }
@@ -526,11 +548,13 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                     if (y2 > 0)
                     {
                 if (targetStr == "[system]耐久力") { StartCoroutine(Status(beforeValue,beforeValue-PlayerPrefs.GetInt("[system]耐久力", 0))); }
+                        if (targetStr == "[system]正気度ポイント") { StartCoroutine(StatusSAN(beforeValue, beforeValue - PlayerPrefs.GetInt("[system]正気度ポイント", 0))); }
                         TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "点上昇した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）");
                     }
                     else
                     {
                 if (targetStr == "[system]耐久力") { StartCoroutine(Status(beforeValue,beforeValue-PlayerPrefs.GetInt("[system]耐久力", 0))); }
+                        if (targetStr == "[system]正気度ポイント") { StartCoroutine(StatusSAN(beforeValue, beforeValue - PlayerPrefs.GetInt("[system]正気度ポイント", 0))); }
                         TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "点減少した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）");
                     }
                     for (int v = 0; v < 60; v++) { yield return null; }
@@ -548,11 +572,13 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                         if (y2 > 0)
                         {
                             if (targetStr == "[system]耐久力") { StartCoroutine(Status(beforeValue, beforeValue - PlayerPrefs.GetInt("[system]耐久力", 0))); }
+                            if (targetStr == "[system]正気度ポイント") { StartCoroutine(StatusSAN(beforeValue, beforeValue - PlayerPrefs.GetInt("[system]正気度ポイント", 0))); }
                             TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "点上昇した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）");
                         }
                         else
                         {
                             if (targetStr == "[system]耐久力") { StartCoroutine(Status(beforeValue, beforeValue - PlayerPrefs.GetInt("[system]耐久力", 0))); }
+                            if (targetStr == "[system]正気度ポイント") { StartCoroutine(StatusSAN(beforeValue, beforeValue - PlayerPrefs.GetInt("[system]正気度ポイント", 0))); }
                             TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "点減少した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）");
                         }
                         for (int v = 0; v < 60; v++) { yield return null; }
@@ -940,21 +966,44 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         int maxHP = PlayerPrefs.GetInt("[system]Status9", 0);
         string color1="";
         string color2="";
-        if(playerHP<=0){ color1 = "<color=red>";color2 = "</color>"; }else if (playerHP < 2) { color1 = "<color=orange>";color2 = "</color>"; }else if(playerHP<=maxHP/2){ color1="<color=yellow>"; color2 = "</color>"; } else { color1 = ""; color2 = ""; }
-        objStatus.GetComponent<Text>().text = color1 + "　　耐久力：" + playerHP.ToString() + " ／ " + maxHP.ToString() + color2;
+        if(playerHP<=0){ color1 = "<color=red>";color2 = "</color>"; }else if (playerHP < 2) { color1 = "<color=#ff4000ff>";color2 = "</color>"; }else if(playerHP<=maxHP/2){ color1="<color=#ff8000ff>"; color2 = "</color>"; } else { color1 = ""; color2 = ""; }
+        objStatusHP.GetComponent<Text>().text = "耐久力　<size=48><b>" + color1 + playerHP.ToString() + color2 + "</b></size>/" + maxHP.ToString();
         for (int i = 0; i < 6; i++) { yield return null; }
         while (damage > 0)
         {
             playerHP--; damage--;
-            if (playerHP <= 0) { color1 = "<color=red>"; color2 = "</color>"; } else if (playerHP < 2) { color1 = "<color=orange>"; color2 = "</color>"; } else if (playerHP <= maxHP/2) { color1 = "<color=yellow>"; color2 = "</color>"; } else { color1 = "";color2 = ""; }
-            objStatus.GetComponent<Text>().text =color1 + "　　耐久力：" + playerHP.ToString() + " ／ " + maxHP.ToString() + color2;
+            if (playerHP <= 0) { color1 = "<color=red>"; color2 = "</color>"; } else if (playerHP < 2) { color1 = "<color=#ff4000ff>"; color2 = "</color>"; } else if (playerHP <= maxHP / 2) { color1 = "<color=#ff8000ff>"; color2 = "</color>"; } else { color1 = ""; color2 = ""; }
+            objStatusHP.GetComponent<Text>().text = "耐久力　<size=48><b>" + color1 + playerHP.ToString() + color2 + "</b></size>/" + maxHP.ToString();
             for (int i=0;i<6;i++) { yield return null; }
         }
         while (damage < 0 && playerHP<maxHP)
         {
             playerHP++; damage++;
-            if (playerHP <= 0) { color1 = "<color=red>"; color2 = "</color>"; } else if (playerHP < 2) { color1 = "<color=orange>"; color2 = "</color>"; } else if (playerHP <= maxHP / 2) { color1 = "<color=yellow>"; color2 = "</color>"; } else { color1 = ""; color2 = ""; }
-            objStatus.GetComponent<Text>().text = color1 + "　　耐久力：" + playerHP.ToString() + " ／ " + maxHP.ToString() + color2;
+            if (playerHP <= 0) { color1 = "<color=red>"; color2 = "</color>"; } else if (playerHP < 2) { color1 = "<color=#ff4000ff>"; color2 = "</color>"; } else if (playerHP <= maxHP / 2) { color1 = "<color=#ff8000ff>"; color2 = "</color>"; } else { color1 = ""; color2 = ""; }
+            objStatusHP.GetComponent<Text>().text = "耐久力　<size=48><b>" + color1 + playerHP.ToString() + color2 + "</b></size>/" + maxHP.ToString();
+            for (int i = 0; i < 6; i++) { yield return null; }
+        }
+    }
+    private IEnumerator StatusSAN(int playerSAN, int damage)
+    {
+        int maxSAN = 99-PlayerPrefs.GetInt("[system]Skill53", 0);
+        string color1 = "";
+        string color2 = "";
+        if (playerSAN <= 0) { color1 = "<color=red>"; color2 = "</color>"; } else if (playerSAN < 20) { color1 = "<color=#ff4000ff>"; color2 = "</color>"; } else if (playerSAN < 40) { color1 = "<color=#ff8000ff>"; color2 = "</color>"; } else { color1 = ""; color2 = ""; }
+        objStatusSAN.GetComponent<Text>().text = "正気度ポイント　<size=48><b>" + color1 + playerSAN.ToString() + color2 + "</b></size>/" + maxSAN.ToString();
+        for (int i = 0; i < 6; i++) { yield return null; }
+        while (damage > 0)
+        {
+            playerSAN--; damage--;
+            if (playerSAN <= 0) { color1 = "<color=red>"; color2 = "</color>"; } else if (playerSAN < 20) { color1 = "<color=#ff4000ff>"; color2 = "</color>"; } else if (playerSAN < 40) { color1 = "<color=#ff8000ff>"; color2 = "</color>"; } else { color1 = ""; color2 = ""; }
+            objStatusSAN.GetComponent<Text>().text = "正気度ポイント　<size=48><b>" + color1 + playerSAN.ToString() + color2 + "</b></size>/" + maxSAN.ToString();
+            for (int i = 0; i < 6; i++) { yield return null; }
+        }
+        while (damage < 0 && playerSAN < maxSAN)
+        {
+            playerSAN++; damage++;
+            if (playerSAN <= 0) { color1 = "<color=red>"; color2 = "</color>"; } else if (playerSAN < 20) { color1 = "<color=#ff4000ff>"; color2 = "</color>"; } else if (playerSAN < 40) { color1 = "<color=#ff8000ff>"; color2 = "</color>"; } else { color1 = ""; color2 = ""; }
+            objStatusSAN.GetComponent<Text>().text = "正気度ポイント　<size=48><b>" + color1 + playerSAN.ToString() + color2 + "</b></size>/" + maxSAN.ToString();
             for (int i = 0; i < 6; i++) { yield return null; }
         }
     }
