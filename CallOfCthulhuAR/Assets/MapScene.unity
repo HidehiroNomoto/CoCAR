@@ -587,7 +587,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -0.000030500929, y: 0.000020742233}
+  m_AnchoredPosition: {x: -0.000030500929, y: -0.000040276085}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &156421304
@@ -9039,6 +9039,7 @@ MonoBehaviour:
   latitude: 0
   sceneChange: 0
   mapImageObj: {fileID: 1571695961}
+  target: {fileID: 1906214559}
   objPreSP: {fileID: 1774099634203990, guid: 0142031a997218e4d93565eb1e688ad5, type: 3}
   parentObject: {fileID: 1248800150}
   VStick: {fileID: 572855172}
@@ -10173,7 +10174,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: -1000, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1906214561

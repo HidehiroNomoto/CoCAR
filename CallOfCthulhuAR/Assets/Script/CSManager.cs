@@ -35,6 +35,11 @@ public class CSManager : MonoBehaviour {
     public GameObject objFreeIvent;
     public GameObject objFIField;
     public GameObject objFIOpenButton;
+    public GameObject SkillBox;
+    public GameObject SkillBoxSlider;
+    public GameObject SkillBoxInput;
+    public GameObject SkillBoxText;
+    private int skillnumber;
 
     // Use this for initialization
     void Start() {
@@ -326,31 +331,56 @@ public class CSManager : MonoBehaviour {
 
     public void SkillAddEnd(int number)
     {
-        StopCoroutine("SkillAddCor");
+        //StopCoroutine("SkillAddCor");
+    }
+
+    public void SkillEnd()
+    {
+        string[] str = objSkill[skillnumber].GetComponent<Text>().text.Split('：');
+        skills[skillnumber] = (int)SkillBoxSlider.GetComponent<Slider>().value;
+        objSkill[skillnumber].GetComponent<Text>().text = str[0] + '：' + skills[skillnumber].ToString();
+        buyPoint -= (int)SkillBoxSlider.GetComponent<Slider>().value - skills[skillnumber];
+        objBuyPoint.GetComponent<Text>().text = "残：" + buyPoint.ToString() + "P";
+        SkillBox.SetActive(false);
+    }
+
+    public void SkillSlide()
+    {
+        int buyPoint2=buyPoint;
+        SkillBoxInput.GetComponent<InputField>().text = SkillBoxSlider.GetComponent<Slider>().value.ToString();
+        buyPoint2-=(int)SkillBoxSlider.GetComponent<Slider>().value - skills[skillnumber];
+        objBuyPoint.GetComponent<Text>().text = "残：" + buyPoint2.ToString() + "P";
+    }
+
+    public void SkillInput()
+    {
+        int buyPoint2=buyPoint;
+        int num;
+        if (int.TryParse(SkillBoxInput.GetComponent<InputField>().text, out num))
+        {
+            if (num >= skillDefault[skillnumber] && num <= buyPoint)
+            {
+                SkillBoxSlider.GetComponent<Slider>().value = num;
+                buyPoint2 -= num - skills[skillnumber];
+                objBuyPoint.GetComponent<Text>().text = "残：" + buyPoint2.ToString() + "P";
+            }
+        }
     }
 
     public IEnumerator SkillAddCor(int number)
     {
         string[] str;
+        yield return null;
         if (loadedChara == false)
         {
+            SkillBox.SetActive(true);
             str = objSkill[number].GetComponent<Text>().text.Split('：');
-            for (int i = 0; i < 2; i++)
-            {
-                skills[number]++; buyPoint--;
-                if (skills[number] == 100 || buyPoint < 0) { buyPoint += (skills[number] - skillDefault[number]); skills[number] = skillDefault[number]; }
-                objSkill[number].GetComponent<Text>().text = str[0] + '：' + skills[number].ToString();
-                objBuyPoint.GetComponent<Text>().text = "残：" + buyPoint.ToString() + "P";
-                yield return new WaitForSeconds(1.0f);
-            }
-            while (true)
-            {
-                skills[number]++; buyPoint--;
-                if (skills[number] == 100 || buyPoint < 0) { buyPoint += (skills[number] - skillDefault[number]); skills[number] = skillDefault[number]; }
-                objSkill[number].GetComponent<Text>().text = str[0] + '：' + skills[number].ToString();
-                objBuyPoint.GetComponent<Text>().text = "残：" + buyPoint.ToString() + "P";
-                yield return null; yield return null;
-            }
+            SkillBoxInput.GetComponent<InputField>().text =str[1];
+            SkillBoxSlider.GetComponent<Slider>().minValue = skillDefault[number];
+            if (buyPoint < 99) { SkillBoxSlider.GetComponent<Slider>().maxValue = buyPoint; } else { SkillBoxSlider.GetComponent<Slider>().maxValue = 99; }
+            SkillBoxSlider.GetComponent<Slider>().value = int.Parse(str[1]);
+            SkillBoxText.GetComponent<Text>().text = str[0];
+            skillnumber = number;
         }
         else
         {

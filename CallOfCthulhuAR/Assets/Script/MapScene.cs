@@ -21,6 +21,7 @@ public class MapScene : MonoBehaviour
     public bool sceneChange = false;
     private bool mapLoad = false;
     public GameObject mapImageObj;
+    public GameObject target;
     GameObject obj;
     GameObject objBGM;
     GameObject objTime;
@@ -36,7 +37,7 @@ public class MapScene : MonoBehaviour
     public GameObject objErrorBack;
     private double beforeLatitude;//イベント直前に保存する用
     private double beforeLongitude;
-    private bool mapMoveNow = false;
+    private bool getmapflag = false;
 
     public GameObject objTitleBack;
 
@@ -71,6 +72,7 @@ public class MapScene : MonoBehaviour
             longitudeMap = objBGM.GetComponent<BGMManager>().longitudeMap;
             mapImage= objBGM.GetComponent<BGMManager>().map;
             mapImageObj.GetComponent<Image>().sprite = mapImage;
+            target.GetComponent<RectTransform>().localPosition=new Vector2(0,0);
             targetX = (float)((longitude - longitudeMap) * 2.05993652344 * zoomPow * Math.Cos(latitude * (Math.PI / 180)));
             targetY = (float)((latitude - latitudeMap) * 2.05993652344 * zoomPow);
             mapImageObj.GetComponent<RectTransform>().localPosition = new Vector2(-targetX, -targetY);
@@ -183,9 +185,9 @@ public class MapScene : MonoBehaviour
     void GetMap()
     {
         //マップを取得
-        if (mapMoveNow == false)
+        if (getmapflag == false)
         {
-            mapMoveNow = true;
+            getmapflag = true;
             StartCoroutine(GetStreetViewImage(latitude, longitude, zoom));
         }
     }
@@ -222,7 +224,7 @@ public class MapScene : MonoBehaviour
 
     private IEnumerator ZoomWait(bool UPFlag)
     {
-        while (mapMoveNow) { yield return null; }
+        while (getmapflag) { yield return null; }
         if (UPFlag == true)
         {
             ZoomUpButton();
@@ -237,7 +239,7 @@ public class MapScene : MonoBehaviour
     {
         if (zoom >= 21) { return; }
         if (zoomNow == true) { return; }
-        if (mapMoveNow == true) { StartCoroutine(ZoomWait(true)); return; }
+        if (getmapflag == true) { StartCoroutine(ZoomWait(true)); return; }
         zoomNow = true;
         zoom++;
         PlayerPrefs.SetInt("[system]Zoom", zoom);
@@ -250,7 +252,7 @@ public class MapScene : MonoBehaviour
     {
         if (zoom <= 10) { return; }
         if (zoomNow == true) { return; }
-        if (mapMoveNow == true) { StartCoroutine(ZoomWait(false)); return; }
+        if (getmapflag == true) { StartCoroutine(ZoomWait(false)); return; }
         zoom--;
         PlayerPrefs.SetInt("[system]Zoom", zoom);
         zoomNow = true;
@@ -262,6 +264,7 @@ public class MapScene : MonoBehaviour
 
     private IEnumerator ZoomEffect(bool UPFlag)
     {
+        getmapflag = true;
         StartCoroutine(GetStreetViewImage(latitude, longitude, zoom));
         if (UPFlag)
         {
@@ -281,6 +284,7 @@ public class MapScene : MonoBehaviour
                 yield return null;
             }
         }
+        while (getmapflag) { yield return null; }
         mapImageObj.GetComponent<RectTransform>().sizeDelta = new Vector2(4000, 4000);
         zoomNow = false;
     }
@@ -292,20 +296,23 @@ public class MapScene : MonoBehaviour
         double longitudeM = longitude;
         double latitudeM = latitude;
         //地図の中心の緯度経度を保存
+        yield return null;yield return null;
+        while (sceneChange) { yield return null; }
         url = "https://map.yahooapis.jp/map/V1/static?" + Secret.SecretString.yahooKey + "&lat=" + latitudeM.ToString() + "&lon=" + longitudeM.ToString() + "&z=" + ((int)zoom-1).ToString() + "&width=" + width.ToString() + "&height=" + height.ToString();
         WWW www = new WWW(url);
         yield return www;
         //マップの画像をTextureからspriteに変換して貼り付ける
         mapImage = Sprite.Create(www.texture, new Rect(0, 0, width, height), Vector2.zero);
+        getmapflag = false;
         while (zoomNow) { yield return null; }
         mapImageObj.GetComponent<Image>().sprite = mapImage;
+        target.GetComponent<RectTransform>().localPosition = new Vector2(0, 0);
         longitudeMap = longitudeM;
         latitudeMap = latitudeM;
         targetX = (float)((longitude - longitudeMap) * 2.05993652344 * zoomPow * Math.Cos(latitude * (Math.PI / 180)));
         targetY = (float)((latitude - latitudeMap) * 2.05993652344 * zoomPow);
         mapImageObj.GetComponent<RectTransform>().localPosition = new Vector2(-targetX,-targetY);
         SpotMake();
-        mapMoveNow = false;
     }
 
     private void SpotMake()
