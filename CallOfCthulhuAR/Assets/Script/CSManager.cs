@@ -337,9 +337,9 @@ public class CSManager : MonoBehaviour {
     public void SkillEnd()
     {
         string[] str = objSkill[skillnumber].GetComponent<Text>().text.Split('：');
+        buyPoint -= (int)SkillBoxSlider.GetComponent<Slider>().value - skills[skillnumber];
         skills[skillnumber] = (int)SkillBoxSlider.GetComponent<Slider>().value;
         objSkill[skillnumber].GetComponent<Text>().text = str[0] + '：' + skills[skillnumber].ToString();
-        buyPoint -= (int)SkillBoxSlider.GetComponent<Slider>().value - skills[skillnumber];
         objBuyPoint.GetComponent<Text>().text = "残：" + buyPoint.ToString() + "P";
         SkillBox.SetActive(false);
     }
@@ -377,9 +377,10 @@ public class CSManager : MonoBehaviour {
             str = objSkill[number].GetComponent<Text>().text.Split('：');
             SkillBoxInput.GetComponent<InputField>().text =str[1];
             SkillBoxSlider.GetComponent<Slider>().minValue = skillDefault[number];
-            if (buyPoint < 99) { SkillBoxSlider.GetComponent<Slider>().maxValue = buyPoint; } else { SkillBoxSlider.GetComponent<Slider>().maxValue = 99; }
+            if (buyPoint+ int.Parse(str[1]) < 99) { SkillBoxSlider.GetComponent<Slider>().maxValue = buyPoint+ int.Parse(str[1]); } else { SkillBoxSlider.GetComponent<Slider>().maxValue = 99; }
             SkillBoxSlider.GetComponent<Slider>().value = int.Parse(str[1]);
             SkillBoxText.GetComponent<Text>().text = str[0];
+            objBuyPoint.GetComponent<Text>().text = "残：" + buyPoint.ToString() + "P";
             skillnumber = number;
         }
         else
