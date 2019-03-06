@@ -298,7 +298,11 @@ public class MapScene : MonoBehaviour
         //地図の中心の緯度経度を保存
         yield return null;yield return null;
         while (sceneChange) { yield return null; }
-        url = "https://map.yahooapis.jp/map/V1/static?" + Secret.SecretString.yahooKey + "&lat=" + latitudeM.ToString() + "&lon=" + longitudeM.ToString() + "&z=" + ((int)zoom-1).ToString() + "&width=" + width.ToString() + "&height=" + height.ToString();
+#if UNITY_IOS
+        url = "https://map.yahooapis.jp/map/V1/static?" + Secret.SecretString.iPhoneKey + "&lat=" + latitudeM.ToString() + "&lon=" + longitudeM.ToString() + "&z=" + ((int)zoom-1).ToString() + "&width=" + width.ToString() + "&height=" + height.ToString();
+#else
+        url = "https://map.yahooapis.jp/map/V1/static?" + Secret.SecretString.androidKey + "&lat=" + latitudeM.ToString() + "&lon=" + longitudeM.ToString() + "&z=" + ((int)zoom-1).ToString() + "&width=" + width.ToString() + "&height=" + height.ToString();
+#endif
         WWW www = new WWW(url);
         yield return www;
         //マップの画像をTextureからspriteに変換して貼り付ける
