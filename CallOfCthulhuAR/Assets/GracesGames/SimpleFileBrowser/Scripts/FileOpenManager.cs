@@ -42,6 +42,7 @@ namespace GracesGames.SimpleFileBrowser.Scripts
         {
             string startFolder="";
             if (Application.platform == RuntimePlatform.Android && GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]CharacterSheet") { startFolder = Application.persistentDataPath; }
+            if (Application.platform == RuntimePlatform.IPhonePlayer && (GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]CharacterSheet" || GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]CharacterIllstPath")) { startFolder = Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/Documents"; }
             // Create the file browser and name it
             GameObject fileBrowserObject = Instantiate(FileBrowserPrefab, transform);
             fileBrowserObject.name = "FileBrowser";
@@ -134,7 +135,6 @@ namespace GracesGames.SimpleFileBrowser.Scripts
                     GetComponent<TitleManager>().SelectButton.SetActive(true);
                     GetComponent<TitleManager>().DeleteButton.SetActive(true);
                     GameObject.Find("SelectText").GetComponent<Text>().text = "シナリオ選択<size=28>\n(DLしたファイルから選ぶ)</size>";
-                    //if (Application.platform == RuntimePlatform.IPhonePlayer) { path = "/Documents/Inbox/" + System.IO.Path.GetFileName(path); }
                     PlayerPrefs.SetString("[system]進行中シナリオ",path);
                     scenarionamePath = path.Split(new char[] { '\\', '.','/' });
                     if (scenarionamePath.Length >= 2) { GameObject.Find("ScenarioName").GetComponent<Text>().text = "[シナリオ名]\n" + scenarionamePath[scenarionamePath.Length - 2]; PlayerPrefs.SetString("[system]ScenarioName", scenarionamePath[scenarionamePath.Length - 2]); }//アドレスからフォルダ名と拡張子を排除。.と\を区切り文字にすると拡張子が最後(Length-1)にあるので、その手前の(Length-2)が欲しい文字列。
@@ -147,7 +147,6 @@ namespace GracesGames.SimpleFileBrowser.Scripts
             }
             else if (GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]CharacterIllstPath")
             {
-                //if (Application.platform == RuntimePlatform.IPhonePlayer) { path = "/Documents/Inbox/" + System.IO.Path.GetFileName(path); }
                 PlayerPrefs.SetString("[system]CharacterIllstPath", path);
                 StartCoroutine(GetComponent<CSManager>().LoadChara(PlayerPrefs.GetString("[system]CharacterIllstPath", "")));
             }

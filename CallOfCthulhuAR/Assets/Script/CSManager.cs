@@ -597,7 +597,7 @@ public class CSManager : MonoBehaviour {
         {
             if (Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer)
             {
-                System.IO.StreamWriter sw = new System.IO.StreamWriter(System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal) + "/" + filename + ".ccs", false);
+                System.IO.StreamWriter sw = new System.IO.StreamWriter(System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal) + "\\" + filename + ".ccs", false);
                 //TextBox1.Textの内容を書き込む
                 sw.Write(tmp);
                 //閉じる

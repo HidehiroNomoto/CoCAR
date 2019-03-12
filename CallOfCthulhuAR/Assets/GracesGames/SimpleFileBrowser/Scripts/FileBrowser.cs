@@ -114,9 +114,11 @@ namespace GracesGames.SimpleFileBrowser.Scripts {
                 _currentPath = startPath;
             } else if (IsAndroidPlatform()) {
                 SetupAndroidVariables();
-                _currentPath = _rootAndroidPath;
+                _currentPath = _rootAndroidPath + "/Download";
+                if (!Directory.Exists(_currentPath)) { _currentPath = _rootAndroidPath; }
             } else if (IsIosPlatform()) {
-                _currentPath=Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+                _currentPath = Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/Documents/Inbox";
+                if (!Directory.Exists(_currentPath)) { _currentPath = Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/Documents"; }
             } else {
                 _currentPath = Directory.GetCurrentDirectory();
             }
