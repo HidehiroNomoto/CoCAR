@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.Video;
 
 public class CSManager : MonoBehaviour {
     private int[] status = new int[STATUSNUM];
@@ -39,7 +40,13 @@ public class CSManager : MonoBehaviour {
     public GameObject SkillBoxSlider;
     public GameObject SkillBoxInput;
     public GameObject SkillBoxText;
+    public GameObject canvas;
+    public VideoPlayer video;
+    public GameObject adButton;
     private int skillnumber;
+    private int adnumbefore = 0;
+    private int adnum=0;
+
 
     // Use this for initialization
     void Start() {
@@ -160,7 +167,6 @@ public class CSManager : MonoBehaviour {
     {
         loadedChara = false;
         Utility u1 = GetComponent<Utility>();
-        string str3 = "";
         string[][] str = new string[STATUSNUM][];
         status[0] = u1.DiceRoll(3, 6);
         status[1] = u1.DiceRoll(3, 6);
@@ -170,7 +176,7 @@ public class CSManager : MonoBehaviour {
         status[5] = u1.DiceRoll(3, 6);
         status[6] = u1.DiceRoll(2, 6) + 6;
         status[7] = u1.DiceRoll(3, 6) + 3;
-        if (status[1] + status[6] < 13) { status[8] = -6; }
+        if (status[0] + status[6] < 13) { status[8] = -6; }
         else if (status[0] + status[6] < 17) { status[8] = -4; }
         else if (status[0] + status[6] < 25) { status[8] = 0; }
         else if (status[0] + status[6] < 33) { status[8] = 4; }
@@ -181,6 +187,63 @@ public class CSManager : MonoBehaviour {
         nowHP = status[9];
         nowMP = status[10];
         nowSAN = status[11];
+
+        StartCoroutine(MakeCharacterEffect(str));
+
+        //技能初期値の入力
+        skillDefault[5] = status[2] * 2; skillDefault[45] = status[7] * 5;
+        SkillReset();
+    }
+
+    public IEnumerator MakeCharacterEffect(string[][] str)
+    {
+        string str3 = "";
+        int tmpDB = 0;
+        int tmpSTR = 0;
+        int tmpSIZ = 0;
+        int tmpCON = 0;
+        int tmpPOW = 0;
+        int tmpHP = 0;
+        for (int j = 0; j < 60; j++)
+        {
+            for (int i = 0; i < STATUSNUM; i++)
+            {
+                str[i] = statusObj[i].GetComponent<Text>().text.Split(':');
+                if (i == 8)
+                {
+                    if (status[8] > 0) { str3 = "+1D"; }
+                    if (status[8] < 0) { str3 = "-1D"; }
+                }
+                if (i == 9) { str3 = nowHP.ToString() + "/"; }
+                if (i == 10) { str3 = nowMP.ToString() + "/"; }
+                if (i == 11) { str3 = nowSAN.ToString() + "/"; }
+
+                if (i == 0) { tmpSTR = Random.Range(3, 19); statusObj[i].GetComponent<Text>().text = str[i][0] + ':' + str3 + tmpSTR.ToString(); }
+                if (i == 1) { tmpCON = Random.Range(3, 19); statusObj[i].GetComponent<Text>().text = str[i][0] + ':' + str3 + tmpCON.ToString(); }
+                if (i == 5) { tmpSIZ = Random.Range(8, 19); statusObj[i].GetComponent<Text>().text = str[i][0] + ':' + str3 + tmpSIZ.ToString(); }
+                if (i == 6) { tmpPOW = Random.Range(3, 19); statusObj[i].GetComponent<Text>().text = str[i][0] + ':' + str3 + tmpPOW.ToString(); }
+                if (i == 2 || i == 4) { statusObj[i].GetComponent<Text>().text = str[i][0] + ':' + str3 + Random.Range(3, 19).ToString(); }
+                if (i == 3) { statusObj[i].GetComponent<Text>().text = str[i][0] + ':' + str3 + Random.Range(8, 19).ToString(); }
+                if (i == 7) { statusObj[i].GetComponent<Text>().text = str[i][0] + ':' + str3 + Random.Range(6, 22).ToString(); }
+                if (i == 8)
+                {
+                    if (tmpSTR + tmpSIZ < 13) { tmpDB = -6; }
+                    else if (tmpSTR + tmpSIZ < 17) { tmpDB = -4; }
+                    else if (tmpSTR + tmpSIZ < 25) { tmpDB = 0; }
+                    else if (tmpSTR + tmpSIZ < 33) { tmpDB = 4; }
+                    else if (tmpSTR + tmpSIZ < 41) { tmpDB = 6; }
+                    statusObj[i].GetComponent<Text>().text = str[i][0] + ':' + str3 + tmpDB.ToString();
+                }
+                if (i == 9) { statusObj[i].GetComponent<Text>().text = str[i][0] + ':' + tmpPOW.ToString() + "/" + tmpPOW.ToString(); }
+                if (i == 10) { tmpHP = (tmpCON + tmpSIZ) / 2 + (tmpCON + tmpSIZ) % 2; statusObj[i].GetComponent<Text>().text = str[i][0] + ':' + tmpHP.ToString() + "/" + tmpHP.ToString(); }
+                if (i == 11) { statusObj[i].GetComponent<Text>().text = str[i][0] + ':' + (tmpPOW * 5).ToString() + "/99"; }
+                str3 = "";
+            }
+            yield return null;
+        }
+        Utility u1 = GetComponent<Utility>();
+        u1.SEPlay(Resources.Load<AudioClip>("kan"));
+
         for (int i = 0; i < STATUSNUM; i++)
         {
             str[i] = statusObj[i].GetComponent<Text>().text.Split(':');
@@ -197,10 +260,8 @@ public class CSManager : MonoBehaviour {
             str3 = "";
         }
 
-        //技能初期値の入力
-        skillDefault[5] = status[2] * 2; skillDefault[45] = status[7] * 5;
-        SkillReset();
     }
+
 
     public void SkillReset()
     {
@@ -396,6 +457,7 @@ public class CSManager : MonoBehaviour {
 
     private void PushDecideButtonIn()
     {
+        GameObject.Find("BGMManager").GetComponent<AudioSource>().mute = false;
         for (int i = 0; i < STATUSNUM; i++)
         {
             PlayerPrefs.SetInt("[system]Status" + i.ToString(), status[i]);
@@ -420,8 +482,47 @@ public class CSManager : MonoBehaviour {
     private void PushRediceButtonIn()
     {
         decideText.GetComponent<Text>().text = "";
-        int adnum;
-        adnum=Random.Range(0,5);
+        while (adnum==adnumbefore) { adnum = Random.Range(0, 5); }
+        adnumbefore=adnum;
+        canvas.SetActive(false);
+        StartCoroutine(VideoPlay());
+    }
+
+    private IEnumerator VideoPlay()
+    {
+        string[] videoname= {"rule","yibb","bugg","zoth","rahn" };
+        Text t1 = GameObject.Find("VideoTime").GetComponent<Text>();
+        GameObject.Find("BGMManager").GetComponent<AudioSource>().mute = true;
+        GetComponent<AudioSource>().clip = Resources.Load<AudioClip>(videoname[adnum]);
+        video.clip = Resources.Load<VideoClip>(videoname[adnum]); 
+        video.time = 0;
+        video.Prepare();
+        while (!video.isPrepared) { yield return null; }
+        video.Play();
+        GetComponent<AudioSource>().volume = PlayerPrefs.GetFloat("[system]SEVolume", 0.8f);
+        GetComponent<AudioSource>().Play();
+        int tmp = (int)(video.clip.length-video.time);
+        while (video.isPlaying) { yield return null;if (tmp!= (int)(video.clip.length-video.time)) { tmp = (int)(video.clip.length-video.time); t1.text = tmp.ToString(); } }
+        t1.text = "";
+        GameObject.Find("BGMManager").GetComponent<AudioSource>().mute = false;
+        adButton.SetActive(true);
+    }
+
+    public void VideoEndButton()
+    {
+        adButton.SetActive(false);
+        canvas.SetActive(true);
+        for (int i = 0; i < SKILLNUM; i++)
+        {
+            skills[i] = 0;
+        }
+        MakeCharacter();
+    }
+    public void URLJumpButton()
+    {
+        if(video.isPlaying) { return; }
+        adButton.SetActive(false);
+        canvas.SetActive(true);
         if (adnum == 0) { Application.OpenURL("https://www.melonbooks.com/index.php?main_page=maker_affiliate_go&affiliate_id=AF0000028251"); }
         if (adnum == 1) { Application.OpenURL("https://www.melonbooks.com/index.php?main_page=maker_affiliate_go&affiliate_id=AF0000027414"); }
         if (adnum == 2) { Application.OpenURL("https://www.melonbooks.com/index.php?main_page=maker_affiliate_go&affiliate_id=AF0000028253"); }
