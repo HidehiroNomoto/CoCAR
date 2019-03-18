@@ -43,6 +43,7 @@ public class CSManager : MonoBehaviour {
     public GameObject canvas;
     public VideoPlayer video;
     public GameObject adButton;
+    private GameObject titleButton;
     private int skillnumber;
     private int adnumbefore = 0;
     private int adnum=0;
@@ -326,9 +327,9 @@ public class CSManager : MonoBehaviour {
     }
 
     private void SkillButtonIn()
-    {
-        if (skill == false) { objSkillButton.GetComponent<Image>().color = new Color(0.8f, 0.8f, 0.8f); }
-        if (skill == true) { objSkillButton.GetComponent<Image>().color = new Color(1.0f, 1.0f, 1.0f); }
+    { 
+        if (skill == false) { objSkillButton.GetComponent<Image>().color = new Color(0.7f, 0.7f, 0.7f); try { titleButton = GameObject.Find("TitleBack"); titleButton.SetActive(false); } catch { } }
+        if (skill == true) { objSkillButton.GetComponent<Image>().color = new Color(1.0f, 1.0f, 1.0f); try { titleButton.SetActive(true); } catch { } }
         StartCoroutine(SkillMove());
     }
 
@@ -555,7 +556,7 @@ public class CSManager : MonoBehaviour {
                 objFIOpenButton.SetActive(true);
             }
             objCS.gameObject.SetActive(true);
-            transform.GetChild(0).gameObject.GetComponent<Text>().text = "戻る";
+            transform.GetChild(1).gameObject.GetComponent<Text>().text = "戻る";
         }
         else
         {
@@ -570,7 +571,7 @@ public class CSManager : MonoBehaviour {
                 objFIField.SetActive(false);
             }
             objCS.gameObject.SetActive(false);
-            transform.GetChild(0).gameObject.GetComponent<Text>().text = "Character\nsheet";
+            transform.GetChild(1).gameObject.GetComponent<Text>().text = "Character\nsheet";
         }
     }
 

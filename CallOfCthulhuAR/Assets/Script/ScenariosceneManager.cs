@@ -1408,9 +1408,18 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         objTextBox.gameObject.SetActive(true);
         if (PlayerPrefs.GetString("[system]PlayerCharacterName", "") == "") { yourName = "名無し"; } else { yourName = PlayerPrefs.GetString("[system]PlayerCharacterName", "名無し"); }
         if (PlayerPrefs.GetString("[system]PlayerCharacterNickName", "") == "") { yourNickName=yourName;  } else { yourNickName = PlayerPrefs.GetString("[system]PlayerCharacterNickName", "名無し"); }
-        text = text.Replace("[system]改行", "\r\n").Replace("[PC]",yourNickName);
+        text = text.Replace("[system]改行", "\r\n").Replace("[PC]",yourNickName).Replace("<PC>", yourNickName);
+
+        System.Text.RegularExpressions.Regex reg= new System.Text.RegularExpressions.Regex("<FLAG：.+?>");
+        System.Text.RegularExpressions.Match match= System.Text.RegularExpressions.Regex.Match(text, "<FLAG：.+?>");
+        while (match.Success)
+        {
+            string tmpstr = PlayerPrefs.GetInt(match.ToString().Replace("<FLAG：", "").Replace(">", ""), 0).ToString();
+            text = reg.Replace(text, tmpstr);
+            match = match.NextMatch();
+        }
         objText.GetComponent<Text>().text = text;
-        if (name == "[PC]")
+        if (name == "[PC]" || name == "<PC>")
         {
             objName.GetComponent<Text>().text = "　" + yourName;
         }
@@ -1428,7 +1437,15 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         objBackText.gameObject.SetActive(true);
         if (PlayerPrefs.GetString("[system]PlayerCharacterName", "") == "") { yourName = "名無し"; } else { yourName = PlayerPrefs.GetString("[system]PlayerCharacterName", "名無し"); }
         if (PlayerPrefs.GetString("[system]PlayerCharacterNickName", "") == "") { yourNickName = yourName; } else { yourNickName = PlayerPrefs.GetString("[system]PlayerCharacterNickName", "名無し"); }
-        text = text.Replace("[system]改行", "\r\n").Replace("[PC]", yourNickName);
+        text = text.Replace("[system]改行", "\r\n").Replace("[PC]", yourNickName).Replace("<PC>", yourNickName);
+        System.Text.RegularExpressions.Regex reg = new System.Text.RegularExpressions.Regex("<FLAG：.+?>");
+        System.Text.RegularExpressions.Match match = System.Text.RegularExpressions.Regex.Match(text, "<FLAG：.+?>");
+        while (match.Success)
+        {
+            string tmpstr = PlayerPrefs.GetInt(match.ToString().Replace("<FLAG：", "").Replace(">", ""), 0).ToString();
+            text = reg.Replace(text, tmpstr);
+            match = match.NextMatch();
+        }
         objBackText.GetComponent<Text>().text = text;
     }
 
