@@ -67,6 +67,7 @@ public class ScenariosceneManager : MonoBehaviour
     public List<string> tmpMP3Path = new List<string>();
     public GameObject objReview;
     private int ask = 0;
+    private int hanteiDice=1;
 
     // Use this for initialization
     void Start()
@@ -908,6 +909,15 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                 {
                     damage = u1.DiceRoll(1, 6);
                     StartCoroutine(DiceEffect(0, 6, damage));
+                    if (hanteiDice< PlayerPrefs.GetInt("[system]Skill46", 1))
+                    {
+                        int damage2;
+                        damage2 = u1.DiceRoll(1, 6);
+                        yield return StartCoroutine(MAEffect());
+                        yield return StartCoroutine(DiceEffect(1, 6, damage2));
+                        damage += damage2;
+                        for(int i = 0; i < 30; i++) { yield return null; }
+                    }
                     playerDB = 0;
                     if (PlayerPrefs.GetInt("[system]Status8", 0) == 6) { playerDB = u1.DiceRoll(1, 6); StartCoroutine(DiceEffect(1, 6, playerDB)); }
                     if (PlayerPrefs.GetInt("[system]Status8", 0) == 4) { playerDB = u1.DiceRoll(1, 4); StartCoroutine(DiceEffect(1, 4, playerDB)); }
@@ -964,6 +974,23 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         }
         selectNum = -1;
     }
+
+    private IEnumerator MAEffect()
+    {
+        Image bo = GameObject.Find("BlackOut").GetComponent<Image>();
+        bo.enabled = true;
+        Sprite sp= bo.sprite;
+        bo.sprite = Resources.Load<Sprite>("MAEffect");
+        SEPlay(1);
+        for (int i = 0; i < 60; i++)
+        {
+            bo.color = new Color(1,1,1, (float)(60-i) / 60);
+            yield return null;
+        }
+        bo.sprite = sp;
+        bo.enabled = false;
+    }
+
     private IEnumerator Status(int playerHP,int damage)
     {
         int maxHP = PlayerPrefs.GetInt("[system]Status9", 0);
@@ -1316,7 +1343,6 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
 
     private int Hantei(string targetStr,int bonus)
     {
-        int dice;
         int target=0;
         string bonusStr="";
         TextDraw("判定", "　");
@@ -1327,17 +1353,17 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         if (target > -bonus) { objRollText.GetComponent<Text>().text = targetStr + bonusStr + "\n" + "<color=#88ff88ff>" + (target + bonus).ToString() + "</color>"; } else { objRollText.GetComponent<Text>().text = targetStr + bonusStr + "\n" + "<color=#88ff88ff>" + "自動失敗" + "</color>"; }
         Utility u1 = GetComponent<Utility>();
         objTextBox.gameObject.SetActive(true);
-        dice =u1.DiceRoll(1, 100);
-        if (dice != 100) { StartCoroutine(DiceEffect(0, 10, dice / 10)); } else { StartCoroutine(DiceEffect(0, 10, 0)); }
-        StartCoroutine(DiceEffect(1, 10, dice % 10));
-        StartCoroutine(DiceText(dice, target, bonus,targetStr,bonusStr));
-        if (dice > target + bonus)
+        hanteiDice =u1.DiceRoll(1, 100);
+        if (hanteiDice != 100) { StartCoroutine(DiceEffect(0, 10, hanteiDice / 10)); } else { StartCoroutine(DiceEffect(0, 10, 0)); }
+        StartCoroutine(DiceEffect(1, 10, hanteiDice % 10));
+        StartCoroutine(DiceText(hanteiDice, target, bonus,targetStr,bonusStr));
+        if (hanteiDice > target + bonus)
         {
             return 2;
         }
         else
         {
-            if (dice <= (target+bonus)/5)
+            if (hanteiDice <= (target+bonus)/5)
             {
                 return 0;
             }
