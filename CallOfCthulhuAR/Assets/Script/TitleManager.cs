@@ -84,8 +84,8 @@ Application.platform == RuntimePlatform.LinuxPlayer)
 
     public void PushStartButton()
     {
+        PlayerPrefs.SetInt("[system]未決定",0);
         StartCoroutine(Anten());
-            
     }
     private IEnumerator Anten()
     {

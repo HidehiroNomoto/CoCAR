@@ -85,7 +85,7 @@ namespace GracesGames.SimpleFileBrowser.Scripts
                 int[] status = new int[STATUSNUM];
                 int[] skills = new int[SKILLNUM];
                 string[] tmpstrs = new string[3];
-                int[] tmpints = new int[7];
+                int[] tmpints = new int[8];
                 int VMode = 0;
                 if (path != null && path.Length != 0)
                 {
@@ -109,6 +109,7 @@ namespace GracesGames.SimpleFileBrowser.Scripts
                    tmpints[4] = PlayerPrefs.GetInt("[system]知識");
                    tmpints[5] = PlayerPrefs.GetInt("[system]幸運");
                     tmpints[6] = PlayerPrefs.GetInt("[system]初発狂");
+                    tmpints[7] = PlayerPrefs.GetInt("[system]未決定");
                     VMode = PlayerPrefs.GetInt("[system]VMode");
                     //セーブデータを全部消す
                     PlayerPrefs.DeleteAll();
@@ -131,6 +132,7 @@ namespace GracesGames.SimpleFileBrowser.Scripts
                     PlayerPrefs.SetInt("[system]知識", tmpints[4]);
                     PlayerPrefs.SetInt("[system]幸運", tmpints[5]);
                     PlayerPrefs.SetInt("[system]初発狂", tmpints[6]);
+                    PlayerPrefs.SetInt("[system]未決定",tmpints[7]);
                     PlayerPrefs.SetInt("[system]VMode", VMode);
                     GetComponent<TitleManager>().SelectButton.SetActive(true);
                     GetComponent<TitleManager>().DeleteButton.SetActive(true);

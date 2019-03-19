@@ -159,7 +159,7 @@ public class CSManager : MonoBehaviour {
             objSkill[i].GetComponent<Text>().text = str2[0] + '：' + skills[i].ToString();
         }
         //キャラがいなければ作成
-        if (status[0] == 0) { MakeCharacter(); } else { loadedChara = true;  }
+        if (status[0] == 0) { MakeCharacter(); } else if (PlayerPrefs.GetInt("[system]未決定", 0) == 1) { loadedChara = false; buyPoint = status[3] * 10 + status[7] * 20; for (int i = 0; i < 54; i++) { buyPoint -= skills[i] - skillDefault[i]; } } else { loadedChara = true; }
     }
 
 
@@ -167,6 +167,7 @@ public class CSManager : MonoBehaviour {
     public void MakeCharacter()
     {
         loadedChara = false;
+        PlayerPrefs.SetInt("[system]未決定", 1);
         Utility u1 = GetComponent<Utility>();
         string[][] str = new string[STATUSNUM][];
         status[0] = u1.DiceRoll(3, 6);
@@ -643,6 +644,37 @@ public class CSManager : MonoBehaviour {
                     GameObject.Find("PlayerCharacterNickName").GetComponent<Text>().text = "";
                     GameObject.Find("InputFieldPN").GetComponent<InputField>().text = "";
                 }
+                j++;
+                try
+                {
+                    if (texts.Length > j)
+                    {
+                        buyPoint=int.Parse(texts[j]);
+                    }
+                    else
+                    {
+                        buyPoint = 0;
+                    }
+                    j++;
+                    if (texts.Length > j)
+                    {
+                        if (texts[j] == "1") { loadedChara = false; } else { loadedChara = true; }
+                        PlayerPrefs.SetInt("[system]未決定", int.Parse(texts[j]));
+                        decideText.GetComponent<Text>().text = "";
+                    }
+                    else
+                    {
+                        loadedChara = true;
+                        PlayerPrefs.SetInt("[system]未決定", 0);
+                        decideText.GetComponent<Text>().text = "決定済";
+                    }
+                }
+                catch {
+                    loadedChara = true;
+                    PlayerPrefs.SetInt("[system]未決定", 0);
+                    decideText.GetComponent<Text>().text = "決定済";
+                }
+
                 //数字を表示に適用。
                 string[][] str = new string[STATUSNUM][];
                 string[] str2;
@@ -667,8 +699,6 @@ public class CSManager : MonoBehaviour {
                     str2 = objSkill[i].GetComponent<Text>().text.Split('：');
                     objSkill[i].GetComponent<Text>().text = str2[0] + '：' + skills[i].ToString();
                 }
-                loadedChara = true;
-                decideText.GetComponent<Text>().text = "決定済";
             }
             catch { }
         }
@@ -694,7 +724,9 @@ public class CSManager : MonoBehaviour {
         if (GameObject.Find("PlayerCharacterName").GetComponent<Text>().text == "") { filename = "未決定"; } else { filename = GameObject.Find("PlayerCharacterName").GetComponent<Text>().text; }
         tmp +=filename + "\n";
         tmp+=PlayerPrefs.GetString("[system]CharacterIllstPath", "") + "\n";
-        tmp += GameObject.Find("PlayerCharacterNickName").GetComponent<Text>().text;
+        tmp += GameObject.Find("PlayerCharacterNickName").GetComponent<Text>().text + "\n";
+        tmp += buyPoint.ToString() + "\n";
+        if (loadedChara) { tmp += "0"; } else { tmp += "1"; }
         try
         {
             if (Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer)

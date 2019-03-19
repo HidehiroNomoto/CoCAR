@@ -290,7 +290,7 @@ public class ScenariosceneManager : MonoBehaviour
         int[] status=new int[STATUSNUM];
         int[] skills=new int[SKILLNUM];
         string[] tmpstrs=new string[3];
-        int[] tmpints = new int[7];
+        int[] tmpints = new int[8];
         int VMode = 0;
         string nowPlay;
         objBGM.GetComponent<BGMManager>().makuma = 1;
@@ -314,7 +314,9 @@ public class ScenariosceneManager : MonoBehaviour
         tmpints[4] = PlayerPrefs.GetInt("[system]知識");
         tmpints[5] = PlayerPrefs.GetInt("[system]幸運");
         tmpints[6] = PlayerPrefs.GetInt("[system]初発狂");
+        tmpints[7] = PlayerPrefs.GetInt("[system]未決定");
         VMode = PlayerPrefs.GetInt("[system]VMode");
+
         //セーブデータを全部消す
         PlayerPrefs.DeleteAll();
         //残す情報を再書き込み
@@ -336,6 +338,7 @@ public class ScenariosceneManager : MonoBehaviour
         PlayerPrefs.SetInt("[system]知識", tmpints[4]);
         PlayerPrefs.SetInt("[system]幸運", tmpints[5]);
         PlayerPrefs.SetInt("[system]初発狂", tmpints[6]);
+        PlayerPrefs.SetInt("[system]未決定",tmpints[7]);
         PlayerPrefs.SetInt("[system]VMode",VMode);
         logNum = 0;
         PlayerPrefs.SetString("[system]進行中シナリオ",nowPlay);
