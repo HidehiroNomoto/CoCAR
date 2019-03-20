@@ -141,7 +141,7 @@ public class ScenariosceneManager : MonoBehaviour
             if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Select:") { buttonText = scenarioText[i].Substring(7).Split(','); StartCoroutine(Select(buttonText[0], buttonText[1], buttonText[2], buttonText[3].Replace("\r", "").Replace("\n", ""),false)); while (sentenceEnd == false) { yield return null; }; SystemSEPlay(systemAudio[3]); i += selectNum; continue; }
             if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "NextFile:") { LoadFile(scenarioText[i].Substring(9).Replace("\r", "").Replace("\n", "")); i = 0; sentenceEnd = true; continue; }
             if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Hantei:") { separateText = scenarioText[i].Substring(7).Split(','); i += Hantei(separateText[0], int.Parse(separateText[1].Replace("\r", "").Replace("\n", ""))); while (sentenceEnd == false) { yield return null; };  for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }objRollText.gameObject.SetActive(false);PlayerPrefs.Save();skipFlag2 = false;sentenceEnd = false;StartCoroutine(PushWait()); while (sentenceEnd == false) { yield return null; } continue; }
-            if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Battle:") { battleText = scenarioText[i].Substring(7).Split(','); battleFlag = -1; StartCoroutine(Battle(int.Parse(battleText[0]), int.Parse(battleText[1]), int.Parse(battleText[2]), int.Parse(battleText[3]), int.Parse(battleText[4]), int.Parse(battleText[5]), int.Parse(battleText[6]),bool.Parse(battleText[7]), battleText[8], battleText[9], int.Parse(battleText[10]), int.Parse(battleText[11]), bool.Parse(battleText[12].Replace("\r", "").Replace("\n", "")))); while (battleFlag == -1) { yield return null; }; i += battleFlag;sentenceEnd = false; StartCoroutine(PushWait()); while (sentenceEnd == false) { yield return null; }continue; }
+            if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Battle:") { battleText = scenarioText[i].Substring(7).Split(',');int attacktype = 5; try { attacktype=int.Parse(battleText[13].Replace("\r", "").Replace("\n", "")); } catch { } battleFlag = -1; StartCoroutine(Battle(int.Parse(battleText[0]), int.Parse(battleText[1]), int.Parse(battleText[2]), int.Parse(battleText[3]), int.Parse(battleText[4]), int.Parse(battleText[5]), int.Parse(battleText[6]),bool.Parse(battleText[7]), battleText[8], battleText[9], int.Parse(battleText[10]), int.Parse(battleText[11]), bool.Parse(battleText[12].Replace("\r", "").Replace("\n", "")),attacktype)); while (battleFlag == -1) { yield return null; }; i += battleFlag;sentenceEnd = false; StartCoroutine(PushWait()); while (sentenceEnd == false) { yield return null; }continue; }
             if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "FlagBranch:") { separateText = scenarioText[i].Substring(11).Replace("\r", "").Replace("\n", "").Split(','); if (PlayerPrefs.GetInt(separateText[0], 0) < int.Parse(separateText[1]) ) { i++; }continue; }
             if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "FlagChange:"){separate3Text = scenarioText[i].Substring(11).Replace("\r", "").Replace("\n","").Split(','); if (flagname.Contains(separate3Text[0])) { } else { flagname.Add(separate3Text[0]); flagvalue.Add(PlayerPrefs.GetInt(separate3Text[0]).ToString()); } if (separate3Text[1] == "") { FlagChange(separate3Text[0], 0, int.Parse(separate3Text[2]), true); } else { FlagChange(separate3Text[0], int.Parse(separate3Text[1]), 0, false); }  sentenceEnd = true; }
             if (scenarioText[i].Length > 8 && scenarioText[i].Substring(0, 8) == "GetTime:"){ dt = DateTime.Now; PlayerPrefs.SetInt("[system]Month", dt.Month); PlayerPrefs.SetInt("[system]Day", dt.Day); PlayerPrefs.SetInt("[system]Hour",dt.Hour); PlayerPrefs.SetInt("[system]Minute", dt.Minute); sentenceEnd = true; }
@@ -641,7 +641,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
     }
 
     //戦闘処理
-    private IEnumerator Battle(int enemyGraph, int enemyNum, int HP, int DEX, int AttackPercent, int ATDiceNum, int ATDice,bool humanFlag,string tokusyu,string tokusyuSkill,int tokusyuSkillBonus,int maxTurn,bool maxTurnWin)
+    private IEnumerator Battle(int enemyGraph, int enemyNum, int HP, int DEX, int AttackPercent, int ATDiceNum, int ATDice,bool humanFlag,string tokusyu,string tokusyuSkill,int tokusyuSkillBonus,int maxTurn,bool maxTurnWin,int attacktype)
     {
         int[] enemyHP = new int[enemyNum];
         int kill = 0;
@@ -730,7 +730,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                             if (tmpDice <= AttackPercent / 5){ special = true; }
                             damage = u1.DiceRoll(ATDiceNum, ATDice);
                             sentenceEnd = false;
-                            StartCoroutine(EnemyHit(i,enemyNum, damage,special));
+                            StartCoroutine(EnemyHit(i,enemyNum, damage,special,attacktype));
                             StartCoroutine(Status(playerHP, damage));
                             playerHP -= damage;
                             if (playerHP <= 2) { break; }
@@ -741,7 +741,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                     else
                     {
                         sentenceEnd = false;
-                        StartCoroutine(EnemyMiss(i,enemyNum));
+                        if (attacktype==4) { StartCoroutine(EnemyMiss(i, enemyNum, true)); } else { StartCoroutine(EnemyMiss(i, enemyNum, false)); }
                     }
                     for (int v = 0; v < 100; v++) { yield return null; }
                 }
@@ -846,6 +846,8 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                         damage = u1.DiceRoll(1, 10);
                         sentenceEnd = false;
                         for (y = 0; y < enemyNum - 1; y++) { if (enemyHP[y] >= 3 || (enemyHP[y] > 0 && humanFlag == false)) { break; } }
+                        yield return StartCoroutine(DiceEffect(0, 10, damage));
+                        for (int i = 0; i < 20; i++) { yield return null; }
                         enemyHP[y] -= damage + PlayerPrefs.GetInt("火器", 0);
                         StartCoroutine(PlayerHit(y, enemyNum, damage,0, PlayerPrefs.GetInt("火器", 0), 0));
                         for (int v = 0; v < 60; v++) { yield return null; }
@@ -877,6 +879,8 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                         damage = u1.DiceRoll(1, 10);
                         sentenceEnd = false;
                         for (y = 0; y < enemyNum - 1; y++) { if (enemyHP[y] >= 3 || (enemyHP[y] > 0 && humanFlag == false)) { break; } }
+                       yield return StartCoroutine(DiceEffect(0, 10, damage));
+                        for (int i = 0; i < 20; i++) { yield return null; }
                         enemyHP[y] -= damage;
                         StartCoroutine(PlayerHit(y, enemyNum, damage,0, 0, 0));
                         for (int v = 0; v < 60; v++) { yield return null; }
@@ -908,7 +912,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                 else
                 {
                     damage = u1.DiceRoll(1, 6);
-                    StartCoroutine(DiceEffect(0, 6, damage));
+                    yield return StartCoroutine(DiceEffect(0, 6, damage));
                     if (hanteiDice< PlayerPrefs.GetInt("[system]Skill46", 1))
                     {
                         int damage2;
@@ -1080,13 +1084,13 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         for (int v = 0; v < 100; v++) { yield return null; }
     }
 
-    private IEnumerator EnemyMiss(int target,int enemyNum)
+    private IEnumerator EnemyMiss(int target,int enemyNum,bool gunflag)
     {
         int targetGra=target;
         if (enemyNum == 1 && target == 0) { targetGra = 2; }
         if (enemyNum == 2) { if (target == 0) { targetGra = 1; } else { targetGra = 3; } }
         if (enemyNum == 3) { if (target == 0) { targetGra = 0; } else if (target==1) { targetGra = 2; } else { targetGra = 4; } }
-        SystemSEPlay(systemAudio[7]);
+        if (gunflag==true) { SystemSEPlay(systemAudio[4]); } else { SystemSEPlay(systemAudio[7]); }
         objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(targetGra * 150 - 300, CHARACTER_Y - 100, 0);
         TextDraw("", "相手の攻撃は当たらなかった。");
         for (int v = 0; v < 100; v++) { yield return null; }
@@ -1141,15 +1145,22 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         objCharacter[target].GetComponent<Image>().color = new Color(1, 1, 1);
     }
 
-    private IEnumerator EnemyHit(int target,int enemyNum, int damage,bool special)
+    private IEnumerator EnemyHit(int target,int enemyNum, int damage,bool special,int attacktype)
     {
         int targetGra = target;
         if (enemyNum == 1 && target == 0) { targetGra = 2; }
         if (enemyNum == 2) { if (target == 0) { targetGra = 1; } else { targetGra = 3; } }
         if (enemyNum == 3) { if (target == 0) { targetGra = 0; } else if (target == 1) { targetGra = 2; } else { targetGra = 4; } }
-
-        SystemSEPlay(systemAudio[5]);
         objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(targetGra * 150 - 300, CHARACTER_Y - 100, 0);
+        SystemSEPlay(systemAudio[attacktype]);
+        Image bo = GameObject.Find("BlackOut").GetComponent<Image>();
+        bo.enabled = true;
+        for (int i = 0; i < 5; i++)
+        {
+            bo.color = new Color(1, 0, 0, (float)(5 - i) / 5);
+            yield return null;
+        }
+        bo.enabled = false;
         if (special == false) { TextDraw("", damage.ToString() + "点のダメージを受けた。"); }
         else { TextDraw("","<color=red>スペシャル攻撃！</color>\n" + damage.ToString() + "点のダメージを受けた。\n敵は追加攻撃を行う。"); }
         for (int v = 0; v < 100; v++)
