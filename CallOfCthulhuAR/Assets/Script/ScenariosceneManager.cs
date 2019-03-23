@@ -60,8 +60,8 @@ public class ScenariosceneManager : MonoBehaviour
     private int sNum = 0;
     private bool pushButton;
     private string sectionName="";
-    public List<string> flagname=new List<string>();
-    public List<string> flagvalue = new List<string>();
+    public List<string> flagname=new List<string>();//イベントが異常終了した際にフラグ等をイベント前まで戻すための一時保存
+    public List<string> flagvalue = new List<string>();//イベントが異常終了した際にフラグ等をイベント前まで戻すための一時保存
     public GameObject inputBox;
     public AudioClip mp3Dammy;
     public List<string> tmpMP3Path = new List<string>();
@@ -128,8 +128,8 @@ public class ScenariosceneManager : MonoBehaviour
             sentenceEnd = false;
             if (scenarioText[i].Replace("\r", "").Replace("\n", "") == "[END]" || scenarioText[i].Replace("\r","").Replace("\n","") == "" || scenarioText[i] == null) { break; }
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Wait:"){ for (int k = 0; k <double.Parse(scenarioText[i].Substring(5).Replace("\r", "").Replace("\n", "")) * 60; k++) { yield return null; }sentenceEnd = true; }
-            if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Text:") { separate3Text = scenarioText[i].Substring(5).Replace("\r","").Replace("\n","").Split(','); TextDraw(separate3Text[0], separate3Text[1]);if (PlayerPrefs.GetInt("[system]" + sectionName + i.ToString(), 0)==1) { skipFlag2 = true; } if (separate3Text[2] == "true") { StartCoroutine(PushWait()); } else { sentenceEnd = true; } PlayerPrefs.SetInt("[system]" + sectionName + i.ToString(),1);if (skipFlag2 == false) {   PlayerPrefs.SetString("[system]バックログ" + logNum.ToString(), scenarioText[i].Substring(5).Replace(",false","").Replace(",true","").Replace("[system]改行", "").Replace(',', ':')); logNum++; if (logNum >= 1000) { logNum = 0; } PlayerPrefs.SetInt("[system]最新ログ番号", logNum); skipFlag2 = false; }}
-            if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "BackText:") {separateText=scenarioText[i].Substring(9).Replace("\r","").Replace("\n","").Split(','); BackTextDraw(separateText[0]); if (PlayerPrefs.GetInt("[system]" + sectionName + i.ToString(), 0) == 1) { skipFlag2 = true; } if (separateText[1] == "true") { StartCoroutine(PushWait()); } else { sentenceEnd = true; }  PlayerPrefs.SetInt("[system]" + sectionName + i.ToString(), 1);if (skipFlag2 == false) {  PlayerPrefs.SetString("[system]バックログ" + logNum.ToString(), separateText[0].Replace(",false", "").Replace(",true", "").Replace("[system]改行", "").Replace(',', ':')); logNum++; if (logNum >= 1000) { logNum = 0; } PlayerPrefs.SetInt("[system]最新ログ番号", logNum); skipFlag2 = false; }}
+            if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Text:") { separate3Text = scenarioText[i].Substring(5).Replace("\r","").Replace("\n","").Split(',');string[] tmp =TextReplace(separate3Text[0], separate3Text[1]); TextDraw(tmp[0], tmp[1]);if (PlayerPrefs.GetInt("[system]" + sectionName + i.ToString(), 0)==1) { skipFlag2 = true; } if (separate3Text[2] == "true") { StartCoroutine(PushWait()); } else { sentenceEnd = true; } PlayerPrefs.SetInt("[system]" + sectionName + i.ToString(),1);if (skipFlag2 == false) {   PlayerPrefs.SetString("[system]バックログ" + logNum.ToString(),"<" + tmp[0] + ">\r\n" + tmp[2]); logNum++; if (logNum >= 1000) { logNum = 0; } PlayerPrefs.SetInt("[system]最新ログ番号", logNum); skipFlag2 = false; }}
+            if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "BackText:") {separateText=scenarioText[i].Substring(9).Replace("\r","").Replace("\n","").Split(',');string[] tmp = TextReplace("",separateText[0]); BackTextDraw(tmp[1]); if (PlayerPrefs.GetInt("[system]" + sectionName + i.ToString(), 0) == 1) { skipFlag2 = true; } if (separateText[1] == "true") { StartCoroutine(PushWait()); } else { sentenceEnd = true; }  PlayerPrefs.SetInt("[system]" + sectionName + i.ToString(), 1);if (skipFlag2 == false) {  PlayerPrefs.SetString("[system]バックログ" + logNum.ToString(), tmp[2]); logNum++; if (logNum >= 1000) { logNum = 0; } PlayerPrefs.SetInt("[system]最新ログ番号", logNum); skipFlag2 = false; }}
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Back:") { BackDraw(int.Parse(scenarioText[i].Substring(5))); sentenceEnd = true; }
             if (scenarioText[i].Length > 4 && scenarioText[i].Substring(0, 4) == "BGM:") { separateText = scenarioText[i].Substring(4).Split(','); BGMIn(int.Parse(separateText[1].Replace("\r", "").Replace("\n", ""))); BGMPlay(int.Parse(separateText[0])); sentenceEnd = true; }
             if (scenarioText[i].Length > 8 && scenarioText[i].Substring(0, 8) == "BGMStop:") { BGMOut(int.Parse(scenarioText[i].Substring(8))); sentenceEnd = true; }
@@ -143,7 +143,7 @@ public class ScenariosceneManager : MonoBehaviour
             if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Hantei:") { separateText = scenarioText[i].Substring(7).Split(','); i += Hantei(separateText[0], int.Parse(separateText[1].Replace("\r", "").Replace("\n", ""))); while (sentenceEnd == false) { yield return null; };  for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }objRollText.gameObject.SetActive(false);PlayerPrefs.Save();skipFlag2 = false;sentenceEnd = false;StartCoroutine(PushWait()); while (sentenceEnd == false) { yield return null; } continue; }
             if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Battle:") { battleText = scenarioText[i].Substring(7).Split(',');int attacktype = 0; try { attacktype=int.Parse(battleText[13].Replace("\r", "").Replace("\n", "")); } catch { } battleFlag = -1; StartCoroutine(Battle(int.Parse(battleText[0]), int.Parse(battleText[1]), int.Parse(battleText[2]), int.Parse(battleText[3]), int.Parse(battleText[4]), int.Parse(battleText[5]), int.Parse(battleText[6]),bool.Parse(battleText[7]), battleText[8], battleText[9], int.Parse(battleText[10]), int.Parse(battleText[11]), bool.Parse(battleText[12].Replace("\r", "").Replace("\n", "")),attacktype)); while (battleFlag == -1) { yield return null; }; i += battleFlag;sentenceEnd = false; StartCoroutine(PushWait()); while (sentenceEnd == false) { yield return null; }continue; }
             if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "FlagBranch:") { separateText = scenarioText[i].Substring(11).Replace("\r", "").Replace("\n", "").Split(','); if (PlayerPrefs.GetInt(separateText[0], 0) < int.Parse(separateText[1]) ) { i++; }continue; }
-            if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "FlagChange:"){separate3Text = scenarioText[i].Substring(11).Replace("\r", "").Replace("\n","").Split(','); if (flagname.Contains(separate3Text[0])) { } else { flagname.Add(separate3Text[0]); flagvalue.Add(PlayerPrefs.GetInt(separate3Text[0]).ToString()); } if (separate3Text[1] == "") { FlagChange(separate3Text[0], 0, int.Parse(separate3Text[2]), true); } else { FlagChange(separate3Text[0], int.Parse(separate3Text[1]), 0, false); }  sentenceEnd = true; }
+            if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "FlagChange:"){separate3Text = scenarioText[i].Substring(11).Replace("\r", "").Replace("\n","").Split(','); if (flagname.Contains(separate3Text[0])) { } else { flagname.Add(separate3Text[0]); flagvalue.Add(PlayerPrefs.GetInt(separate3Text[0]).ToString()); } if (separate3Text[1] == "") { FlagChange(separate3Text[0], 0, separate3Text[2].Replace("\r", "").Replace("\n", ""), true); } else { FlagChange(separate3Text[0], int.Parse(separate3Text[1]), "", false); }  sentenceEnd = true; }
             if (scenarioText[i].Length > 8 && scenarioText[i].Substring(0, 8) == "GetTime:"){ dt = DateTime.Now; PlayerPrefs.SetInt("[system]Month", dt.Month); PlayerPrefs.SetInt("[system]Day", dt.Day); PlayerPrefs.SetInt("[system]Hour",dt.Hour); PlayerPrefs.SetInt("[system]Minute", dt.Minute); sentenceEnd = true; }
             if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "FlagCopy:"){ separateText = scenarioText[i].Substring(9).Split(',');if (flagname.Contains(separateText[1].Replace("\r", "").Replace("\n", ""))) { } else { flagname.Add(separateText[1].Replace("\r", "").Replace("\n", "")); flagvalue.Add(PlayerPrefs.GetInt(separateText[1].Replace("\r", "").Replace("\n", "")).ToString()); } PlayerPrefs.SetInt(separateText[1].Replace("\r", "").Replace("\n", ""), PlayerPrefs.GetInt(separateText[0], 0));  sentenceEnd = true; }//フラグを別名で保存する
             if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "Difference:"){separate3Text = scenarioText[i].Substring(11).Split(',');i+=Difference(separate3Text);continue; }
@@ -266,10 +266,24 @@ public class ScenariosceneManager : MonoBehaviour
     }
 
 
-    private void FlagChange(string flagname,int value,int changevalue,bool changevalueflag)
+    private void FlagChange(string flagname,int value,string changevalue,bool changevalueflag)
     {
         if (changevalueflag==false) { PlayerPrefs.SetInt(flagname, value); }
-        if (changevalueflag==true) { PlayerPrefs.SetInt(flagname, PlayerPrefs.GetInt(flagname, 0) + changevalue); }
+        if (changevalueflag==true) {
+            if (changevalue.Contains("D"))
+            {
+
+
+
+
+
+
+            }
+            else
+            {
+                PlayerPrefs.SetInt(flagname, PlayerPrefs.GetInt(flagname, 0) + int.Parse(changevalue));
+            }
+        }
     }
 
     private IEnumerator BlackOut(int r,int g,int b,int time)
@@ -1444,44 +1458,15 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         SystemSEPlay(systemAudio[0]);
     }
 
-    private void TextDraw(string name,string text)
+    private string[] TextReplace(string name,string text)
     {
+        string[] backtext = new string[3];
         string yourName;
         string yourNickName;
-        objBackText.gameObject.SetActive(false);
-        objTextBox.gameObject.SetActive(true);
-        if (PlayerPrefs.GetString("[system]PlayerCharacterName", "") == "") { yourName = "名無し"; } else { yourName = PlayerPrefs.GetString("[system]PlayerCharacterName", "名無し"); }
-        if (PlayerPrefs.GetString("[system]PlayerCharacterNickName", "") == "") { yourNickName=yourName;  } else { yourNickName = PlayerPrefs.GetString("[system]PlayerCharacterNickName", "名無し"); }
-        text = text.Replace("[system]改行", "\r\n").Replace("[PC]",yourNickName).Replace("<PC>", yourNickName);
-
-        System.Text.RegularExpressions.Regex reg= new System.Text.RegularExpressions.Regex("<FLAG：.+?>");
-        System.Text.RegularExpressions.Match match= System.Text.RegularExpressions.Regex.Match(text, "<FLAG：.+?>");
-        while (match.Success)
-        {
-            string tmpstr = PlayerPrefs.GetInt(match.ToString().Replace("<FLAG：", "").Replace(">", ""), 0).ToString();
-            text = reg.Replace(text, tmpstr);
-            match = match.NextMatch();
-        }
-        objText.GetComponent<Text>().text = text;
-        if (name == "[PC]" || name == "<PC>")
-        {
-            objName.GetComponent<Text>().text = "　" + yourName;
-        }
-        else
-        {
-            objName.GetComponent<Text>().text = "　" + name;
-        }
-    }
-
-    private void BackTextDraw(string text)
-    {
-        string yourName, yourNickName;
-        //背景テキスト表示の際は通常テキスト欄は消す
-        objTextBox.gameObject.SetActive(false);
-        objBackText.gameObject.SetActive(true);
         if (PlayerPrefs.GetString("[system]PlayerCharacterName", "") == "") { yourName = "名無し"; } else { yourName = PlayerPrefs.GetString("[system]PlayerCharacterName", "名無し"); }
         if (PlayerPrefs.GetString("[system]PlayerCharacterNickName", "") == "") { yourNickName = yourName; } else { yourNickName = PlayerPrefs.GetString("[system]PlayerCharacterNickName", "名無し"); }
         text = text.Replace("[system]改行", "\r\n").Replace("[PC]", yourNickName).Replace("<PC>", yourNickName);
+
         System.Text.RegularExpressions.Regex reg = new System.Text.RegularExpressions.Regex("<FLAG：.+?>");
         System.Text.RegularExpressions.Match match = System.Text.RegularExpressions.Regex.Match(text, "<FLAG：.+?>");
         while (match.Success)
@@ -1490,6 +1475,40 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             text = reg.Replace(text, tmpstr);
             match = match.NextMatch();
         }
+        backtext[1] = text.Replace(" ", " ");
+        string text2=text;
+        System.Text.RegularExpressions.Regex reg2 = new System.Text.RegularExpressions.Regex("<size=.+?>");
+        System.Text.RegularExpressions.Match match2 = System.Text.RegularExpressions.Regex.Match(text, "<size=.+?>");
+        while (match2.Success)
+        {
+            text2 = reg2.Replace(text2,"");
+            match2 = match2.NextMatch();
+        }
+        backtext[2]=text2.Replace("</size>","") + "\r\n";
+        if (name == "[PC]" || name == "<PC>")
+            {
+                backtext[0] =  yourName.Replace(" ", " ");
+            }
+            else
+            {
+                backtext[0] = name.Replace(" ", " ");
+            }
+        return backtext;
+    }
+
+    private void TextDraw(string name,string text)
+    {
+        objBackText.gameObject.SetActive(false);
+        objTextBox.gameObject.SetActive(true);
+        objText.GetComponent<Text>().text = text;
+        objName.GetComponent<Text>().text = name;
+    }
+
+    private void BackTextDraw(string text)
+    {
+        //背景テキスト表示の際は通常テキスト欄は消す
+        objTextBox.gameObject.SetActive(false);
+        objBackText.gameObject.SetActive(true);
         objBackText.GetComponent<Text>().text = text;
     }
 
