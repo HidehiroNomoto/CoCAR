@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 using System.IO;
 
 public class BackLog : MonoBehaviour {
-    public GameObject obj,obj2,obj3,obj4,obj5,obj6,obj7,obj8;
+    public GameObject obj,obj2,obj3,obj4,obj5,obj6,obj7,obj8,obj9,obj10;
     GameObject objGame;
     private bool backLog = false;
     private bool itemFlag = false;
@@ -94,6 +94,7 @@ public class BackLog : MonoBehaviour {
             obj2.GetComponent<Text>().text = "";
             logNum2 = PlayerPrefs.GetInt("[system]最新ログ番号", 0);
             obj3.GetComponent<Text>().text = "戻る";
+            obj9.GetComponent<Image>().sprite = Resources.Load<Sprite>("yajirushiico");
             if (PlayerPrefs.GetString("[system]バックログ" + (logNum2 + 1).ToString(), "[NoLog!]") == "[NoLog!]") { logNum = 0; } else { logNum = logNum2 + 1; if (logNum >= 1000) { logNum = 0; } }
             for (int i = 0; i < 1000; i++)
             {
@@ -113,6 +114,7 @@ public class BackLog : MonoBehaviour {
             obj4.gameObject.SetActive(false);
             obj8.gameObject.SetActive(true);
             obj3.GetComponent<Text>().text = "BackLog";
+            obj9.GetComponent<Image>().sprite = Resources.Load<Sprite>("memoico");
             backLog = false;
         }
     }
@@ -133,6 +135,8 @@ public class BackLog : MonoBehaviour {
         {
             obj5.gameObject.SetActive(true);
             obj4.GetComponentInChildren<Text>().text = "戻る";
+            obj10.GetComponent<Image>().sprite = Resources.Load<Sprite>("yajirushiico");
+            obj10.GetComponent<Image>().color = new Color(1, 1, 1, (float)160 / 255);
             itemFlag = true;
             StartCoroutine(ItemSee());
         }
@@ -140,6 +144,8 @@ public class BackLog : MonoBehaviour {
         {
             obj5.gameObject.SetActive(false);
             obj4.GetComponentInChildren<Text>().text = "取得情報";
+            obj10.GetComponent<Image>().sprite = Resources.Load<Sprite>("cameraico");
+            obj10.GetComponent<Image>().color = new Color(1, 1, 1, (float)80 / 255);
             itemFlag = false;
         }  
     }

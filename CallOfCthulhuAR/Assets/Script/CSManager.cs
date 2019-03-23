@@ -558,6 +558,10 @@ public class CSManager : MonoBehaviour {
             }
             objCS.gameObject.SetActive(true);
             transform.GetChild(1).gameObject.GetComponent<Text>().text = "戻る";
+            transform.GetChild(0).gameObject.GetComponent<Image>().sprite = Resources.Load<Sprite>("yajirushiico");
+            transform.GetChild(0).gameObject.GetComponent<RectTransform>().sizeDelta = new Vector2(100,100);
+            transform.GetChild(0).gameObject.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
+            transform.GetChild(0).gameObject.GetComponent<Image>().color = new Color(1, 1, 1, (float)160 / 255);
         }
         else
         {
@@ -573,6 +577,10 @@ public class CSManager : MonoBehaviour {
             }
             objCS.gameObject.SetActive(false);
             transform.GetChild(1).gameObject.GetComponent<Text>().text = "Character\nsheet";
+            transform.GetChild(0).gameObject.GetComponent<Image>().sprite = Resources.Load<Sprite>("playerico");
+            transform.GetChild(0).gameObject.GetComponent<RectTransform>().sizeDelta = new Vector2(70, 100);
+            transform.GetChild(0).gameObject.GetComponent<RectTransform>().anchoredPosition = new Vector2(95, 0);
+            transform.GetChild(0).gameObject.GetComponent<Image>().color = new Color(1, 1, 1, (float)80 / 255);
         }
     }
 
