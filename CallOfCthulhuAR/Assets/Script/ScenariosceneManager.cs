@@ -1501,7 +1501,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         objBackText.gameObject.SetActive(false);
         objTextBox.gameObject.SetActive(true);
         objText.GetComponent<Text>().text = text;
-        objName.GetComponent<Text>().text = name;
+        objName.GetComponent<Text>().text = " " + name;
     }
 
     private void BackTextDraw(string text)
