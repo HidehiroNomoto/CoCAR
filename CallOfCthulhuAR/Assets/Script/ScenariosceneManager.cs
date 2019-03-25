@@ -1071,20 +1071,22 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             {
                 objCharacter[y].GetComponent<Image>().color = new Color(0.5f, 0.5f, 0.5f);
                 sentenceEnd = false;
-                catcher = Hantei("格闘", 0);
+                catcher = Hantei("格闘/2", 0);
                 while (sentenceEnd == false) { yield return null; }
                 for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                 objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
                 objCharacter[y].GetComponent<Image>().color = new Color(1, 1, 1);
                 y++;
-                if (catcher == 0) { catcherNum+=99;break; }
-                if (catcher == 2) { break; }
-                if (catcher == 1) { continue; }
+                for (int i = 0; i < 40; i++) { yield return null; }
+                if (catcher == 0) { TextDraw("", "スペシャル成功！\r\nあなたは絶妙な動きで敵を次々と縛り付けた。\r\n"); catcherNum +=99;break; }
+                if (catcher == 2) { TextDraw("", "失敗！\r\nあなたが手間取る隙に、全ての敵が拘束から抜け出した。\r\n"); break; }
+                if (catcher == 1) { TextDraw("", "成功！\r\nあなたは一人を拘束した。\r\n残り：" + (enemyNum - sleep - kill-catcherNum-1).ToString() + "人"); continue; }
             }
-            if (enemyNum - sleep - kill <= catcherNum) { for (int i = 0; i < enemyNum; i++) { if (enemyHP[i] > 3) { enemyHP[i] = 2; } } }//全員捕獲した場合のみ、それらのHPを２にして戦闘終了処理へ
+            for (int i = 0; i < 60; i++) { yield return null; }
+            if (enemyNum - sleep - kill <= catcherNum) { TextDraw("", "<color=blue>全ての敵を捕縛した！</color>"); for (int i = 0; i < enemyNum; i++) { if (enemyHP[i] > 2) { enemyHP[i] = 2; } } }//全員捕獲した場合のみ、それらのHPを２にして戦闘終了処理へ
             else
             {
-                TextDraw("", "<color=red>全員拘束には至らなかった……。</color>"); for (int i = 0; i < 80; i++) { yield return null; }
+                TextDraw("", "<color=red>敵の捕縛に失敗した……。</color>"); 
             }
         }
         selectNum = -1;
