@@ -1473,7 +1473,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         while (match.Success)
         {
             string tmpstr = PlayerPrefs.GetInt(match.ToString().Replace("<FLAG：", "").Replace(">", ""), 0).ToString();
-            text = reg.Replace(text, tmpstr);
+            text = System.Text.RegularExpressions.Regex.Replace(text,match.ToString(), tmpstr);
             match = match.NextMatch();
         }
         backtext[1] = text.Replace(" ", " ");
