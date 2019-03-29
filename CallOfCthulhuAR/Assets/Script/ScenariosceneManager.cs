@@ -833,9 +833,11 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
     private IEnumerator PlayerBattle(int detailAct,int[] enemyHP,bool humanFlag,int enemyNum)
     {
         int damage;
-        int y;
+        int y,z;
         int playerDB;
         int attack = 2;
+        bool tmp=false;
+        z = 0;
         Utility u1 = GetComponent<Utility>();
         if (detailAct == 0)
         {
@@ -863,12 +865,15 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                         for (int i = 0; i < 20; i++) { yield return null; }
                         enemyHP[y] -= damage + PlayerPrefs.GetInt("火器", 0);
                         StartCoroutine(PlayerHit(y, enemyNum, damage,0, PlayerPrefs.GetInt("火器", 0), 0));
+                        objText.GetComponent<Text>().text = objText.GetComponent<Text>().text + "\n(" + (x+1).ToString() + "発目/"+ (z+3).ToString() +"発)";
                         for (int v = 0; v < 60; v++) { yield return null; }
-                        if (attack == 0) { x--; }
+                        if (attack == 0) { x--;z++; objText.GetComponent<Text>().text = objText.GetComponent<Text>().text + "★追加攻撃"; }
                         for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                         objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
                         if (enemyHP[y] <= 0 || (enemyHP[y] <= 2 && humanFlag == true)) { objCharacter[y].gameObject.SetActive(false); }
                         for (int i = 0; i < 60; i++) { yield return null; }
+                        for (int i = 0; i < enemyNum; i++) { if (enemyHP[i] > 0 && (enemyHP[i] > 2 || humanFlag == false)) { break; }if (i == enemyNum - 1) { tmp = true; } }
+                        if (tmp == true) { break; }
                     }
                 }
             }
@@ -902,6 +907,8 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                         objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
                         if (enemyHP[y] <= 0 || (enemyHP[y] <= 2 && humanFlag == true)) { objCharacter[y].gameObject.SetActive(false); }
                         for (int i = 0; i < 60; i++) { yield return null; }
+                        for (int i = 0; i < enemyNum; i++) { if (enemyHP[i] > 0 && (enemyHP[i] > 2 || humanFlag == false)) { break; } if (i == enemyNum - 1) { tmp = true; } }
+                        if (tmp == true) { break; }
                     }
                 }
             }
@@ -949,6 +956,8 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                     objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
                     if (enemyHP[y] <= 0 || (enemyHP[y] <= 2 && humanFlag == true)) { objCharacter[y].gameObject.SetActive(false); }
                     for (int i = 0; i < 60; i++) { yield return null; }
+                    for (int i = 0; i < enemyNum; i++) { if (enemyHP[i] > 0 && (enemyHP[i] > 2 || humanFlag == false)) { break; } if (i == enemyNum - 1) { tmp = true; } }
+                    if (tmp == true) { break; }
                 }
             }
         }
@@ -986,6 +995,8 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                     objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
                     if (enemyHP[y] <= 0 || (enemyHP[y] <= 2 && humanFlag == true)) { objCharacter[y].gameObject.SetActive(false); }
                     for (int i = 0; i < 60; i++) { yield return null; }
+                    for (int i = 0; i < enemyNum; i++) { if (enemyHP[i] > 0 && (enemyHP[i] > 2 || humanFlag == false)) { break; } if (i == enemyNum - 1) { tmp = true; } }
+                    if (tmp == true) { break; }
                 }
             }
         }
