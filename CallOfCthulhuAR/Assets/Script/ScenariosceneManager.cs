@@ -200,7 +200,7 @@ public class ScenariosceneManager : MonoBehaviour
                 }
             }
             //if (tmp.Length > 1) { if (int.TryParse(tmp[1], out tmpint)) { if (tmpint >= 0) { dice[0] = dice[0].Replace("+", "+-"); } else { dice[0] = dice[0].Replace("+-", "+"); } } }
-            if (dice[0].Contains("D")) { str[1] = "-" + dice[0]; } else { str[1] = dice[0]; }
+            if (dice[0].Contains("D")) { str[1] = "-" + dice[0]; } else { str[1] = "-" + dice[0]; }
             StartCoroutine(StatusChange(str,true));
         }
         //失敗時の減少
@@ -216,7 +216,7 @@ public class ScenariosceneManager : MonoBehaviour
                 }
             }
             //if (tmp.Length > 1) { if (int.TryParse(tmp[1], out tmpint)) { if (tmpint >= 0) { dice[1] = dice[1].Replace("+", "+-"); } else { dice[1] = dice[1].Replace("+-", "+"); } } }
-            if (dice[1].Contains("D")) { str[1] = "-" + dice[1]; } else { str[1] = dice[1]; }
+            if (dice[1].Contains("D")) { str[1] = "-" + dice[1]; } else { str[1] = "-" + dice[1]; }
             StartCoroutine(StatusChange(str,true));
         }
         while (sentenceEnd == false) { yield return null; }

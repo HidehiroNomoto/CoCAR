@@ -86,8 +86,14 @@ public class MapScene : MonoBehaviour
 
     void Update()
     {
-        if (!zoomNow) { GetPos(); }
-        if ((Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer) || Input.location.status == LocationServiceStatus.Running || VMode > 0) { if (mapLoad == true) { IventCheck(); } }
+        if ((Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer) || Input.location.status == LocationServiceStatus.Running || VMode > 0)
+        {
+            if (mapLoad == true)
+            {
+                if (!zoomNow) { GetPos(); }
+                 IventCheck();
+            }
+        }
         objBGM.GetComponent<Text>().text = longitude.ToString() + "," + latitude.ToString();
         //地図の更新は、マップ範囲から出た時かつ時間が相当経過している時に。（時間変数入れないと、場所によってはGPS誤差でマップ連続読込になりかねない）
         if (((longitude > longitudeMap + 750 / zoomPow) ||
