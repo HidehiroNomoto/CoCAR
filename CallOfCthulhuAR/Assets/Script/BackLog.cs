@@ -11,6 +11,7 @@ public class BackLog : MonoBehaviour {
     private bool backLog = false;
     private bool itemFlag = false;
     public int startLog = 0;
+    private Sprite s1;
 	// Use this for initialization
 	void Start () {
 
@@ -197,7 +198,7 @@ public class BackLog : MonoBehaviour {
                 mousePos = Vector3.zero;
                 changeFlag = false;
             }
-            yield return null;  
+            yield return null;
         }
     }
 
@@ -220,35 +221,21 @@ public class BackLog : MonoBehaviour {
             if (ze != null)
             {
                 //pngファイルの場合
-                if (path.Substring(path.Length - 4) == ".png")
+                if (path.Substring(path.Length - 4) == ".png" || path.Substring(path.Length - 4) == ".PNG" || path.Substring(path.Length - 4) == ".jpg" || path.Substring(path.Length - 4) == ".JPG")
                 {
                     //閲覧するZIPエントリのStreamを取得
                     Stream fs = zf.GetInputStream(ze);
                     buffer = ReadBinaryData(fs);//bufferにbyte[]になったファイルを読み込み
 
                     // 画像を取り出す
-                    //横サイズ
-                    int pos = 16;
-                    int width = 0;
-                    for (int i = 0; i < 4; i++)
-                    {
-                        width = width * 256 + buffer[pos++];
-                    }
-                    //縦サイズ
-                    int height = 0;
-                    for (int i = 0; i < 4; i++)
-                    {
-                        height = height * 256 + buffer[pos++];
-                    }
-                    //byteからTexture2D作成
-                    Texture2D texture = new Texture2D(width, height);
-                    texture.LoadImage(buffer);
 
-                    // 読み込んだ画像からSpriteを作成する
-                    obj6.GetComponent<RectTransform>().sizeDelta = new Vector2(texture.width, texture.height);
+                    //byteからTexture2D作成
+                    Texture2D texture = new Texture2D(1, 1);
+                    texture.LoadImage(buffer);
                     obj6.GetComponent<Image>().sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
                     //閉じる
                     fs.Close();
+
                 }
             }
             //閉じる

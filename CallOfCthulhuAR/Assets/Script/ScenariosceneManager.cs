@@ -48,6 +48,7 @@ public class ScenariosceneManager : MonoBehaviour
     public Sprite skip;
     public Sprite play;
     public GameObject objSkipImage;
+    public GameObject objDiceButton;
     public bool skipFlag = false;
     public bool skipFlag2 = false;
     public bool backLogCSFlag = false;
@@ -68,6 +69,9 @@ public class ScenariosceneManager : MonoBehaviour
     public GameObject objReview;
     private int ask = 0;
     private int hanteiDice=1;
+    private int hanteikekka = 2;
+    private bool hanteiWait = true;
+    private string proxySkill;
 
     // Use this for initialization
     void Start()
@@ -140,7 +144,7 @@ public class ScenariosceneManager : MonoBehaviour
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Jump:") { StartCoroutine(CharacterJump(int.Parse(scenarioText[i].Substring(5, 1).Replace("\r", "").Replace("\n", "")))); }
             if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Select:") { buttonText = scenarioText[i].Substring(7).Split(','); StartCoroutine(Select(buttonText[0], buttonText[1], buttonText[2], buttonText[3].Replace("\r", "").Replace("\n", ""),false)); while (sentenceEnd == false) { yield return null; }; SystemSEPlay(systemAudio[3]); i += selectNum; continue; }
             if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "NextFile:") { LoadFile(scenarioText[i].Substring(9).Replace("\r", "").Replace("\n", "")); i = 0; sentenceEnd = true; continue; }
-            if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Hantei:") { separateText = scenarioText[i].Substring(7).Split(','); i += Hantei(separateText[0], int.Parse(separateText[1].Replace("\r", "").Replace("\n", ""))); while (sentenceEnd == false) { yield return null; };  for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }objRollText.gameObject.SetActive(false);PlayerPrefs.Save();skipFlag2 = false;sentenceEnd = false;StartCoroutine(PushWait()); while (sentenceEnd == false) { yield return null; } continue; }
+            if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Hantei:") { separateText = scenarioText[i].Substring(7).Split(','); yield return StartCoroutine(Hantei(separateText[0], int.Parse(separateText[1].Replace("\r", "").Replace("\n", ""))));i += hanteikekka; for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }objRollText.gameObject.SetActive(false);PlayerPrefs.Save();skipFlag2 = false; continue; }
             if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Battle:") { battleText = scenarioText[i].Substring(7).Split(',');int attacktype = 0; try { attacktype=int.Parse(battleText[13].Replace("\r", "").Replace("\n", "")); } catch { } battleFlag = -1; StartCoroutine(Battle(int.Parse(battleText[0]), int.Parse(battleText[1]), int.Parse(battleText[2]), int.Parse(battleText[3]), int.Parse(battleText[4]), int.Parse(battleText[5]), int.Parse(battleText[6]),bool.Parse(battleText[7]), battleText[8], battleText[9], int.Parse(battleText[10]), int.Parse(battleText[11]), bool.Parse(battleText[12].Replace("\r", "").Replace("\n", "")),attacktype)); while (battleFlag == -1) { yield return null; }; i += battleFlag;sentenceEnd = false; StartCoroutine(PushWait()); while (sentenceEnd == false) { yield return null; }continue; }
             if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "FlagBranch:") { separateText = scenarioText[i].Substring(11).Replace("\r", "").Replace("\n", "").Split(','); if (PlayerPrefs.GetInt(separateText[0], 0) < int.Parse(separateText[1]) ) { i++; }continue; }
             if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "FlagChange:") { sentenceEnd = true; separate3Text = scenarioText[i].Substring(11).Replace("\r", "").Replace("\n","").Split(','); if (flagname.Contains(separate3Text[0])) { } else { flagname.Add(separate3Text[0]); flagvalue.Add(PlayerPrefs.GetInt(separate3Text[0]).ToString()); } if (separate3Text[1] == "") { FlagChange(separate3Text[0], 0, separate3Text[2].Replace("\r", "").Replace("\n", ""), true); } else { FlagChange(separate3Text[0], int.Parse(separate3Text[1]), "", false); }  }
@@ -185,7 +189,8 @@ public class ScenariosceneManager : MonoBehaviour
         int nowSAN = PlayerPrefs.GetInt("[system]正気度ポイント",0);
         sentenceEnd = false;
         //正気度ポイントで判定して成功か失敗か
-        kekka = Hantei("正気度ポイント",0); while (sentenceEnd == false) { yield return null; };  sentenceEnd = false; StartCoroutine(PushWait()); while (sentenceEnd == false) { yield return null; }
+        yield return StartCoroutine(Hantei("正気度ポイント",0)); 
+        kekka = hanteikekka;
         sentenceEnd = false;
         //成功時の減少
         if (kekka < 2)
@@ -227,7 +232,8 @@ public class ScenariosceneManager : MonoBehaviour
         //アイデア判定
         if (SANCheckFlag == -1)
         {
-            kekka = Hantei("アイデア", 0); while (sentenceEnd == false) { yield return null; }; 
+            yield return StartCoroutine(Hantei("アイデア", 0));
+            kekka = hanteikekka; 
             sentenceEnd = false; StartCoroutine(PushWait()); while (sentenceEnd == false) { yield return null; }
             sentenceEnd = false;
             //失敗なら何事もなく
@@ -713,10 +719,11 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                         if (humanFlag==true && cutFlag==true && attacktype!=2)
                         {
                             sentenceEnd = false;
-                            avoid = Hantei("武器術", 0);
+                            StartCoroutine(Hantei("回避", 0));
                             objRollText.GetComponent<Text>().text = "受け流し\n（武器術）" + objRollText.GetComponent<Text>().text.Substring(3);
-                            if (avoid >= 1) { cutFlag = false; }
                             while (sentenceEnd == false) { yield return null; }
+                            avoid = hanteikekka;
+                            if (avoid >= 1) { cutFlag = false; }
                             for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                             objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
                             if (avoid <=1 )
@@ -729,9 +736,8 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                         }
                         if (selectNum==1)
                         {
-                            sentenceEnd = false;
-                            avoid = Hantei("回避", 0);
-                            while (sentenceEnd == false) { yield return null; }
+                            yield return StartCoroutine(Hantei("回避", 0));
+                            avoid = hanteikekka;
                             for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                             objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
                             if (avoid >= 2) { selectNum = -1; }         
@@ -773,10 +779,9 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             }//拘束２（相手より遅い場合）
             if(selectNum==3 && playerHP>2)
             {
-                sentenceEnd = false;
-                if (Hantei(tokusyuSkill, tokusyuSkillBonus) < 2)
+                yield return StartCoroutine(Hantei(tokusyuSkill, tokusyuSkillBonus));
+                if (hanteikekka < 2)
                 {
-                    while (sentenceEnd == false) { yield return null; }
                     for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                     objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
                     battleFlag = 0; BattleEnd(playerHP); yield break;
@@ -837,17 +842,16 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         int playerDB;
         int attack = 2;
         bool tmp=false;
-        z = 0;
+        z = 3;
         Utility u1 = GetComponent<Utility>();
         if (detailAct == 0)
         {
             if (PlayerPrefs.GetInt("火器", 0) > 0)
             {
-                for (int x = 0; x < 3; x++)
+                for (int x = 0; x < z; x++)
                 {
-                    sentenceEnd = false;
-                    attack = Hantei("火器", 0);
-                    while (sentenceEnd == false) { yield return null; }
+                    yield return StartCoroutine(Hantei("火器", 0));
+                    attack = hanteikekka;
                     for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                     objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
                     if (attack == 2)
@@ -855,6 +859,8 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                         sentenceEnd = false;
                         for (y = 0; y < enemyNum - 1; y++) { if (enemyHP[y] >= 3 || (enemyHP[y] > 0 && humanFlag == false)) { break; } }
                         StartCoroutine(PlayerMiss(y, enemyNum));
+                        objText.GetComponent<Text>().text = objText.GetComponent<Text>().text + "\n(" + (x + 1).ToString() + "発目/" + z.ToString() + "発)";
+                        for (int i = 0; i < 100; i++) { yield return null; }
                     }
                     else
                     {
@@ -865,9 +871,8 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                         for (int i = 0; i < 20; i++) { yield return null; }
                         enemyHP[y] -= damage + PlayerPrefs.GetInt("火器", 0);
                         StartCoroutine(PlayerHit(y, enemyNum, damage,0, PlayerPrefs.GetInt("火器", 0), 0));
-                        objText.GetComponent<Text>().text = objText.GetComponent<Text>().text + "\n(" + (x+1).ToString() + "発目/"+ (z+3).ToString() +"発)";
-                        for (int v = 0; v < 60; v++) { yield return null; }
-                        if (attack == 0) { x--;z++; objText.GetComponent<Text>().text = objText.GetComponent<Text>().text + "★追加攻撃"; }
+                        objText.GetComponent<Text>().text = objText.GetComponent<Text>().text + "\n(" + (x+1).ToString() + "発目/"+ z.ToString() +"発)";
+                        if (attack == 0) { z++; objText.GetComponent<Text>().text = objText.GetComponent<Text>().text + "★追加攻撃"; }
                         for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                         objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
                         if (enemyHP[y] <= 0 || (enemyHP[y] <= 2 && humanFlag == true)) { objCharacter[y].gameObject.SetActive(false); }
@@ -881,9 +886,8 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             {
                 for (int x = 0; x < 1; x++)
                 {
-                    sentenceEnd = false;
-                    attack = Hantei("投擲", 0);
-                    while (sentenceEnd == false) { yield return null; }
+                    yield return StartCoroutine(Hantei("投擲", 0));
+                    attack = hanteikekka;
                     for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                     objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
                     if (attack == 2)
@@ -917,9 +921,8 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         {
             for (int x = 0; x < 1; x++)
             {
-                sentenceEnd = false;
-                attack = Hantei("格闘", 0);
-                while (sentenceEnd == false) { yield return null; }
+                yield return StartCoroutine(Hantei("格闘", 0));
+                attack = hanteikekka;
                 for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                 objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
                 if (attack == 0) { x--; }
@@ -965,9 +968,8 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         {
             for (int x = 0; x < 1; x++)
             {
-                sentenceEnd = false;
-                attack = Hantei("武器術", 0);
-                while (sentenceEnd == false) { yield return null; }
+                yield return StartCoroutine(Hantei("武器術", 0));
+                attack = hanteikekka;
                 for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                 objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
                 if (attack ==0) {x--; }
@@ -1081,9 +1083,8 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             for (catcherNum = 0; catcherNum < enemyNum - sleep - kill; catcherNum++)
             {
                 objCharacter[y].GetComponent<Image>().color = new Color(0.5f, 0.5f, 0.5f);
-                sentenceEnd = false;
-                catcher = Hantei("格闘/2", 0);
-                while (sentenceEnd == false) { yield return null; }
+                yield return StartCoroutine(Hantei("格闘/2", 0));
+                catcher = hanteikekka;
                 for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                 objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
                 objCharacter[y].GetComponent<Image>().color = new Color(1, 1, 1);
@@ -1382,7 +1383,13 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         return target;
     }
 
-    private int Hantei(string targetStr,int bonus)
+    public void HanteiDiceRoll()
+    {
+        hanteiWait = false;
+        objDiceButton.SetActive(false);
+    }
+
+    private IEnumerator Hantei(string targetStr,int bonus)
     {
         int target=0;
         string bonusStr="";
@@ -1391,30 +1398,35 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         if (bonus > 0) { bonusStr = " + " + bonus.ToString(); }
         if (bonus < 0) { bonusStr = " - " + (-1*bonus).ToString(); }
         objRollText.gameObject.SetActive(true);
+        objDiceButton.SetActive(true);
         if (target > -bonus) { objRollText.GetComponent<Text>().text = targetStr + bonusStr + "\n" + "<color=#88ff88ff>" + (target + bonus).ToString() + "</color>"; } else { objRollText.GetComponent<Text>().text = targetStr + bonusStr + "\n" + "<color=#88ff88ff>" + "自動失敗" + "</color>"; }
         Utility u1 = GetComponent<Utility>();
         objTextBox.gameObject.SetActive(true);
+        hanteiWait = true;
+        proxySkill = targetStr;
+        while (hanteiWait) { yield return null; }
+        targetStr = proxySkill;
         hanteiDice =u1.DiceRoll(1, 100);
         if (hanteiDice != 100) { StartCoroutine(DiceEffect(0, 10, hanteiDice / 10)); } else { StartCoroutine(DiceEffect(0, 10, 0)); }
-        StartCoroutine(DiceEffect(1, 10, hanteiDice % 10));
-        StartCoroutine(DiceText(hanteiDice, target, bonus,targetStr,bonusStr));
+        yield return StartCoroutine(DiceEffect(1, 10, hanteiDice % 10));
+        yield return StartCoroutine(DiceText(hanteiDice, target, bonus,targetStr,bonusStr));
         if (hanteiDice > target + bonus)
         {
-            return 2;
+            hanteikekka=2;
         }
         else
         {
             if (hanteiDice <= (target+bonus)/5)
             {
-                return 0;
+                hanteikekka=0;
             }
-            return 1;
+            hanteikekka=1;
         }
     }
 
     private IEnumerator DiceText(int dice, int target, int bonus,string targetStr,string bonusStr)
     {
-        for (int j = 0; j < 50; j++) { yield return null; }
+        //for (int j = 0; j < 50; j++) { yield return null; }
         if (dice > target + bonus)
         {
             objText.GetComponent<Text>().text = "<color=#ff0000ff>[DiceRoll]\n1D100→　" + dice.ToString() + " > " + (target + bonus).ToString() + " (<" + targetStr + ">" + bonusStr + ")\n<size=72>（失敗）</size></color>";
@@ -1431,7 +1443,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             for (int j = 0; j < 40; j++) { yield return null; }
             SystemSEPlay(systemAudio[1]);
         }
-        sentenceEnd = true;
+        yield return StartCoroutine(PushWait());    
     }
 
 
@@ -1547,7 +1559,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         backNum = back;
         BackTextDraw("");
         for (int i = 0; i < itemNumMax; i++) { if (PlayerPrefs.GetString("[system]Item" + i.ToString())==scenarioGraphicToPath[item]) { return; } }//既に持ってたらセーブしない。
-        PlayerPrefs.SetString("[system]Item" + PlayerPrefs.GetInt("[system]所持アイテム数", 0),scenarioGraphicToPath[item]);
+        PlayerPrefs.SetString("[system]Item" + PlayerPrefs.GetInt("[system]所持アイテム数", 0).ToString(),scenarioGraphicToPath[item]);
         PlayerPrefs.SetInt("[system]所持アイテム数", PlayerPrefs.GetInt("[system]所持アイテム数", 0) + 1);
     }
 
