@@ -69,7 +69,7 @@ public class ScenariosceneManager : MonoBehaviour
     public GameObject objReview;
     private int ask = 0;
     private int hanteiDice=1;
-    private int hanteikekka = 2;
+    public int hanteikekka = 2;
     private bool hanteiWait = true;
     private string proxySkill;
 
@@ -145,7 +145,7 @@ public class ScenariosceneManager : MonoBehaviour
             if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Select:") { buttonText = scenarioText[i].Substring(7).Split(','); StartCoroutine(Select(buttonText[0], buttonText[1], buttonText[2], buttonText[3].Replace("\r", "").Replace("\n", ""),false)); while (sentenceEnd == false) { yield return null; }; SystemSEPlay(systemAudio[3]); i += selectNum; continue; }
             if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "NextFile:") { LoadFile(scenarioText[i].Substring(9).Replace("\r", "").Replace("\n", "")); i = 0; sentenceEnd = true; continue; }
             if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Hantei:") { separateText = scenarioText[i].Substring(7).Split(','); yield return StartCoroutine(Hantei(separateText[0], int.Parse(separateText[1].Replace("\r", "").Replace("\n", ""))));i += hanteikekka; for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }objRollText.gameObject.SetActive(false);PlayerPrefs.Save();skipFlag2 = false; continue; }
-            if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Battle:") { battleText = scenarioText[i].Substring(7).Split(',');int attacktype = 0; try { attacktype=int.Parse(battleText[13].Replace("\r", "").Replace("\n", "")); } catch { } battleFlag = -1; StartCoroutine(Battle(int.Parse(battleText[0]), int.Parse(battleText[1]), int.Parse(battleText[2]), int.Parse(battleText[3]), int.Parse(battleText[4]), int.Parse(battleText[5]), int.Parse(battleText[6]),bool.Parse(battleText[7]), battleText[8], battleText[9], int.Parse(battleText[10]), int.Parse(battleText[11]), bool.Parse(battleText[12].Replace("\r", "").Replace("\n", "")),attacktype)); while (battleFlag == -1) { yield return null; }; i += battleFlag;sentenceEnd = false; StartCoroutine(PushWait()); while (sentenceEnd == false) { yield return null; }continue; }
+            if (scenarioText[i].Length > 7 && scenarioText[i].Substring(0, 7) == "Battle:") { battleText = scenarioText[i].Substring(7).Split(',');int attacktype = 0; try { attacktype=int.Parse(battleText[13].Replace("\r", "").Replace("\n", "")); } catch { } battleFlag = -1; StartCoroutine(Battle(int.Parse(battleText[0]), int.Parse(battleText[1]), int.Parse(battleText[2]), int.Parse(battleText[3]), int.Parse(battleText[4]), int.Parse(battleText[5]), int.Parse(battleText[6]),bool.Parse(battleText[7]), battleText[8], battleText[9], int.Parse(battleText[10]), int.Parse(battleText[11]), bool.Parse(battleText[12].Replace("\r", "").Replace("\n", "")),attacktype)); while (battleFlag == -1) { yield return null; }; i += battleFlag;continue; }
             if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "FlagBranch:") { separateText = scenarioText[i].Substring(11).Replace("\r", "").Replace("\n", "").Split(','); if (PlayerPrefs.GetInt(separateText[0], 0) < int.Parse(separateText[1]) ) { i++; }continue; }
             if (scenarioText[i].Length > 11 && scenarioText[i].Substring(0, 11) == "FlagChange:") { sentenceEnd = true; separate3Text = scenarioText[i].Substring(11).Replace("\r", "").Replace("\n","").Split(','); if (flagname.Contains(separate3Text[0])) { } else { flagname.Add(separate3Text[0]); flagvalue.Add(PlayerPrefs.GetInt(separate3Text[0]).ToString()); } if (separate3Text[1] == "") { FlagChange(separate3Text[0], 0, separate3Text[2].Replace("\r", "").Replace("\n", ""), true); } else { FlagChange(separate3Text[0], int.Parse(separate3Text[1]), "", false); }  }
             if (scenarioText[i].Length > 8 && scenarioText[i].Substring(0, 8) == "GetTime:"){ dt = DateTime.Now; PlayerPrefs.SetInt("[system]Month", dt.Month); PlayerPrefs.SetInt("[system]Day", dt.Day); PlayerPrefs.SetInt("[system]Hour",dt.Hour); PlayerPrefs.SetInt("[system]Minute", dt.Minute); sentenceEnd = true; }
@@ -640,7 +640,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         return 1;
     }
 
-    private void BattleBegin(int enemyGraph,int enemyNum,int HP,int playerHP,ref int[] enemyHP)
+    private void BattleBegin(int enemyGraph,int enemyNum,int HP,int playerHP,ref int[] enemyHP,ref int enemyMaxHP)
     {
         TextDraw(" ", "<size=72>戦闘開始</size>");
         for (int i = 0; i < 5; i++)
@@ -654,6 +654,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             enemyHP[i] = HP;
             ObjSizeChangeToGraph(i, scenarioGraphic[enemyGraph]);
         }
+        enemyMaxHP = HP;
         if (enemyNum == 1) { objCharacter[0].GetComponent<RectTransform>().localPosition =new Vector3(0, CHARACTER_Y, 1); }
         if (enemyNum == 2) { objCharacter[0].GetComponent<RectTransform>().localPosition = new Vector3(1 * 150 - 300, CHARACTER_Y, 1); objCharacter[1].GetComponent<RectTransform>().localPosition = new Vector3(3 * 150 - 300, CHARACTER_Y, 1); }
         if (enemyNum == 3) { objCharacter[1].GetComponent<RectTransform>().localPosition = new Vector3(2 * 150 - 300, CHARACTER_Y, 1); objCharacter[2].GetComponent<RectTransform>().localPosition = new Vector3(4 * 150 - 300, CHARACTER_Y, 1); }
@@ -663,6 +664,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
     private IEnumerator Battle(int enemyGraph, int enemyNum, int HP, int DEX, int AttackPercent, int ATDiceNum, int ATDice,bool humanFlag,string tokusyu,string tokusyuSkill,int tokusyuSkillBonus,int maxTurn,bool maxTurnWin,int attacktype)
     {
         int[] enemyHP = new int[enemyNum];
+        int enemyMaxHP=0;
         int kill = 0;
         int sleep = 0;
         int playerHP = PlayerPrefs.GetInt("[system]耐久力", 0);
@@ -673,7 +675,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         int tmpDice;
         bool cutFlag = false;
 
-        BattleBegin(enemyGraph,enemyNum,HP,playerHP,ref enemyHP);
+        BattleBegin(enemyGraph,enemyNum,HP,playerHP,ref enemyHP,ref enemyMaxHP);
 
         Utility u1 = GetComponent<Utility>();
         for (int x=0;x<maxTurn || maxTurn==-1;x++)
@@ -698,7 +700,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             for (int v = 0; v < 50; v++) { yield return null; }
             if (DEX <= playerDEX && selectNum==0 && playerHP>2)
             {
-                StartCoroutine(PlayerBattle(detailAct, enemyHP, humanFlag, enemyNum));
+                StartCoroutine(PlayerBattle(detailAct, enemyHP, humanFlag, enemyNum,enemyMaxHP));
                 while (selectNum == 0) { yield return null; }
                 for (int v = 0; v < 100; v++) { yield return null; }
             }//攻撃１（相手より早い場合）
@@ -767,7 +769,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             }//敵の攻撃
             if(selectNum == 0 && playerHP>2)
             {
-                StartCoroutine(PlayerBattle(detailAct, enemyHP, humanFlag, enemyNum));
+                StartCoroutine(PlayerBattle(detailAct, enemyHP, humanFlag, enemyNum,enemyMaxHP));
                 while (selectNum == 0) {  yield return null; }
                 for (int v = 0; v < 100; v++) { yield return null; }
             }//攻撃２（相手より遅い場合）
@@ -784,7 +786,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                 {
                     for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                     objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
-                    battleFlag = 0; BattleEnd(playerHP); yield break;
+                    battleFlag = 0; yield return StartCoroutine(BattleEnd(playerHP)); yield break;
                 }
                 while (sentenceEnd == false) { yield return null; }
                 for (int v = 0; v < 100; v++) { yield return null; }
@@ -795,14 +797,14 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             for (int i = 0; i < enemyNum; i++) { if (enemyHP[i] <= 2 && humanFlag==true) { sleep++; } if (enemyHP[i] <= 0) { kill++; sleep--; } }
             if (sleep + kill == enemyNum)
             {
-                BattleEnd(playerHP);
+                yield return StartCoroutine(BattleEnd(playerHP));
                 if (kill == enemyNum) { battleFlag = 1; yield break; }//皆殺し勝利
                 if (sleep == enemyNum) { battleFlag = 3; yield break; }//全員生存勝利
                 battleFlag = 2; yield break;//生存・死亡両方あり勝利
             }//勝ち
             if (playerHP <= 2)
             {
-                BattleEnd(playerHP);
+                yield return StartCoroutine(BattleEnd(playerHP));
                 if (playerHP <= 0) { battleFlag = 5; yield break; }//死亡敗北
                 battleFlag = 4; yield break;//生存敗北
             }//負け
@@ -810,7 +812,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         }
         //戦闘終了判定
         for (int i = 0; i < enemyNum; i++) { if (enemyHP[i] <= 2 && humanFlag==true) { sleep++; } if (enemyHP[i] <= 0) { kill++; sleep--; } }
-        BattleEnd(playerHP);
+        yield return StartCoroutine(BattleEnd(playerHP));
         if (maxTurnWin == true)
         {
             if (kill == enemyNum) { battleFlag = 1; yield break; }//皆殺し勝利
@@ -824,18 +826,21 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         }
     }
 
-    private void BattleEnd(int playerHP)
+    private IEnumerator BattleEnd(int playerHP)
     {
         PlayerPrefs.SetInt("[system]耐久力", playerHP);
         TextDraw(" ", "<size=72>戦闘終了</size>");
+        yield return StartCoroutine(PushWait());
         for (int i = 0; i < 5; i++)
         {
+            objCharacter[i].GetComponentInChildren<Text>().text = "";
+            objCharacter[i].GetComponent<Image>().enabled = true;
             objCharacter[i].GetComponent<RectTransform>().localPosition = new Vector3(i * 150 - 300, CHARACTER_Y, 1);
             objCharacter[i].gameObject.SetActive(false);
         }
     }
 
-    private IEnumerator PlayerBattle(int detailAct,int[] enemyHP,bool humanFlag,int enemyNum)
+    private IEnumerator PlayerBattle(int detailAct,int[] enemyHP,bool humanFlag,int enemyNum,int enemyMaxHP)
     {
         int damage;
         int y,z;
@@ -870,12 +875,12 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                         yield return StartCoroutine(DiceEffect(0, 10, damage));
                         for (int i = 0; i < 20; i++) { yield return null; }
                         enemyHP[y] -= damage + PlayerPrefs.GetInt("火器", 0);
-                        StartCoroutine(PlayerHit(y, enemyNum, damage,0, PlayerPrefs.GetInt("火器", 0), 0));
+                        StartCoroutine(PlayerHit(y, enemyNum, damage,0, PlayerPrefs.GetInt("火器", 0), 0, enemyHP, humanFlag, enemyMaxHP));
                         objText.GetComponent<Text>().text = objText.GetComponent<Text>().text + "\n(" + (x+1).ToString() + "発目/"+ z.ToString() +"発)";
                         if (attack == 0) { z++; objText.GetComponent<Text>().text = objText.GetComponent<Text>().text + "★追加攻撃"; }
                         for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                         objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
-                        if (enemyHP[y] <= 0 || (enemyHP[y] <= 2 && humanFlag == true)) { objCharacter[y].gameObject.SetActive(false); }
+                        if (enemyHP[y] <= 0 || (enemyHP[y] <= 2 && humanFlag == true)) { objCharacter[y].GetComponent<Image>().enabled=false; }
                         for (int i = 0; i < 60; i++) { yield return null; }
                         for (int i = 0; i < enemyNum; i++) { if (enemyHP[i] > 0 && (enemyHP[i] > 2 || humanFlag == false)) { break; }if (i == enemyNum - 1) { tmp = true; } }
                         if (tmp == true) { break; }
@@ -904,12 +909,12 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                        yield return StartCoroutine(DiceEffect(0, 10, damage));
                         for (int i = 0; i < 20; i++) { yield return null; }
                         enemyHP[y] -= damage;
-                        StartCoroutine(PlayerHit(y, enemyNum, damage,0, 0, 0));
+                        StartCoroutine(PlayerHit(y, enemyNum, damage,0, 0, 0, enemyHP, humanFlag, enemyMaxHP));
                         for (int v = 0; v < 60; v++) { yield return null; }
                         if (attack == 0) { x--; }
                         for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                         objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
-                        if (enemyHP[y] <= 0 || (enemyHP[y] <= 2 && humanFlag == true)) { objCharacter[y].gameObject.SetActive(false); }
+                        if (enemyHP[y] <= 0 || (enemyHP[y] <= 2 && humanFlag == true)) { objCharacter[y].GetComponent<Image>().enabled = false; }
                         for (int i = 0; i < 60; i++) { yield return null; }
                         for (int i = 0; i < enemyNum; i++) { if (enemyHP[i] > 0 && (enemyHP[i] > 2 || humanFlag == false)) { break; } if (i == enemyNum - 1) { tmp = true; } }
                         if (tmp == true) { break; }
@@ -954,10 +959,10 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                     sentenceEnd = false;
                     for (y = 0; y < enemyNum - 1; y++) { if (enemyHP[y] >= 3 || (enemyHP[y] > 0 && humanFlag == false)) { break; } }
                     if (damage + playerDB > 0) { enemyHP[y] -= damage + playerDB; }
-                    StartCoroutine(PlayerHit(y,enemyNum, damage, playerDB,0, detailAct));
+                    StartCoroutine(PlayerHit(y,enemyNum, damage, playerDB,0, detailAct, enemyHP, humanFlag, enemyMaxHP));
                     for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                     objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
-                    if (enemyHP[y] <= 0 || (enemyHP[y] <= 2 && humanFlag == true)) { objCharacter[y].gameObject.SetActive(false); }
+                    if (enemyHP[y] <= 0 || (enemyHP[y] <= 2 && humanFlag == true)) { objCharacter[y].GetComponent<Image>().enabled = false; }
                     for (int i = 0; i < 60; i++) { yield return null; }
                     for (int i = 0; i < enemyNum; i++) { if (enemyHP[i] > 0 && (enemyHP[i] > 2 || humanFlag == false)) { break; } if (i == enemyNum - 1) { tmp = true; } }
                     if (tmp == true) { break; }
@@ -992,10 +997,10 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                     sentenceEnd = false;
                     for (y = 0; y < enemyNum - 1; y++) { if (enemyHP[y] >= 3 || (enemyHP[y] > 0 && humanFlag == false)) { break; } }
                     if (damage + playerDB > 0) { enemyHP[y] -= damage + playerDB + PlayerPrefs.GetInt("武器", 0); }
-                    StartCoroutine(PlayerHit(y,enemyNum, damage, playerDB, PlayerPrefs.GetInt("武器", 0), detailAct));
+                    StartCoroutine(PlayerHit(y,enemyNum, damage, playerDB, PlayerPrefs.GetInt("武器", 0), detailAct,enemyHP,humanFlag,enemyMaxHP));
                     for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                     objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
-                    if (enemyHP[y] <= 0 || (enemyHP[y] <= 2 && humanFlag == true)) { objCharacter[y].gameObject.SetActive(false); }
+                    if (enemyHP[y] <= 0 || (enemyHP[y] <= 2 && humanFlag == true)) { objCharacter[y].GetComponent<Image>().enabled = false; }
                     for (int i = 0; i < 60; i++) { yield return null; }
                     for (int i = 0; i < enemyNum; i++) { if (enemyHP[i] > 0 && (enemyHP[i] > 2 || humanFlag == false)) { break; } if (i == enemyNum - 1) { tmp = true; } }
                     if (tmp == true) { break; }
@@ -1124,7 +1129,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(targetGra * 150 - 300, CHARACTER_Y, 0);
     }
 
-    private IEnumerator PlayerHit(int target,int enemyNum,int damage,int db,int bonus,int detailAct)
+    private IEnumerator PlayerHit(int target,int enemyNum,int damage,int db,int bonus,int detailAct,int[] enemyHP,bool humanflag,int enemyMaxHP)
     {
         int targetGra = target;
         int toutekiSound=0;
@@ -1152,6 +1157,13 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             {
                 TextDraw("", "damage→" + damage.ToString() + bonusStr + "\n" + (damage + db+bonus).ToString() + "点のダメージを与えた。");
             }
+            int tmp=0;
+            int.TryParse(objCharacter[target].GetComponentInChildren<Text>().text,out tmp);
+            int totaldamage= tmp + damage + db + bonus;
+            if (enemyHP[target] <= 0) { objCharacter[target].GetComponentInChildren<Text>().text = "<color=red>死亡</color>"; }
+            else if (enemyHP[target] <= 2 && humanflag == true) { objCharacter[target].GetComponentInChildren<Text>().text = "<color=orange><size=48>戦闘不能</size></color>"; }
+            else if (enemyHP[target]<=enemyMaxHP/2) { objCharacter[target].GetComponentInChildren<Text>().text = "<color=yellow>" + totaldamage.ToString() + "</color>"; }
+            else { objCharacter[target].GetComponentInChildren<Text>().text = totaldamage.ToString(); }
         }
         else
         {
@@ -1413,14 +1425,17 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         if (hanteiDice > target + bonus)
         {
             hanteikekka=2;
+            yield break;
         }
         else
         {
             if (hanteiDice <= (target+bonus)/5)
             {
                 hanteikekka=0;
+                yield break;
             }
             hanteikekka=1;
+            yield break;
         }
     }
 
