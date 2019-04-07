@@ -49,6 +49,7 @@ public class ScenariosceneManager : MonoBehaviour
     public Sprite play;
     public GameObject objSkipImage;
     public GameObject objDiceButton;
+    public GameObject objProxySkillButton;
     public bool skipFlag = false;
     public bool skipFlag2 = false;
     public bool backLogCSFlag = false;
@@ -72,6 +73,9 @@ public class ScenariosceneManager : MonoBehaviour
     public int hanteikekka = 2;
     private bool hanteiWait = true;
     private string proxySkill;
+    private string proxyBase;
+    private int baseBonus;
+    private int basemulti;
 
     // Use this for initialization
     void Start()
@@ -700,15 +704,13 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             for (int v = 0; v < 50; v++) { yield return null; }
             if (DEX <= playerDEX && selectNum==0 && playerHP>2)
             {
-                StartCoroutine(PlayerBattle(detailAct, enemyHP, humanFlag, enemyNum,enemyMaxHP));
-                while (selectNum == 0) { yield return null; }
+                yield return StartCoroutine(PlayerBattle(detailAct, enemyHP, humanFlag, enemyNum,enemyMaxHP));
                 for (int v = 0; v < 100; v++) { yield return null; }
             }//攻撃１（相手より早い場合）
 
             if (DEX <= playerDEX && selectNum==2 && playerHP>2)
             {
-                StartCoroutine(Catcher(enemyNum, humanFlag, enemyHP));
-                while (selectNum == 2) { yield return null; }
+                yield return StartCoroutine(Catcher(enemyNum, humanFlag, enemyHP));
                 for (int v = 0; v < 100; v++) { yield return null; }
             }//拘束１（相手より早い場合）
             for (int i = 0; i < enemyNum && playerHP>2; i++)
@@ -769,14 +771,12 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             }//敵の攻撃
             if(selectNum == 0 && playerHP>2)
             {
-                StartCoroutine(PlayerBattle(detailAct, enemyHP, humanFlag, enemyNum,enemyMaxHP));
-                while (selectNum == 0) {  yield return null; }
+                yield return StartCoroutine(PlayerBattle(detailAct, enemyHP, humanFlag, enemyNum,enemyMaxHP));
                 for (int v = 0; v < 100; v++) { yield return null; }
             }//攻撃２（相手より遅い場合）
             if (selectNum == 2 && playerHP>2)
             {
-                StartCoroutine(Catcher(enemyNum,humanFlag,enemyHP));
-                while (selectNum == 2) { yield return null; }
+                yield return StartCoroutine(Catcher(enemyNum,humanFlag,enemyHP));
                 for (int v = 0; v < 100; v++) { yield return null; }
             }//拘束２（相手より遅い場合）
             if(selectNum==3 && playerHP>2)
@@ -1416,8 +1416,18 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         objTextBox.gameObject.SetActive(true);
         hanteiWait = true;
         proxySkill = targetStr;
+        proxyBase = targetStr;
+        baseBonus = bonus;
+        if (proxyBase.Contains("火器") || proxyBase.Contains("武器術") || proxyBase.Contains("格闘") || proxyBase.Contains("幸運") || proxyBase.Contains("知識") || proxyBase.Contains("アイデア") || proxyBase.Contains("正気度ポイント") || proxyBase.Contains("耐久力") || proxyBase.Contains("マジック・ポイント") || proxyBase.Contains("最大耐久力") || proxyBase.Contains("最大マジック・ポイント") ||
+            proxyBase.Contains("APP") || proxyBase.Contains("SIZ") || proxyBase.Contains("EDU") || proxyBase.Contains("INT") || proxyBase.Contains("POW") || proxyBase.Contains("CON") || proxyBase.Contains("DEX") || proxyBase.Contains("STR")) { }
+        else
+        {
+            objProxySkillButton.SetActive(true);
+        }
         while (hanteiWait) { yield return null; }
+        objProxySkillButton.SetActive(false);
         targetStr = proxySkill;
+        target = SkillCheck(targetStr);
         hanteiDice =u1.DiceRoll(1, 100);
         if (hanteiDice != 100) { StartCoroutine(DiceEffect(0, 10, hanteiDice / 10)); } else { StartCoroutine(DiceEffect(0, 10, 0)); }
         yield return StartCoroutine(DiceEffect(1, 10, hanteiDice % 10));
@@ -1438,6 +1448,132 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             yield break;
         }
     }
+
+    //代用技能ボタンを押した時
+    public void ProxySkillButton()
+    {
+        objRollText.SetActive(false);
+        StartCoroutine(ProxySkillButtonCor());    
+    }
+
+    private IEnumerator ProxySkillButtonCor()
+    {
+        int target = 0;
+        int beforeselect;
+        string bonusStr = "";
+        string targetStr = "";
+        string[] proxy = new string[3];
+        MakeProxy(ref proxy);
+        beforeselect=selectNum;
+        if (baseBonus > 0) { bonusStr = " + " + baseBonus.ToString(); }
+        if (baseBonus < 0) { bonusStr = " - " + (-1 * baseBonus).ToString(); }
+        yield return StartCoroutine(Select(proxyBase+bonusStr, proxy[0]+bonusStr, proxy[1]+bonusStr, proxy[2]+bonusStr, false));
+        if (selectNum == 0) { targetStr = proxyBase; }//等倍技能
+        if (selectNum == 1) { targetStr = proxy[0]; }//代用１
+        if (selectNum == 2) { targetStr = proxy[1]; }//代用２
+        if (selectNum == 3) { targetStr = proxy[2]; }//代用３
+        selectNum = beforeselect;
+        sentenceEnd=false;
+        target = SkillCheck(targetStr);
+        objRollText.SetActive(true);
+        if (target > -baseBonus) { objRollText.GetComponent<Text>().text = targetStr + bonusStr + "\n" + "<color=#88ff88ff>" + (target + baseBonus).ToString() + "</color>"; } else { objRollText.GetComponent<Text>().text = targetStr + bonusStr + "\n" + "<color=#88ff88ff>" + "自動失敗" + "</color>"; }
+        proxySkill = targetStr;
+    }
+
+    private void MakeProxy(ref string[] proxy)
+    {
+        if (proxyBase.Contains("言いくるめ")) { proxy[0] = "説得/2"; proxy[1] = "信用/2"; proxy[2] = "値切り/2"; }
+        if (proxyBase.Contains("医学")) { proxy[0] = "応急手当/5"; proxy[1] = "生物学/5"; proxy[2] = "薬学/5"; }
+        if (proxyBase.Contains("運転")) { proxy[0] = "操縦/2"; proxy[1] = "重機械操作/2"; proxy[2] = "乗馬/5"; }
+        if (proxyBase.Contains("応急手当")) { proxy[0] = "医学"; proxy[1] = "薬学/3"; proxy[2] = "生物学/5"; }
+        if (proxyBase.Contains("オカルト")) { proxy[0] = "歴史/4"; proxy[1] = "考古学/2"; proxy[2] = "人類学/2"; }
+        if (proxyBase.Contains("回避")) { proxy[0] = "隠れる/2"; proxy[1] = "跳躍/5"; proxy[2] = "マーシャルアーツ/5"; }
+        if (proxyBase.Contains("化学")) { proxy[0] = "生物学/2"; proxy[1] = "地質学/2"; proxy[2] = "医学/4"; }
+        if (proxyBase.Contains("鍵開け")) { proxy[0] = "機械修理/2"; proxy[1] = "隠す/5"; proxy[2] = "製作/2"; }
+        if (proxyBase.Contains("隠す")) { proxy[0] = "鍵開け/2"; proxy[1] = "隠れる/5"; proxy[2] = "DEX"; }
+        if (proxyBase.Contains("隠れる")) { proxy[0] = "変装"; proxy[1] = "隠す/5"; proxy[2] = "忍び歩き/3"; }
+        if (proxyBase.Contains("機械修理")) { proxy[0] = "電気修理/2"; proxy[1] = "製作/2"; proxy[2] = "重機械操作/2"; }
+        if (proxyBase.Contains("聞き耳")) { proxy[0] = "INT"; proxy[1] = "マーシャルアーツ/2"; proxy[2] = "POW"; }
+        if (proxyBase.Contains("芸術")) { proxy[0] = "製作/2"; proxy[1] = "INT"; proxy[2] = "POW"; }
+        if (proxyBase.Contains("経理")) { proxy[0] = "法律/2"; proxy[1] = "EDU"; proxy[2] = "値切り/2"; }
+        if (proxyBase.Contains("考古学")) { proxy[0] = "歴史/2"; proxy[1] = "オカルト/5"; proxy[2] = "博物学/5"; }
+        if (proxyBase.Contains("コンピューター")) { proxy[0] = "電子工学/2"; proxy[1] = "INT"; proxy[2] = "EDU"; }
+        if (proxyBase.Contains("忍び歩き")) { proxy[0] = "隠れる/2"; proxy[1] = "変装/2"; proxy[2] = "DEX"; }
+        if (proxyBase.Contains("写真術")) { proxy[0] = "INT"; proxy[1] = "POW"; proxy[2] = "EDU"; }
+        if (proxyBase.Contains("重機械操作")) { proxy[0] = "運転/5"; proxy[1] = "操縦/5"; proxy[2] = "INT"; }
+        if (proxyBase.Contains("乗馬")) { proxy[0] = "DEX"; proxy[1] = "操縦/5"; proxy[2] = "マーシャルアーツ/5"; }
+        if (proxyBase.Contains("信用")) { proxy[0] = "法律/5"; proxy[1] = "変装"; proxy[2] = "説得/5"; }
+        if (proxyBase.Contains("心理学")) { proxy[0] = "精神分析/2"; proxy[1] = "変装/3"; proxy[2] = "POW"; }
+        if (proxyBase.Contains("人類学")) { proxy[0] = "心理学/2"; proxy[1] = "変装/2"; proxy[2] = "EDU"; }
+        if (proxyBase.Contains("水泳")) { proxy[0] = "DEX"; proxy[1] = "CON"; proxy[2] = "STR"; }
+        if (proxyBase.Contains("製作")) { proxy[0] = "機械修理/2"; proxy[1] = "電気修理/2"; proxy[2] = "芸術/2"; }
+        if (proxyBase.Contains("精神分析")) { proxy[0] = "人類学/5"; proxy[1] = "心理学/5"; proxy[2] = "芸術/5"; }
+        if (proxyBase.Contains("生物学")) { proxy[0] = "薬学/2"; proxy[1] = "医学/4"; proxy[2] = "化学/2"; }
+        if (proxyBase.Contains("説得")) { proxy[0] = "言いくるめ/2"; proxy[1] = "信用/2"; proxy[2] = "値切り/5"; }
+        if (proxyBase.Contains("操縦")) { proxy[0] = "運転/2"; proxy[1] = "重機械操作/2"; proxy[2] = "乗馬/5"; }
+        if (proxyBase.Contains("地質学")) { proxy[0] = "化学/5"; proxy[1] = "考古学/5"; proxy[2] = "博物学/2"; }
+        if (proxyBase.Contains("跳躍")) { proxy[0] = "登ハン/5"; proxy[1] = "DEX"; proxy[2] = "乗馬/5"; }
+        if (proxyBase.Contains("追跡")) { proxy[0] = "ナビゲート/2"; proxy[1] = "変装/5"; proxy[2] = "INT"; }
+        if (proxyBase.Contains("電気修理")) { proxy[0] = "機械修理/3"; proxy[1] = "電子工学/2"; proxy[2] = "物理学/3"; }
+        if (proxyBase.Contains("電子工学")) { proxy[0] = "電気修理/5"; proxy[1] = "物理学/2"; proxy[2] = "EDU"; }
+        if (proxyBase.Contains("天文学")) { proxy[0] = "物理学/2"; proxy[1] = "歴史/5"; proxy[2] = "EDU"; }
+        if (proxyBase.Contains("投擲")) { proxy[0] = "STR"; proxy[1] = "DEX"; proxy[2] = "SIZE"; }
+        if (proxyBase.Contains("登ハン")) { proxy[0] = "跳躍/2"; proxy[1] = "DEX"; proxy[2] = "乗馬/5"; }
+        if (proxyBase.Contains("図書館")) { proxy[0] = "EDU"; proxy[1] = "博物学/5"; proxy[2] = "ナビゲート/5"; }
+        if (proxyBase.Contains("ナビゲート")) { proxy[0] = "追跡/4"; proxy[1] = "天文学/5"; proxy[2] = "POW"; }
+        if (proxyBase.Contains("値切り")) { proxy[0] = "言いくるめ/3"; proxy[1] = "説得/4"; proxy[2] = "信用/5"; }
+        if (proxyBase.Contains("博物学")) { proxy[0] = "地質学/3"; proxy[1] = "人類学/4"; proxy[2] = "考古学/5"; }
+        if (proxyBase.Contains("物理学")) { proxy[0] = "博物学/5"; proxy[1] = "天文学/4"; proxy[2] = "INT"; }
+        if (proxyBase.Contains("変装")) { proxy[0] = "APP"; proxy[1] = "DEX/2"; proxy[2] = "隠す/9"; }
+        if (proxyBase.Contains("法律")) { proxy[0] = "言いくるめ/5"; proxy[1] = "EDU"; proxy[2] = "経理/5"; }
+        if (proxyBase.Contains("ほかの言語")) { proxy[0] = "EDU/2"; proxy[1] = "母国語/9"; proxy[2] = "信用/5"; }
+        if (proxyBase.Contains("母国語")) { proxy[0] = "知識"; proxy[1] = "EDU"; proxy[2] = "歴史"; }
+        if (proxyBase.Contains("マーシャルアーツ")) { proxy[0] = "格闘/5"; proxy[1] = "乗馬/5"; proxy[2] = "武器術/5"; }
+        if (proxyBase.Contains("目星")) { proxy[0] = "聞き耳/5"; proxy[1] = "INT"; proxy[2] = "POW"; }
+        if (proxyBase.Contains("薬学")) { proxy[0] = "化学/2"; proxy[1] = "医学/3"; proxy[2] = "生物学/2"; }
+        if (proxyBase.Contains("歴史")) { proxy[0] = "考古学/2"; proxy[1] = "博物学/2"; proxy[2] = "人類学/2"; }
+        if (proxyBase.Contains("クトゥルフ神話")) { proxy[0] = "考古学/9"; proxy[1] = "POW/9"; proxy[2] = "オカルト/9"; }
+
+        string[] tmp2;
+        int x1, x2;
+        char[] tmpchar = { '*', '/' };
+        x2 = 1;
+        if (proxyBase.Contains("*") || proxyBase.Contains("/")) { tmp2 = proxyBase.Split(tmpchar); int.TryParse(tmp2[1], out x2); }
+
+        for (int i = 0; i < 3; i++)
+        {
+            string[] tmp;
+            if (proxy[i].Contains("/"))
+            {
+                tmp = proxy[i].Split('/');
+                int.TryParse(tmp[1], out x1);
+                if (proxyBase.Contains("*"))
+                {
+                    if (x2 >= x1) { proxy[i] = tmp[0] + "*" + (x2 / x1).ToString(); }
+                    else { proxy[i] = tmp[0] + "/" + (x1 / x2).ToString(); }
+                }
+                if (proxyBase.Contains("/"))
+                {
+                    proxy[i] = tmp[0] + "/" + (x1 * x2).ToString();
+                }
+            }
+            else {
+                if (proxyBase.Contains("/"))
+                {
+                    proxy[i] = proxy[i] + "/" + x2.ToString();
+                }
+                if (proxyBase.Contains("*"))
+                {
+                    proxy[i] = proxy[i] + "*" + x2.ToString();
+                }
+            }
+        }
+    }
+
+
+
+
+
 
     private IEnumerator DiceText(int dice, int target, int bonus,string targetStr,string bonusStr)
     {
