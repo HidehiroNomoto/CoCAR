@@ -32,6 +32,7 @@ public class MapScene : MonoBehaviour
     private double zoomPow = 1;
     private int VMode = 0;
     public GameObject VStick;
+    public GameObject VStext;
     FixedJoystick stick;
     private bool zoomNow = false;
     public GameObject objErrorBack;
@@ -46,7 +47,7 @@ public class MapScene : MonoBehaviour
         PlayerPrefs.Save();
         zoom = PlayerPrefs.GetInt("[system]Zoom", 16);
         VMode = PlayerPrefs.GetInt("[system]VMode", 0);
-        if (VMode == 0) { VStick.SetActive(false); } else { stick = VStick.GetComponent<FixedJoystick>(); }
+        if (VMode == 0) { VStick.SetActive(false); VStext.SetActive(true); } else { VStext.SetActive(false); stick = VStick.GetComponent<FixedJoystick>(); }
         zoomPow = Math.Pow(2, zoom)*0.4266666666;
         GetComponent<Utility>().BGMFadeIn(2);
         if ((VMode == 0) && (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer))
