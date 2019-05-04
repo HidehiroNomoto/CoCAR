@@ -11349,6 +11349,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+  - {fileID: 0}
   mad: {fileID: 8300000, guid: d57d8dffe5fb9aa4e9c52d940fcc7c7a, type: 3}
   moveDice10Graphic:
   - {fileID: 21300000, guid: e67038d7d4be6ee4b9b0dd1f006955f0, type: 3}

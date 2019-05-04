@@ -37,7 +37,7 @@ public class ScenariosceneManager : MonoBehaviour
     public GameObject objStatusSAN;
     public GameObject objStatusName;
     public GameObject objMad;
-    public AudioClip[] systemAudio = new AudioClip[10];
+    public AudioClip[] systemAudio = new AudioClip[11];
     public AudioClip mad;
     public Sprite[] moveDice10Graphic = new Sprite[7];
     public Sprite[] dice10Graphic = new Sprite[10];
@@ -92,6 +92,7 @@ public class ScenariosceneManager : MonoBehaviour
         systemAudio[4] = Resources.Load<AudioClip>("gun1"); systemAudio[5] = Resources.Load<AudioClip>("punch-high1");
         systemAudio[6] = Resources.Load<AudioClip>("sword-slash5"); systemAudio[7] = Resources.Load<AudioClip>("punch-swing1");
         systemAudio[8] = Resources.Load<AudioClip>("highspeed-movement1"); systemAudio[9] = Resources.Load<AudioClip>("sword-clash4");
+        systemAudio[10] = Resources.Load<AudioClip>("magic");
         objName = GameObject.Find("CharacterName").gameObject as GameObject;
         objRollText = GameObject.Find("Rolltext").gameObject as GameObject; objRollText.gameObject.SetActive(false);
         obj = GameObject.Find("error").gameObject as GameObject;
@@ -720,10 +721,10 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                     tmpDice = u1.DiceRoll(1, 100);
                     if (tmpDice < AttackPercent)
                     {
-                        if (humanFlag==true && cutFlag==true && attacktype!=2)
+                        if (humanFlag==true && cutFlag==true && attacktype<2)
                         {
                             sentenceEnd = false;
-                            StartCoroutine(Hantei("回避", 0));
+                            StartCoroutine(Hantei("武器術", 0));
                             objRollText.GetComponent<Text>().text = "受け流し\n（武器術）" + objRollText.GetComponent<Text>().text.Substring(3);
                             while (sentenceEnd == false) { yield return null; }
                             avoid = hanteikekka;
@@ -811,7 +812,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             sleep = 0;kill = 0;
         }
         //戦闘終了判定
-        for (int i = 0; i < enemyNum; i++) { if (enemyHP[i] <= 2 && humanFlag==true) { sleep++; } if (enemyHP[i] <= 0) { kill++; sleep--; } }
+        for (int i = 0; i < enemyNum; i++) { if (enemyHP[i] <= 2 && humanFlag==true) { sleep++; } if (enemyHP[i] <= 0) { kill++; if (humanFlag == true) { sleep--; } } }
         yield return StartCoroutine(BattleEnd(playerHP));
         if (maxTurnWin == true)
         {
@@ -1158,7 +1159,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                 TextDraw("", "damage→" + damage.ToString() + bonusStr + "\n" + (damage + db+bonus).ToString() + "点のダメージを与えた。");
             }
             int tmp=0;
-            int.TryParse(objCharacter[target].GetComponentInChildren<Text>().text,out tmp);
+            int.TryParse((objCharacter[target].GetComponentInChildren<Text>().text).Replace("<color=yellow>","").Replace("</color>",""),out tmp);
             int totaldamage= tmp + damage + db + bonus;
             if (enemyHP[target] <= 0) { objCharacter[target].GetComponentInChildren<Text>().text = "<color=red>死亡</color>"; }
             else if (enemyHP[target] <= 2 && humanflag == true) { objCharacter[target].GetComponentInChildren<Text>().text = "<color=orange><size=48>戦闘不能</size></color>"; }
@@ -1194,7 +1195,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         if (attacktype == 0) { SystemSEPlay(systemAudio[5]); }
         if (attacktype == 1) { SystemSEPlay(systemAudio[6]); }
         if (attacktype == 2) { SystemSEPlay(systemAudio[4]); }
-
+        if (attacktype == 3) { SystemSEPlay(systemAudio[10]); }
 
         Image bo = GameObject.Find("BlackOut").GetComponent<Image>();
         bo.enabled = true;
@@ -1418,8 +1419,8 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         proxySkill = targetStr;
         proxyBase = targetStr;
         baseBonus = bonus;
-        if (proxyBase.Contains("火器") || proxyBase.Contains("武器術") || proxyBase.Contains("格闘") || proxyBase.Contains("幸運") || proxyBase.Contains("知識") || proxyBase.Contains("アイデア") || proxyBase.Contains("正気度ポイント") || proxyBase.Contains("耐久力") || proxyBase.Contains("マジック・ポイント") || proxyBase.Contains("最大耐久力") || proxyBase.Contains("最大マジック・ポイント") ||
-            proxyBase.Contains("APP") || proxyBase.Contains("SIZ") || proxyBase.Contains("EDU") || proxyBase.Contains("INT") || proxyBase.Contains("POW") || proxyBase.Contains("CON") || proxyBase.Contains("DEX") || proxyBase.Contains("STR")) { }
+        if (targetStr==SkillList(targetStr) || proxyBase.Contains("回避") || proxyBase.Contains("投擲") || proxyBase.Contains("火器") || proxyBase.Contains("武器術") || proxyBase.Contains("格闘") || proxyBase.Contains("幸運") || proxyBase.Contains("知識") || proxyBase.Contains("アイデア") || proxyBase.Contains("正気度ポイント") || proxyBase.Contains("耐久力") || proxyBase.Contains("マジック・ポイント") || proxyBase.Contains("最大耐久力") || proxyBase.Contains("最大マジック・ポイント") ||
+            proxyBase.Contains("APP") || proxyBase.Contains("SIZ") || proxyBase.Contains("EDU") || proxyBase.Contains("INT") || proxyBase.Contains("POW") || proxyBase.Contains("CON") || proxyBase.Contains("DEX") || proxyBase.Contains("STR")) { objProxySkillButton.SetActive(false); }
         else
         {
             objProxySkillButton.SetActive(true);
@@ -1487,7 +1488,6 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         if (proxyBase.Contains("運転")) { proxy[0] = "操縦/2"; proxy[1] = "重機械操作/2"; proxy[2] = "乗馬/5"; }
         if (proxyBase.Contains("応急手当")) { proxy[0] = "医学"; proxy[1] = "薬学/3"; proxy[2] = "生物学/5"; }
         if (proxyBase.Contains("オカルト")) { proxy[0] = "歴史/4"; proxy[1] = "考古学/2"; proxy[2] = "人類学/2"; }
-        if (proxyBase.Contains("回避")) { proxy[0] = "隠れる/2"; proxy[1] = "跳躍/5"; proxy[2] = "マーシャルアーツ/5"; }
         if (proxyBase.Contains("化学")) { proxy[0] = "生物学/2"; proxy[1] = "地質学/2"; proxy[2] = "医学/4"; }
         if (proxyBase.Contains("鍵開け")) { proxy[0] = "機械修理/2"; proxy[1] = "隠す/5"; proxy[2] = "製作/2"; }
         if (proxyBase.Contains("隠す")) { proxy[0] = "鍵開け/2"; proxy[1] = "隠れる/5"; proxy[2] = "DEX"; }
@@ -1517,7 +1517,6 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         if (proxyBase.Contains("電気修理")) { proxy[0] = "機械修理/3"; proxy[1] = "電子工学/2"; proxy[2] = "物理学/3"; }
         if (proxyBase.Contains("電子工学")) { proxy[0] = "電気修理/5"; proxy[1] = "物理学/2"; proxy[2] = "EDU"; }
         if (proxyBase.Contains("天文学")) { proxy[0] = "物理学/2"; proxy[1] = "歴史/5"; proxy[2] = "EDU"; }
-        if (proxyBase.Contains("投擲")) { proxy[0] = "STR"; proxy[1] = "DEX"; proxy[2] = "SIZE"; }
         if (proxyBase.Contains("登ハン")) { proxy[0] = "跳躍/2"; proxy[1] = "DEX"; proxy[2] = "乗馬/5"; }
         if (proxyBase.Contains("図書館")) { proxy[0] = "EDU"; proxy[1] = "博物学/5"; proxy[2] = "ナビゲート/5"; }
         if (proxyBase.Contains("ナビゲート")) { proxy[0] = "追跡/4"; proxy[1] = "天文学/5"; proxy[2] = "POW"; }
@@ -2123,6 +2122,10 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
 
     public void TitleBackDecide()
     {
+        int x;
+        float y;
+        for (int i = 0; i < flagname.Count; i++) { if (int.TryParse(flagvalue[i], out x)) { PlayerPrefs.SetInt(flagname[i], x); } else if (float.TryParse(flagvalue[i], out y)) { PlayerPrefs.SetFloat(flagname[i], y); } else { PlayerPrefs.SetString(flagname[i], flagvalue[i].Replace("[system]String", "")); } }
+        PlayerPrefs.Save();
         GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene");
     }
 
