@@ -162,7 +162,7 @@ public class ScenariosceneManager : MonoBehaviour
             if (scenarioText[i].Length > 12 && scenarioText[i].Substring(0, 12) == "PlaceChange:") { if (flagname.Contains("[system]latitude") && flagname.Contains("[system]longitude")) { } else { flagname.Add("[system]latitude"); flagname.Add("[system]longitude"); } flagvalue.Add(PlayerPrefs.GetFloat("[system]latitude",0).ToString()); flagvalue.Add(PlayerPrefs.GetFloat("[system]longitude",0).ToString()); separateText = scenarioText[i].Substring(12).Split(','); PlayerPrefs.SetFloat("[system]latitude", float.Parse(separateText[0].Replace("\r", "").Replace("\n", ""))); PlayerPrefs.SetFloat("[system]longitude", float.Parse(separateText[1].Replace("\r", "").Replace("\n", "")));  sentenceEnd = true; }
             if (scenarioText[i].Length > 5 && scenarioText[i].Substring(0, 5) == "Lost:") { StartCoroutine(CharaLost()); }
             if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "SANCheck:") { separateText = scenarioText[i].Substring(9).Replace("\r","").Replace("\n","").Split(',');SANCheckFlag = -1; StartCoroutine(SANCheck(separateText)); while (SANCheckFlag == -1) { yield return null; }i += SANCheckFlag;continue; }
-            if (scenarioText[i].Length > 10 && scenarioText[i].Substring(0, 10) == "FlagReset:") { FlagReset();}
+            if (scenarioText[i].Length > 10 && scenarioText[i].Substring(0, 10) == "FlagReset:") { yield return StartCoroutine(Grow()); FlagReset();}
             if (scenarioText[i].Length > 9 && scenarioText[i].Substring(0, 9) == "BlackOut:") { buttonText = scenarioText[i].Substring(9).Split(','); StartCoroutine(BlackOut(int.Parse(buttonText[0]),int.Parse(buttonText[1]),int.Parse(buttonText[2]),int.Parse(buttonText[3].Replace("\r", "").Replace("\n", ""))));}
             if (scenarioText[i].Length > 6 && scenarioText[i].Substring(0, 6) == "Title:") { if (LostCheck()) { GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "TitleScene"); } }
             if (scenarioText[i].Length > 4 && scenarioText[i].Substring(0, 4) == "Map:") { if (LostCheck()) { if (scenarioText[i].Substring(4, 4).Replace("\r", "").Replace("\n", "") == "Once") { PlayerPrefs.SetInt(objBGM.GetComponent<BGMManager>().chapterName.Substring(0, objBGM.GetComponent<BGMManager>().chapterName.Length - 4) + "Flag", 1); } GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "MapScene"); } }
@@ -370,6 +370,42 @@ public class ScenariosceneManager : MonoBehaviour
         if (skipFlag == true) { PlayerPrefs.SetInt("[system]skipFlag", 1); }
         sentenceEnd=false;
         StartCoroutine(Review());
+    }
+
+    private IEnumerator Grow()
+    {
+        TextDraw(" ","＜技能成長＞");
+        sentenceEnd = false;
+        StartCoroutine(PushWait());
+        while (sentenceEnd) { yield return null; }
+        for (int i = 0; i < 53; i++)
+        {
+            if (PlayerPrefs.GetInt("s[system]Skill" + i.ToString(), 0) == 1)
+            {
+                string skilltmp=ReverseSkillList("[system]Skill" + i.ToString());
+                yield return StartCoroutine(Hantei(skilltmp,0,true));
+                if (hanteikekka > 1) {
+                    string[] tmp = new string[2];
+                    tmp[0] = skilltmp;
+                    tmp[1] = "1D10";
+                    yield return StartCoroutine(StatusChange(tmp,true));
+                    if (SkillCheck(tmp[0])>=90)
+                    {
+                        tmp[0] = "正気度ポイント";
+                        tmp[1] = "2D6";
+                        yield return StartCoroutine(StatusChange(tmp, true));
+                        sentenceEnd = false;
+                        StartCoroutine(PushWait());
+                        while (sentenceEnd) { yield return null; }
+                    }
+                }
+                PlayerPrefs.SetInt("s[system]Skill" + i.ToString(), 0);
+            }
+        }
+        sentenceEnd = false;
+        StartCoroutine(PushWait());
+        while (sentenceEnd) { yield return null; }
+        sentenceEnd = false;
     }
 
     private IEnumerator Review()
@@ -1396,13 +1432,74 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         return target;
     }
 
+    private string ReverseSkillList(string targetStr)
+    {
+        string target = targetStr;
+        if (targetStr == "[system]Skill0") { target = "言いくるめ"; }
+        if (targetStr == "[system]Skill1") { target = "医学"; }
+        if (targetStr == "[system]Skill2") { target = "運転"; }
+        if (targetStr == "[system]Skill3") { target = "応急手当";} 
+        if (targetStr == "[system]Skill4") { target = "オカルト";}
+        if (targetStr == "[system]Skill5") { target = "回避";}
+        if (targetStr == "[system]Skill6") { target = "化学";}
+        if (targetStr == "[system]Skill7") { target = "鍵開け";}
+        if (targetStr == "[system]Skill8") { target = "隠す";} 
+        if (targetStr == "[system]Skill9") { target = "隠れる";}
+        if (targetStr == "[system]Skill10") { target = "機械修理";}
+        if (targetStr == "[system]Skill11") { target = "聞き耳";}
+        if (targetStr == "[system]Skill12") { target = "芸術";} 
+        if (targetStr == "[system]Skill13") { target = "経理";} 
+        if (targetStr == "[system]Skill14") { target = "考古学";} 
+        if (targetStr == "[system]Skill15") { target = "コンピューター";} 
+        if (targetStr == "[system]Skill16") { target = "忍び歩き";} 
+        if (targetStr == "[system]Skill17") { target = "写真術";} 
+        if (targetStr == "[system]Skill18") { target = "重機械操作";} 
+        if (targetStr == "[system]Skill19") { target = "乗馬";}
+        if (targetStr == "[system]Skill20") { target = "信用";}
+        if (targetStr == "[system]Skill21") { target = "心理学";} 
+        if (targetStr == "[system]Skill22") { target = "人類学";} 
+        if (targetStr == "[system]Skill23") { target = "水泳";} 
+        if (targetStr == "[system]Skill24") { target = "製作";}
+        if (targetStr == "[system]Skill25") { target = "精神分析";} 
+        if (targetStr == "[system]Skill26") { target = "生物学";} 
+        if (targetStr == "[system]Skill27") { target = "説得";}
+        if (targetStr == "[system]Skill28") { target = "操縦";} 
+        if (targetStr == "[system]Skill29") { target = "地質学";}
+        if (targetStr == "[system]Skill30") { target = "跳躍";}
+        if (targetStr == "[system]Skill31") { target = "追跡";} 
+        if (targetStr == "[system]Skill32") { target = "電気修理";} 
+        if (targetStr == "[system]Skill33") { target = "電子工学";} 
+        if (targetStr == "[system]Skill34") { target = "天文学";} 
+        if (targetStr == "[system]Skill35") { target = "投擲";} 
+        if (targetStr == "[system]Skill36") { target = "登ハン";}
+        if (targetStr == "[system]Skill37") { target = "図書館";} 
+        if (targetStr == "[system]Skill38") { target = "ナビゲート";} 
+        if (targetStr == "[system]Skill39") { target = "値切り";}
+        if (targetStr == "[system]Skill40") { target = "博物学";}
+        if (targetStr == "[system]Skill41") { target = "物理学";}
+        if (targetStr == "[system]Skill42") { target = "変装";}
+        if (targetStr == "[system]Skill43") { target = "法律";} 
+        if (targetStr == "[system]Skill44") { target = "ほかの言語";} 
+        if (targetStr == "[system]Skill45") { target = "母国語";}
+        if (targetStr == "[system]Skill46") { target = "マーシャルアーツ";} 
+        if (targetStr == "[system]Skill47") { target = "目星";} 
+        if (targetStr == "[system]Skill48") { target = "薬学";} 
+        if (targetStr == "[system]Skill49") { target = "歴史";} 
+        if (targetStr == "[system]Skill50") { target = "火器";} 
+        if (targetStr == "[system]Skill51") { target = "格闘";} 
+        if (targetStr == "[system]Skill52") { target = "武器術";} 
+        return target;
+    }
+
+
+
     public void HanteiDiceRoll()
     {
         hanteiWait = false;
         objDiceButton.SetActive(false);
     }
 
-    private IEnumerator Hantei(string targetStr,int bonus)
+    private IEnumerator Hantei(string targetStr,int bonus,bool growflag=false)
     {
         int target=0;
         string bonusStr="";
@@ -1420,7 +1517,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         proxyBase = targetStr;
         baseBonus = bonus;
         if (targetStr==SkillList(targetStr) || proxyBase.Contains("回避") || proxyBase.Contains("投擲") || proxyBase.Contains("火器") || proxyBase.Contains("武器術") || proxyBase.Contains("格闘") || proxyBase.Contains("幸運") || proxyBase.Contains("知識") || proxyBase.Contains("アイデア") || proxyBase.Contains("正気度ポイント") || proxyBase.Contains("耐久力") || proxyBase.Contains("マジック・ポイント") || proxyBase.Contains("最大耐久力") || proxyBase.Contains("最大マジック・ポイント") ||
-            proxyBase.Contains("APP") || proxyBase.Contains("SIZ") || proxyBase.Contains("EDU") || proxyBase.Contains("INT") || proxyBase.Contains("POW") || proxyBase.Contains("CON") || proxyBase.Contains("DEX") || proxyBase.Contains("STR")) { objProxySkillButton.SetActive(false); }
+            proxyBase.Contains("APP") || proxyBase.Contains("SIZ") || proxyBase.Contains("EDU") || proxyBase.Contains("INT") || proxyBase.Contains("POW") || proxyBase.Contains("CON") || proxyBase.Contains("DEX") || proxyBase.Contains("STR") || growflag==true) { objProxySkillButton.SetActive(false); }
         else
         {
             objProxySkillButton.SetActive(true);
@@ -1433,6 +1530,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         if (hanteiDice != 100) { StartCoroutine(DiceEffect(0, 10, hanteiDice / 10)); } else { StartCoroutine(DiceEffect(0, 10, 0)); }
         yield return StartCoroutine(DiceEffect(1, 10, hanteiDice % 10));
         yield return StartCoroutine(DiceText(hanteiDice, target, bonus,targetStr,bonusStr));
+        string success = SkillList(targetStr);
         if (hanteiDice > target + bonus)
         {
             hanteikekka=2;
@@ -1443,9 +1541,11 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             if (hanteiDice <= (target+bonus)/5)
             {
                 hanteikekka=0;
+                if (success != targetStr) { PlayerPrefs.SetInt("s" + success, 1); }
                 yield break;
             }
             hanteikekka=1;
+            if (success != targetStr) { PlayerPrefs.SetInt("s" + success, 1); }
             yield break;
         }
     }
