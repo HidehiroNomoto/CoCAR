@@ -377,7 +377,7 @@ public class ScenariosceneManager : MonoBehaviour
         TextDraw(" ","＜技能成長＞");
         sentenceEnd = false;
         StartCoroutine(PushWait());
-        while (sentenceEnd) { yield return null; }
+        while (!sentenceEnd) { yield return null; }
         for (int i = 0; i < 53; i++)
         {
             if (PlayerPrefs.GetInt("s[system]Skill" + i.ToString(), 0) == 1)
@@ -1529,7 +1529,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         hanteiDice =u1.DiceRoll(1, 100);
         if (hanteiDice != 100) { StartCoroutine(DiceEffect(0, 10, hanteiDice / 10)); } else { StartCoroutine(DiceEffect(0, 10, 0)); }
         yield return StartCoroutine(DiceEffect(1, 10, hanteiDice % 10));
-        yield return StartCoroutine(DiceText(hanteiDice, target, bonus,targetStr,bonusStr));
+        yield return StartCoroutine(DiceText(hanteiDice, target, bonus,targetStr,bonusStr,growflag));
         string success = SkillList(targetStr);
         if (hanteiDice > target + bonus)
         {
@@ -1674,24 +1674,42 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
 
 
 
-    private IEnumerator DiceText(int dice, int target, int bonus,string targetStr,string bonusStr)
+    private IEnumerator DiceText(int dice, int target, int bonus,string targetStr,string bonusStr,bool growflag)
     {
         //for (int j = 0; j < 50; j++) { yield return null; }
         if (dice > target + bonus)
         {
-            objText.GetComponent<Text>().text = "<color=#ff0000ff>[DiceRoll]\n1D100→　" + dice.ToString() + " > " + (target + bonus).ToString() + " (<" + targetStr + ">" + bonusStr + ")\n<size=72>（失敗）</size></color>";
-            for (int j = 0; j < 40; j++) { yield return null; }
-            SystemSEPlay(systemAudio[2]);
+            if (growflag)
+            {
+                objText.GetComponent<Text>().text = "<color=#0000ffff>[DiceRoll]\n1D100→　" + dice.ToString() + " > " + (target + bonus).ToString() + " (<" + targetStr + ">" + bonusStr + ")\n<size=72>（1D10成長）</size></color>";
+                for (int j = 0; j < 40; j++) { yield return null; }
+                SystemSEPlay(systemAudio[1]);
+            }
+            else
+            {
+                objText.GetComponent<Text>().text = "<color=#ff0000ff>[DiceRoll]\n1D100→　" + dice.ToString() + " > " + (target + bonus).ToString() + " (<" + targetStr + ">" + bonusStr + ")\n<size=72>（失敗）</size></color>";
+                for (int j = 0; j < 40; j++) { yield return null; }
+                SystemSEPlay(systemAudio[2]);
+            }
         }
         if (dice <= target + bonus)
         {
-            objText.GetComponent<Text>().text = "<color=#000099ff>DiceRoll:1D100→  " + dice.ToString() + " <= " + (target + bonus).ToString() + "\n　　　　　　　　" + targetStr + bonusStr + "   （成功）</color>";
-            if (dice <= (target+bonus)/5)
+            if (growflag)
             {
-                objText.GetComponent<Text>().text = "<color=#0000ffff>DiceRoll:1D100→  " + dice.ToString() + " << " + (target + bonus).ToString() + "\n　　　　　　　　" + targetStr + bonusStr + "   （スペシャル）</color>";
+                objText.GetComponent<Text>().text = "<color=#ff0000ff>DiceRoll:1D100→  " + dice.ToString() + " <= " + (target + bonus).ToString() + "\n　　　　　　　　" + targetStr + bonusStr + "   （成長せず）</color>";
+                for (int j = 0; j < 40; j++) { yield return null; }
+                SystemSEPlay(systemAudio[2]);
             }
-            for (int j = 0; j < 40; j++) { yield return null; }
-            SystemSEPlay(systemAudio[1]);
+            else
+            {
+                objText.GetComponent<Text>().text = "<color=#000099ff>DiceRoll:1D100→  " + dice.ToString() + " <= " + (target + bonus).ToString() + "\n　　　　　　　　" + targetStr + bonusStr + "   （成功）</color>";
+                if (dice <= (target + bonus) / 5)
+                {
+                    objText.GetComponent<Text>().text = "<color=#0000ffff>DiceRoll:1D100→  " + dice.ToString() + " << " + (target + bonus).ToString() + "\n　　　　　　　　" + targetStr + bonusStr + "   （スペシャル）</color>";
+                }
+                for (int j = 0; j < 40; j++) { yield return null; }
+                SystemSEPlay(systemAudio[1]);
+            }
         }
         yield return StartCoroutine(PushWait());    
     }
