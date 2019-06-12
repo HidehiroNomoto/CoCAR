@@ -753,9 +753,18 @@ public class CSManager : MonoBehaviour {
                 //閉じる
                 sw.Close();
             }
+            GameObject.Find("Error").GetComponent<Text>().text = "保存完了";
         }
-        catch { }
+        catch { GameObject.Find("Error").GetComponent<Text>().text = "<color=red>保存失敗</color>"; }
+        StartCoroutine(DeleteError());
     }
+
+    private IEnumerator DeleteError()
+    {
+        for (int i = 0; i < 100; i++) { yield return null; }
+        GameObject.Find("Error").GetComponent<Text>().text = "";
+    }
+
 
     //startのタイミングでフリーイベントの一覧表を取得し、条件を満たしているものはボタンを作成（Mapシーン限定）
     private void GetFreeIvent(string path)

@@ -380,7 +380,7 @@ public class ScenariosceneManager : MonoBehaviour
         while (!sentenceEnd) { yield return null; }
         for (int i = 0; i < 53; i++)
         {
-            if (PlayerPrefs.GetInt("s[system]Skill" + i.ToString(), 0) == 1)
+            if (PlayerPrefs.GetInt("s[system]Skill" + i.ToString(), 0) > 0)
             {
                 string skilltmp=ReverseSkillList("[system]Skill" + i.ToString());
                 yield return StartCoroutine(Hantei(skilltmp,0,true));
