@@ -41,7 +41,7 @@ namespace GracesGames.SimpleFileBrowser.Scripts
         private void OpenFileBrowser(FileBrowserMode fileBrowserMode)
         {
             string startFolder="";
-            if (Application.platform == RuntimePlatform.Android && GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]CharacterSheet") { startFolder = Application.persistentDataPath; }
+            if (Application.platform == RuntimePlatform.Android && (GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]CharacterSheet" || GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]消去ファイルCS")) { startFolder = Application.persistentDataPath; }
             if (Application.platform == RuntimePlatform.IPhonePlayer && (GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]CharacterSheet" || GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]CharacterIllstPath")) { startFolder = Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/Documents"; }
             // Create the file browser and name it
             GameObject fileBrowserObject = Instantiate(FileBrowserPrefab, transform);
@@ -152,7 +152,7 @@ namespace GracesGames.SimpleFileBrowser.Scripts
                 PlayerPrefs.SetString("[system]CharacterIllstPath", path);
                 StartCoroutine(GetComponent<CSManager>().LoadChara(PlayerPrefs.GetString("[system]CharacterIllstPath", "")));
             }
-            else if (GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]消去ファイル")
+            else if (GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]消去ファイル" || GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]消去ファイルCS")
             {
                 if (path.Substring(path.Length - 4) == ".png" || path.Substring(path.Length - 4) == ".PNG" || path.Substring(path.Length - 4) == ".zip" || path.Substring(path.Length - 4) == ".ZIP" || path.Substring(path.Length - 4) == ".ccs")
                 {

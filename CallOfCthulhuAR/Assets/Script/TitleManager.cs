@@ -19,6 +19,7 @@ public class TitleManager : MonoBehaviour {
     public GameObject makumaObj;
     public GameObject titleText;
     public GameObject VButtonImage;
+    public GameObject ChoiceFolder;
     public Sprite pad;
     public Sprite walk;
     GameObject objBGM;
@@ -93,6 +94,9 @@ Application.platform == RuntimePlatform.LinuxPlayer)
         for (int i = 0; i < 30; i++)
         {
             anten.GetComponent<Image>().color = new Color(1, 1, 1, (float)i / 30);
+#if UNITY_IOS
+i++;
+#endif
             yield return null;
         }
         GetComponent<Utility>().StartCoroutine("LoadSceneCoroutine", "MapScene");
@@ -113,7 +117,18 @@ Application.platform == RuntimePlatform.LinuxPlayer)
     public void PushDeleteButton()
     {
         SelectButton.SetActive(false); DeleteButton.SetActive(false);
-        GetComponent<GracesGames.SimpleFileBrowser.Scripts.FileOpenManager>().GetFilePathWithKey("[system]消去ファイル");
+#if UNITY_ANDROID
+        ChoiceFolder.SetActive(true);
+#else
+ GetComponent<GracesGames.SimpleFileBrowser.Scripts.FileOpenManager>().GetFilePathWithKey("[system]消去ファイル");
+#endif
+    }
+
+    public void ChoiceFolderButton(int num)
+    {
+        if (num == 0) { GetComponent<GracesGames.SimpleFileBrowser.Scripts.FileOpenManager>().GetFilePathWithKey("[system]消去ファイル"); }
+        if (num == 1) { GetComponent<GracesGames.SimpleFileBrowser.Scripts.FileOpenManager>().GetFilePathWithKey("[system]消去ファイルCS"); }
+        ChoiceFolder.SetActive(false);
     }
 
     public void PushVButton()

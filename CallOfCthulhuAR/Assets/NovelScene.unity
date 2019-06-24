@@ -11333,6 +11333,7 @@ MonoBehaviour:
   sentenceEnd: 0
   battleFlag: -10
   SANCheckFlag: -1
+  ScreenSizeChanger: {fileID: 912758943}
   objTitleBack: {fileID: 158927675}
   objStatusHP: {fileID: 887346903}
   objStatusSAN: {fileID: 1088597955}

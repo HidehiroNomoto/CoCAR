@@ -32,6 +32,7 @@ public class ScenariosceneManager : MonoBehaviour
     GameObject[] objBox=new GameObject[4];
     GameObject objInput;
     GameObject objSkip;
+    public GameObject ScreenSizeChanger;
     public GameObject objTitleBack;
     public GameObject objStatusHP;
     public GameObject objStatusSAN;
@@ -131,6 +132,7 @@ public class ScenariosceneManager : MonoBehaviour
         {
             for (int j = 0; j < 4; j++) { buttonText[j] = null; }
             for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
+            ScreenSizeChanger.SetActive(true);
             objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
             PlayerPrefs.Save();
             skipFlag2 = false;
@@ -265,6 +267,9 @@ public class ScenariosceneManager : MonoBehaviour
         for (int i=0; i < 600; i++)
         {
             yield return null;
+#if UNITY_IOS
+i++;
+#endif
         }
         objMad.SetActive(false);
     }
@@ -303,6 +308,9 @@ public class ScenariosceneManager : MonoBehaviour
         for (int i = 0; i < time * 60; i++)
         {
             bo.color = new Color((float)r/255,(float)g/255,(float)b/255,(float)i/(time*60));
+#if UNITY_IOS
+i++;
+#endif
             yield return null;
         }
         bo.enabled = false;
@@ -553,8 +561,13 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                 if (targetStr == "[system]正気度ポイント") { StartCoroutine(StatusSAN(beforeValue, beforeValue - PlayerPrefs.GetInt("[system]正気度ポイント", 0))); }
                     if (textsee) { TextDraw("", separateText[0] + "の能力が" + (-1 * x2).ToString() + "点減少した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）"); }
             }
-            for (int v = 0; v < 60; v++) { yield return null; }
-        }
+            for (int v = 0; v < 60; v++)
+            {
+#if UNITY_IOS
+v++;
+#endif
+                yield return null; }
+            }
         else
         {
             separate3Text = separateText[1].Split(new char[] { 'D','+' });
@@ -566,7 +579,11 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                 if (separate3Text.Length>2){ int.TryParse(separate3Text[2],out changeValue3); }
                 StartCoroutine(DiceEffect(0, int.Parse(separate3Text[1]), changeValue));
                 StartCoroutine(DiceEffect(1, int.Parse(separate3Text[1]), changeValue2));
-                for (int v = 0; v < 60; v++) { yield return null; }
+                for (int v = 0; v < 60; v++) {
+#if UNITY_IOS
+v++;
+#endif
+                    yield return null; }
                 if (PlayerPrefs.GetInt(targetStr, 0) < -1 * (changeValue + changeValue2 + changeValue3) * y2) { PlayerPrefs.SetInt(targetStr, 0); }
                 else if (targetStr == "[system]耐久力" && PlayerPrefs.GetInt(targetStr, 0) + (changeValue + changeValue2 + changeValue3) * y2 >= PlayerPrefs.GetInt("[system]Status9", 0)) { PlayerPrefs.SetInt(targetStr, PlayerPrefs.GetInt("[system]Status9", 0)); }
                 else if (targetStr == "[system]マジック・ポイント" && PlayerPrefs.GetInt(targetStr, 0) + (changeValue + changeValue2 + changeValue3) * y2 >= PlayerPrefs.GetInt("[system]Status10", 0)) { PlayerPrefs.SetInt(targetStr, PlayerPrefs.GetInt("[system]Status10", 0)); }
@@ -586,7 +603,11 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                     if (targetStr == "[system]正気度ポイント") { StartCoroutine(StatusSAN(beforeValue, beforeValue - PlayerPrefs.GetInt("[system]正気度ポイント", 0))); }
                                 if (textsee) { TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "+" + changeValue2.ToString() + cvtext + "=" + (changeValue + changeValue2 + changeValue3).ToString() + "点減少した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）"); }
                 }
-                for (int v = 0; v < 60; v++) { yield return null; }
+                for (int v = 0; v < 60; v++) { yield return null;
+#if UNITY_IOS
+v++;
+#endif
+                }
             }
             else
             {
@@ -602,7 +623,11 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                         if (changeValue != 100) { StartCoroutine(DiceEffect(0, 10, changeValue / 10)); } else { StartCoroutine(DiceEffect(0, 10, 0)); }
                         StartCoroutine(DiceEffect(1, 10, changeValue % 10));
                     }
-                    for (int v = 0; v < 60; v++) { yield return null; }
+                    for (int v = 0; v < 60; v++) { yield return null;
+#if UNITY_IOS
+v++;
+#endif
+                    }
                     if (PlayerPrefs.GetInt(targetStr, 0) < -1 * changeValue * y2) { PlayerPrefs.SetInt(targetStr, 0); }
                     else if (targetStr == "[system]耐久力" && PlayerPrefs.GetInt(targetStr, 0) + changeValue * y2 >= PlayerPrefs.GetInt("[system]Status9", 0)) { PlayerPrefs.SetInt(targetStr, PlayerPrefs.GetInt("[system]Status9", 0)); }
                     else if (targetStr == "[system]マジック・ポイント" && PlayerPrefs.GetInt(targetStr, 0) + changeValue * y2 >= PlayerPrefs.GetInt("[system]Status10", 0)) { PlayerPrefs.SetInt(targetStr, PlayerPrefs.GetInt("[system]Status10", 0)); }
@@ -621,7 +646,11 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                         if (targetStr == "[system]正気度ポイント") { StartCoroutine(StatusSAN(beforeValue, beforeValue - PlayerPrefs.GetInt("[system]正気度ポイント", 0))); }
                                             if (textsee) { TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "点減少した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）"); }
                     }
-                    for (int v = 0; v < 60; v++) { yield return null; }
+                    for (int v = 0; v < 60; v++) { yield return null;
+#if UNITY_IOS
+v++;
+#endif
+                    }
                 }
                 if (separate3Text.Length > 2)
                 {
@@ -645,7 +674,11 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                             if (targetStr == "[system]正気度ポイント") { StartCoroutine(StatusSAN(beforeValue, beforeValue - PlayerPrefs.GetInt("[system]正気度ポイント", 0))); }
                                                         if (textsee) { TextDraw("", separateText[0] + "の能力が" + changeValue.ToString() + "点減少した。" + "\n（" + separateText[0] + "：" + PlayerPrefs.GetInt(targetStr, 0).ToString() + "）"); }
                         }
-                        for (int v = 0; v < 60; v++) { yield return null; }
+                        for (int v = 0; v < 60; v++) { yield return null;
+#if UNITY_IOS
+v++;
+#endif
+                        }
                     }
                 }
             }
@@ -738,17 +771,29 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                 detailAct =selectNum;selectNum = 0;
                 TextDraw("", "");
             }
-            for (int v = 0; v < 50; v++) { yield return null; }
+            for (int v = 0; v < 50; v++) { yield return null;
+#if UNITY_IOS
+v++;
+#endif
+            }
             if (DEX <= playerDEX && selectNum==0 && playerHP>2)
             {
                 yield return StartCoroutine(PlayerBattle(detailAct, enemyHP, humanFlag, enemyNum,enemyMaxHP));
-                for (int v = 0; v < 100; v++) { yield return null; }
+                for (int v = 0; v < 100; v++) { yield return null;
+#if UNITY_IOS
+v++;
+#endif
+                }
             }//攻撃１（相手より早い場合）
 
             if (DEX <= playerDEX && selectNum==2 && playerHP>2)
             {
                 yield return StartCoroutine(Catcher(enemyNum, humanFlag, enemyHP));
-                for (int v = 0; v < 100; v++) { yield return null; }
+                for (int v = 0; v < 100; v++) { yield return null;
+#if UNITY_IOS
+v++;
+#endif
+                }
             }//拘束１（相手より早い場合）
             for (int i = 0; i < enemyNum && playerHP>2; i++)
             {
@@ -771,7 +816,11 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                             {
                                 sentenceEnd = false;
                                 StartCoroutine(Cut(i,enemyNum));
-                                for (int v = 0; v < 100; v++) { yield return null; }
+                                for (int v = 0; v < 100; v++) { yield return null;
+#if UNITY_IOS
+v++;
+#endif
+                                }
                                 continue;
                             }
                         }
@@ -782,7 +831,12 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                             for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                             objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
                             if (avoid >= 2) { selectNum = -1; }         
-                            if (avoid <= 1) { sentenceEnd = false;SEPlay(4);for (int j = 0; j < 10; j++) { yield return null; } StartCoroutine(Avoid(i,enemyNum)); }
+                            if (avoid <= 1) { sentenceEnd = false;SEPlay(4);for (int j = 0; j < 10; j++) { yield return null;
+#if UNITY_IOS
+j++;
+#endif
+                                }
+                                StartCoroutine(Avoid(i,enemyNum)); }
                         }
                         if (selectNum !=1 )
                         {
@@ -803,18 +857,30 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                         sentenceEnd = false;
                         if (attacktype==2) { StartCoroutine(EnemyMiss(i, enemyNum, true)); } else { StartCoroutine(EnemyMiss(i, enemyNum, false)); }
                     }
-                    for (int v = 0; v < 100; v++) { yield return null; }
+                    for (int v = 0; v < 100; v++) { yield return null;
+#if UNITY_IOS
+v++;
+#endif
+                    }
                 }
             }//敵の攻撃
             if(selectNum == 0 && playerHP>2)
             {
                 yield return StartCoroutine(PlayerBattle(detailAct, enemyHP, humanFlag, enemyNum,enemyMaxHP));
-                for (int v = 0; v < 100; v++) { yield return null; }
+                for (int v = 0; v < 100; v++) { yield return null;
+#if UNITY_IOS
+v++;
+#endif
+                }
             }//攻撃２（相手より遅い場合）
             if (selectNum == 2 && playerHP>2)
             {
                 yield return StartCoroutine(Catcher(enemyNum,humanFlag,enemyHP));
-                for (int v = 0; v < 100; v++) { yield return null; }
+                for (int v = 0; v < 100; v++) { yield return null;
+#if UNITY_IOS
+v++;
+#endif
+                }
             }//拘束２（相手より遅い場合）
             if(selectNum==3 && playerHP>2)
             {
@@ -826,7 +892,11 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                     battleFlag = 0; yield return StartCoroutine(BattleEnd(playerHP)); yield break;
                 }
                 while (sentenceEnd == false) { yield return null; }
-                for (int v = 0; v < 100; v++) { yield return null; }
+                for (int v = 0; v < 100; v++) { yield return null;
+#if UNITY_IOS
+v++;
+#endif
+                }
                 for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                 objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
             }//特殊行動に成功したら戦闘終了
@@ -902,7 +972,11 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                         for (y = 0; y < enemyNum - 1; y++) { if (enemyHP[y] >= 3 || (enemyHP[y] > 0 && humanFlag == false)) { break; } }
                         StartCoroutine(PlayerMiss(y, enemyNum));
                         objText.GetComponent<Text>().text = objText.GetComponent<Text>().text + "\n(" + (x + 1).ToString() + "発目/" + z.ToString() + "発)";
-                        for (int i = 0; i < 100; i++) { yield return null; }
+                        for (int i = 0; i < 100; i++) { yield return null;
+#if UNITY_IOS
+i++;
+#endif
+                        }
                     }
                     else
                     {
@@ -910,7 +984,11 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                         sentenceEnd = false;
                         for (y = 0; y < enemyNum - 1; y++) { if (enemyHP[y] >= 3 || (enemyHP[y] > 0 && humanFlag == false)) { break; } }
                         yield return StartCoroutine(DiceEffect(0, 10, damage));
-                        for (int i = 0; i < 20; i++) { yield return null; }
+                        for (int i = 0; i < 20; i++) { yield return null;
+#if UNITY_IOS
+i++;
+#endif
+                        }
                         enemyHP[y] -= damage + PlayerPrefs.GetInt("火器", 0);
                         StartCoroutine(PlayerHit(y, enemyNum, damage,0, PlayerPrefs.GetInt("火器", 0), 0, enemyHP, humanFlag, enemyMaxHP));
                         objText.GetComponent<Text>().text = objText.GetComponent<Text>().text + "\n(" + (x+1).ToString() + "発目/"+ z.ToString() +"発)";
@@ -918,7 +996,11 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                         for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                         objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
                         if (enemyHP[y] <= 0 || (enemyHP[y] <= 2 && humanFlag == true)) { objCharacter[y].GetComponent<Image>().enabled=false; }
-                        for (int i = 0; i < 60; i++) { yield return null; }
+                        for (int i = 0; i < 60; i++) { yield return null;
+#if UNITY_IOS
+i++;
+#endif
+                        }
                         for (int i = 0; i < enemyNum; i++) { if (enemyHP[i] > 0 && (enemyHP[i] > 2 || humanFlag == false)) { break; }if (i == enemyNum - 1) { tmp = true; } }
                         if (tmp == true) { break; }
                     }
@@ -944,15 +1026,27 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                         sentenceEnd = false;
                         for (y = 0; y < enemyNum - 1; y++) { if (enemyHP[y] >= 3 || (enemyHP[y] > 0 && humanFlag == false)) { break; } }
                        yield return StartCoroutine(DiceEffect(0, 10, damage));
-                        for (int i = 0; i < 20; i++) { yield return null; }
+                        for (int i = 0; i < 20; i++) { yield return null;
+#if UNITY_IOS
+i++;
+#endif
+                        }
                         enemyHP[y] -= damage;
                         StartCoroutine(PlayerHit(y, enemyNum, damage,0, 0, 0, enemyHP, humanFlag, enemyMaxHP));
-                        for (int v = 0; v < 60; v++) { yield return null; }
+                        for (int v = 0; v < 60; v++) { yield return null;
+#if UNITY_IOS
+v++;
+#endif
+                        }
                         if (attack == 0) { x--; }
                         for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                         objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
                         if (enemyHP[y] <= 0 || (enemyHP[y] <= 2 && humanFlag == true)) { objCharacter[y].GetComponent<Image>().enabled = false; }
-                        for (int i = 0; i < 60; i++) { yield return null; }
+                        for (int i = 0; i < 60; i++) { yield return null;
+#if UNITY_IOS
+i++;
+#endif
+                        }
                         for (int i = 0; i < enemyNum; i++) { if (enemyHP[i] > 0 && (enemyHP[i] > 2 || humanFlag == false)) { break; } if (i == enemyNum - 1) { tmp = true; } }
                         if (tmp == true) { break; }
                     }
@@ -985,14 +1079,22 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                         yield return StartCoroutine(MAEffect());
                         yield return StartCoroutine(DiceEffect(1, 6, damage2));
                         damage += damage2;
-                        for(int i = 0; i < 30; i++) { yield return null; }
+                        for(int i = 0; i < 30; i++) { yield return null;
+#if UNITY_IOS
+i++;
+#endif
+                        }
                     }
                     playerDB = 0;
                     if (PlayerPrefs.GetInt("[system]Status8", 0) == 6) { playerDB = u1.DiceRoll(1, 6); StartCoroutine(DiceEffect(1, 6, playerDB)); }
                     if (PlayerPrefs.GetInt("[system]Status8", 0) == 4) { playerDB = u1.DiceRoll(1, 4); StartCoroutine(DiceEffect(1, 4, playerDB)); }
                     if (PlayerPrefs.GetInt("[system]Status8", 0) == -4) { playerDB = -u1.DiceRoll(1, 4); StartCoroutine(DiceEffect(1, 4, -playerDB)); }
                     if (PlayerPrefs.GetInt("[system]Status8", 0) == -6) { playerDB = -u1.DiceRoll(1, 6); StartCoroutine(DiceEffect(1, 6, -playerDB)); }
-                    for (int i = 0; i < 60; i++) { yield return null; }
+                    for (int i = 0; i < 60; i++) { yield return null;
+#if UNITY_IOS
+i++;
+#endif
+                    }
                     sentenceEnd = false;
                     for (y = 0; y < enemyNum - 1; y++) { if (enemyHP[y] >= 3 || (enemyHP[y] > 0 && humanFlag == false)) { break; } }
                     if (damage + playerDB > 0) { enemyHP[y] -= damage + playerDB; }
@@ -1000,7 +1102,11 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                     for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                     objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
                     if (enemyHP[y] <= 0 || (enemyHP[y] <= 2 && humanFlag == true)) { objCharacter[y].GetComponent<Image>().enabled = false; }
-                    for (int i = 0; i < 60; i++) { yield return null; }
+                    for (int i = 0; i < 60; i++) { yield return null;
+#if UNITY_IOS
+i++;
+#endif
+                    }
                     for (int i = 0; i < enemyNum; i++) { if (enemyHP[i] > 0 && (enemyHP[i] > 2 || humanFlag == false)) { break; } if (i == enemyNum - 1) { tmp = true; } }
                     if (tmp == true) { break; }
                 }
@@ -1030,7 +1136,11 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                     if (PlayerPrefs.GetInt("[system]Status8", 0) == 4) { playerDB = u1.DiceRoll(1, 4); StartCoroutine(DiceEffect(1, 4, playerDB)); }
                     if (PlayerPrefs.GetInt("[system]Status8", 0) == -4) { playerDB = -u1.DiceRoll(1, 4); StartCoroutine(DiceEffect(1, 4, -playerDB)); }
                     if (PlayerPrefs.GetInt("[system]Status8", 0) == -6) { playerDB = -u1.DiceRoll(1, 6); StartCoroutine(DiceEffect(1, 6, -playerDB)); }
-                    for (int i = 0; i < 60; i++) { yield return null; } 
+                    for (int i = 0; i < 60; i++) { yield return null;
+#if UNITY_IOS
+i++;
+#endif
+                    }
                     sentenceEnd = false;
                     for (y = 0; y < enemyNum - 1; y++) { if (enemyHP[y] >= 3 || (enemyHP[y] > 0 && humanFlag == false)) { break; } }
                     if (damage + playerDB > 0) { enemyHP[y] -= damage + playerDB + PlayerPrefs.GetInt("武器", 0); }
@@ -1038,7 +1148,11 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                     for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                     objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
                     if (enemyHP[y] <= 0 || (enemyHP[y] <= 2 && humanFlag == true)) { objCharacter[y].GetComponent<Image>().enabled = false; }
-                    for (int i = 0; i < 60; i++) { yield return null; }
+                    for (int i = 0; i < 60; i++) { yield return null;
+#if UNITY_IOS
+i++;
+#endif
+                    }
                     for (int i = 0; i < enemyNum; i++) { if (enemyHP[i] > 0 && (enemyHP[i] > 2 || humanFlag == false)) { break; } if (i == enemyNum - 1) { tmp = true; } }
                     if (tmp == true) { break; }
                 }
@@ -1057,6 +1171,9 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         for (int i = 0; i < 60; i++)
         {
             bo.color = new Color(1,1,1, (float)(60-i) / 60);
+#if UNITY_IOS
+i++;
+#endif
             yield return null;
         }
         bo.sprite = sp;
@@ -1118,7 +1235,12 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         int catcherNum;
         int y;
         for (y = 0; y < enemyNum - 1; y++) { if (enemyHP[y] > 3 || (enemyHP[y] > 0 && humanFlag == false)) { break; } }
-        if (humanFlag == false) {  TextDraw("", "拘束できる相手ではない……！"); for (int i = 0; i < 80; i++) { yield return null; } }//人外は拘束できない
+        if (humanFlag == false) {  TextDraw("", "拘束できる相手ではない……！"); for (int i = 0; i < 80; i++) { yield return null;
+#if UNITY_IOS
+i++;
+#endif
+            }
+        }//人外は拘束できない
         else
         {
             for (int i = 0; i < enemyNum; i++) { if (enemyHP[i] <= 2 && humanFlag == true) { sleep++; } if (enemyHP[i] <= 0) { kill++; sleep--; } }
@@ -1131,12 +1253,20 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                 objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
                 objCharacter[y].GetComponent<Image>().color = new Color(1, 1, 1);
                 y++;
-                for (int i = 0; i < 40; i++) { yield return null; }
+                for (int i = 0; i < 40; i++) { yield return null;
+#if UNITY_IOS
+i++;
+#endif
+                }
                 if (catcher == 0) { TextDraw("", "スペシャル成功！\r\nあなたは絶妙な動きで敵を次々と縛り付けた。\r\n"); catcherNum +=99;break; }
                 if (catcher == 2) { TextDraw("", "失敗！\r\nあなたが手間取る隙に、全ての敵が拘束から抜け出した。\r\n"); break; }
                 if (catcher == 1) { TextDraw("", "成功！\r\nあなたは一人を拘束した。\r\n残り：" + (enemyNum - sleep - kill-catcherNum-1).ToString() + "人"); continue; }
             }
-            for (int i = 0; i < 60; i++) { yield return null; }
+            for (int i = 0; i < 60; i++) { yield return null;
+#if UNITY_IOS
+i++;
+#endif
+            }
             if (enemyNum - sleep - kill <= catcherNum) { TextDraw("", "<color=blue>全ての敵を捕縛した！</color>"); for (int i = 0; i < enemyNum; i++) { if (enemyHP[i] > 2) { enemyHP[i] = 2; } } }//全員捕獲した場合のみ、それらのHPを２にして戦闘終了処理へ
             else
             {
@@ -1150,7 +1280,11 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
     {
         SystemSEPlay(systemAudio[7]);
         TextDraw("", "攻撃を外した！");
-        for (int v = 0; v < 100; v++) { yield return null; }
+        for (int v = 0; v < 100; v++) { yield return null;
+#if UNITY_IOS
+v++;
+#endif
+        }
     }
 
     private IEnumerator EnemyMiss(int target,int enemyNum,bool gunflag)
@@ -1162,7 +1296,11 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         if (gunflag==true) { SystemSEPlay(systemAudio[4]); } else { SystemSEPlay(systemAudio[7]); }
         objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(targetGra * 150 - 300, CHARACTER_Y - 100, 0);
         TextDraw("", "相手の攻撃は当たらなかった。");
-        for (int v = 0; v < 100; v++) { yield return null; }
+        for (int v = 0; v < 100; v++) { yield return null;
+#if UNITY_IOS
+v++;
+#endif
+        }
         objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(targetGra * 150 - 300, CHARACTER_Y, 0);
     }
 
@@ -1217,7 +1355,11 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                 TextDraw("", "damage→" + damage.ToString() + bonusStr + "\n" + "ダメージを与えられない！");
             }
         }
-        for (int v = 0; v < 100; v++) { yield return null; }
+        for (int v = 0; v < 100; v++) { yield return null;
+#if UNITY_IOS
+v++;
+#endif
+        }
         objCharacter[target].GetComponent<Image>().color = new Color(1, 1, 1);
     }
 
@@ -1247,6 +1389,9 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         {
             if (v < 30) { objCanvas.GetComponent<RectTransform>().localPosition = new Vector3(0, 5 * (v % 2), 0); }
             yield return null;
+#if UNITY_IOS
+v++;
+#endif
         }
         objCanvas.GetComponent<RectTransform>().localPosition = new Vector3(0, 0, 0);
         objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(targetGra * 150 - 300, CHARACTER_Y, 0);
@@ -1262,7 +1407,11 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         SystemSEPlay(systemAudio[9]);
         objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(targetGra * 150 - 300, CHARACTER_Y - 100, 0);
         TextDraw("", "攻撃を受け流した。");
-        for (int v = 0; v < 100; v++) { yield return null; }
+        for (int v = 0; v < 100; v++) { yield return null;
+#if UNITY_IOS
+v++;
+#endif
+        }
         objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(targetGra * 150 - 300, CHARACTER_Y, 0);
     }
 
@@ -1276,7 +1425,11 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         SystemSEPlay(systemAudio[8]);
         objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(targetGra * 150 - 300, CHARACTER_Y - 100, 0);
         TextDraw("", "攻撃を回避した。");
-        for (int v = 0; v < 100; v++) { yield return null; }
+        for (int v = 0; v < 100; v++) { yield return null;
+#if UNITY_IOS
+v++;
+#endif
+        }
         objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(targetGra * 150 - 300, CHARACTER_Y, 0);
     }
 
@@ -1682,13 +1835,21 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             if (growflag)
             {
                 objText.GetComponent<Text>().text = "<color=#0000ffff>[DiceRoll]\n1D100→　" + dice.ToString() + " > " + (target + bonus).ToString() + " (<" + targetStr + ">" + bonusStr + ")\n<size=72>（1D10成長）</size></color>";
-                for (int j = 0; j < 40; j++) { yield return null; }
+                for (int j = 0; j < 40; j++) { yield return null;
+#if UNITY_IOS
+j++;
+#endif
+                }
                 SystemSEPlay(systemAudio[1]);
             }
             else
             {
                 objText.GetComponent<Text>().text = "<color=#ff0000ff>[DiceRoll]\n1D100→　" + dice.ToString() + " > " + (target + bonus).ToString() + " (<" + targetStr + ">" + bonusStr + ")\n<size=72>（失敗）</size></color>";
-                for (int j = 0; j < 40; j++) { yield return null; }
+                for (int j = 0; j < 40; j++) { yield return null;
+#if UNITY_IOS
+j++;
+#endif
+                }
                 SystemSEPlay(systemAudio[2]);
             }
         }
@@ -1697,7 +1858,11 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             if (growflag)
             {
                 objText.GetComponent<Text>().text = "<color=#ff0000ff>DiceRoll:1D100→  " + dice.ToString() + " <= " + (target + bonus).ToString() + "\n　　　　　　　　" + targetStr + bonusStr + "   （成長せず）</color>";
-                for (int j = 0; j < 40; j++) { yield return null; }
+                for (int j = 0; j < 40; j++) { yield return null;
+#if UNITY_IOS
+j++;
+#endif
+                }
                 SystemSEPlay(systemAudio[2]);
             }
             else
@@ -1707,7 +1872,11 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
                 {
                     objText.GetComponent<Text>().text = "<color=#0000ffff>DiceRoll:1D100→  " + dice.ToString() + " << " + (target + bonus).ToString() + "\n　　　　　　　　" + targetStr + bonusStr + "   （スペシャル）</color>";
                 }
-                for (int j = 0; j < 40; j++) { yield return null; }
+                for (int j = 0; j < 40; j++) { yield return null;
+#if UNITY_IOS
+j++;
+#endif
+                }
                 SystemSEPlay(systemAudio[1]);
             }
         }
@@ -1724,7 +1893,11 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             for (int i = 0; i < 7; i++)
             {
                 objDice[dicenum].GetComponent<Image>().sprite = moveDice10Graphic[i];
-                for (int j = 0; j < 6; j++) { yield return null; }
+                for (int j = 0; j < 6; j++) { yield return null;
+#if UNITY_IOS
+j++;
+#endif
+                }
             }
             if (num >= 10) { num = 0; }
             objDice[dicenum].GetComponent<Image>().sprite = dice10Graphic[num];
@@ -1734,7 +1907,11 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             for (int i = 0; i < 8; i++)
             {
                 objDice[dicenum].GetComponent<Image>().sprite = moveDice6Graphic[i];
-                for (int j = 0; j < 6; j++) { yield return null; }
+                for (int j = 0; j < 6; j++) { yield return null;
+#if UNITY_IOS
+j++;
+#endif
+                }
             }
             objDice[dicenum].GetComponent<Image>().sprite = dice6Graphic[num-1];
         }
@@ -1743,7 +1920,11 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             for (int i = 0; i < 7; i++)
             {
                 objDice[dicenum].GetComponent<Image>().sprite = moveDice4Graphic[i];
-                for (int j = 0; j < 6; j++) { yield return null; }
+                for (int j = 0; j < 6; j++) { yield return null;
+#if UNITY_IOS
+j++;
+#endif
+                }
             }
             objDice[dicenum].GetComponent<Image>().sprite = dice4Graphic[num-1];
         }
@@ -1802,6 +1983,7 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         objTextBox.gameObject.SetActive(false);
         objBackText.gameObject.SetActive(true);
         objBackText.GetComponent<Text>().text = text;
+        if (text == "") {ScreenSizeChanger.SetActive(false);}
     }
 
     private void BackDraw(int back)
@@ -1880,6 +2062,9 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
             }
             if (lr == "N") {; }//Nなら動きなし
             yield return null;
+#if UNITY_IOS
+i++;
+#endif
         }
         objCharacter[position - 1].GetComponent<RectTransform>().localPosition = new Vector3((position - 1) * 150 - 300, CHARACTER_Y, 0);
         sentenceEnd = true;
@@ -1893,6 +2078,9 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         {
             objCanvas.GetComponent<RectTransform>().localPosition = new Vector3(0, 0 - 5 + 10 * (i % 2));
             yield return null;
+#if UNITY_IOS
+i++;
+#endif
         }
         objCanvas.GetComponent<RectTransform>().localPosition = new Vector3(0, 0);
         sentenceEnd = true;
@@ -1907,11 +2095,17 @@ if (targetStr == "[system]耐久力") {beforeValue=PlayerPrefs.GetInt("[system]�
         {
             objCharacter[position - 1].GetComponent<RectTransform>().localPosition = new Vector3((position - 1) * 150 - 300, CHARACTER_Y + i * 2, 1);
             yield return null;
+#if UNITY_IOS
+i++;
+#endif
         }
         for (int i = 7; i > 0; i--)
         {
             objCharacter[position - 1].GetComponent<RectTransform>().localPosition = new Vector3((position - 1) * 150 - 300, CHARACTER_Y + i * 2, 1);
             yield return null;
+#if UNITY_IOS
+i--;
+#endif
         }
         objCharacter[position - 1].GetComponent<RectTransform>().localPosition = new Vector3((position - 1) * 150 - 300, CHARACTER_Y, 1);
         sentenceEnd = true;

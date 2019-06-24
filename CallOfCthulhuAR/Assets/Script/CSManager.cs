@@ -208,6 +208,9 @@ public class CSManager : MonoBehaviour {
         int tmpHP = 0;
         for (int j = 0; j < 60; j++)
         {
+#if UNITY_IOS
+j++;
+#endif
             for (int i = 0; i < STATUSNUM; i++)
             {
                 str[i] = statusObj[i].GetComponent<Text>().text.Split(':');
@@ -371,6 +374,9 @@ public class CSManager : MonoBehaviour {
             for (int i = 0; i <= 20; i++)
             {
                 objSkillSheet1.GetComponent<RectTransform>().localPosition = new Vector3(800 - i * 40, 0, 0);
+#if UNITY_IOS
+i++;
+#endif
                 yield return null;
             }
             yield break;
@@ -381,6 +387,9 @@ public class CSManager : MonoBehaviour {
             for (int i = 0; i <= 20; i++)
             {
                 objSkillSheet1.GetComponent<RectTransform>().localPosition = new Vector3(i * 40, 0, 0);
+#if UNITY_IOS
+i++;
+#endif
                 yield return null;
             }
             yield break;
