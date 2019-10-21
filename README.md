@@ -6,7 +6,7 @@ https://github.com/GracesGames/SimpleFileBrowser
 
 Virtual Joystick Pack
 https://assetstore.unity.com/packages/tools/input-management/joystick-pack-107631
-
+※配布用ライセンスがないので別途取得のこと
 
 <使用ライブラリ>
 sharpziplib
