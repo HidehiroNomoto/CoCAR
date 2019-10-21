@@ -901,7 +901,7 @@ v++;
                 objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
             }//特殊行動に成功したら戦闘終了
             //戦闘終了判定
-            for (int i = 0; i < enemyNum; i++) { if (enemyHP[i] <= 2 && humanFlag==true) { sleep++; } if (enemyHP[i] <= 0) { kill++; sleep--; } }
+            for (int i = 0; i < enemyNum; i++) { if (enemyHP[i] <= 2 && humanFlag==true) { sleep++; } if (enemyHP[i] <= 0) { kill++; if (humanFlag == true) { sleep--; } } }
             if (sleep + kill == enemyNum)
             {
                 yield return StartCoroutine(BattleEnd(playerHP));
@@ -1973,7 +1973,7 @@ j++;
     {
         objBackText.gameObject.SetActive(false);
         objTextBox.gameObject.SetActive(true);
-        objText.GetComponent<Text>().text = text;
+        objText.GetComponent<Text>().text=text;
         objName.GetComponent<Text>().text = " " + name;
     }
 
