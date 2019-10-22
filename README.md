@@ -10,7 +10,7 @@ https://assetstore.unity.com/packages/tools/input-management/joystick-pack-10763
 
 <使用ライブラリ>
 sharpziplib
-https://assetstore.unity.com/packages/tools/input-management/simple-file-browser-98451
+https://github.com/icsharpcode/SharpZipLib
 ※MITライセンス
 
 social-connector
