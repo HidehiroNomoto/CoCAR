@@ -21,4 +21,8 @@ UnityWav
 https://github.com/deadlyfingers/UnityWav
 ※MITライセンス
 
+unity-webview
+https://github.com/gree/unity-webview
+※Zlibライセンス
+
 整頓していないので、とても読みにくいです。暇があったら綺麗にするかも。
