@@ -43,7 +43,17 @@ namespace GracesGames.SimpleFileBrowser.Scripts
             string startFolder="";
             if (Application.platform == RuntimePlatform.Android && (GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]CharacterSheet" || GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]消去ファイルCS")) { startFolder = Application.persistentDataPath; }
             if (Application.platform == RuntimePlatform.IPhonePlayer && (GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]CharacterSheet" || GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]CharacterIllstPath")) { startFolder = Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/Documents"; }
-            if (GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]進行中シナリオ") { string path=Application.persistentDataPath + "/scenario"; if (Directory.Exists(path)) { startFolder = path; } else { GameObject obj=GameObject.Find("Error");obj.SetActive(true);obj.GetComponentInChildren<Text>().text = "投稿サイトからシナリオをDLしましょう！"; } }
+            if (GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]消去ファイル") { string path = Application.persistentDataPath + "/scenario"; if (Directory.Exists(path)) { startFolder = path; } }
+            if (GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]進行中シナリオ") { string path=Application.persistentDataPath + "/scenario"; if (Directory.Exists(path)) { startFolder = path; } else
+                {
+                    GameObject.Find("TitleManager").GetComponent<TitleManager>().SelectButton.SetActive(true);
+                    GameObject.Find("TitleManager").GetComponent<TitleManager>().DeleteButton.SetActive(true);
+                    GameObject obj = GameObject.Find("JumpButton").GetComponent<ScenarioWebView>().errorObject;
+                    obj.SetActive(true);
+                    obj.GetComponentInChildren<Text>().text = "<size=32>まずは投稿サイトからシナリオをDLしましょう！</size>";
+                    obj.GetComponent<RectTransform>().localPosition = new Vector3(0, -370, 0);
+                    return;
+                } }
             // Create the file browser and name it
             GameObject fileBrowserObject = Instantiate(FileBrowserPrefab, transform);
             fileBrowserObject.name = "FileBrowser";

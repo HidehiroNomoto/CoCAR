@@ -10,6 +10,7 @@ public class ScenarioWebView : MonoBehaviour
     public GameObject webWindow;
     WebViewObject webViewObject;
     bool visible=false;
+    int dlWaitNum = 0;
     
     void Start()
     {
@@ -19,8 +20,12 @@ public class ScenarioWebView : MonoBehaviour
             StartCoroutine(FileDownload(msg));
         });
         webViewObject.LoadURL(url);
-        webViewObject.SetMargins(0, 0, 60, 60);
+        webViewObject.SetMargins(0, 0, 60, 100);
         webViewObject.SetVisibility(false);
+    }
+
+    void Update()
+    {
     }
 
     public void OpenCloseWebView()
@@ -32,27 +37,31 @@ public class ScenarioWebView : MonoBehaviour
     private void OpenWebView()
     {
         errorObject.SetActive(true);
+        errorObject.GetComponent<RectTransform>().anchoredPosition = new Vector3(0, 0, 0);
         webViewObject.SetVisibility(true);
         closeObject.SetActive(true);
         visible = true;
-        GetComponentInChildren<Text>().text = "<size=48>戻る</size>";
     }
 
     private void CloseWebView()
     {
-        errorObject.SetActive(false);
+        if (dlWaitNum == 0) {
+            errorObject.GetComponentInChildren<Text>().text = "";
+            errorObject.SetActive(false);
+        }
         webViewObject.SetVisibility(false);
         closeObject.SetActive(false);
         visible = false;
-        GetComponentInChildren<Text>().text = "投稿サイトからシナリオを取得";
     }
 
     private IEnumerator FileDownload(string msg)
     {
+        if (dlWaitNum > 0) { yield break; }
         WWW www = new WWW(msg);
-
+        dlWaitNum++;
+        errorObject.GetComponentInChildren<Text>().text = "<color=yellow>ダウンロード中です</color>";
         while (!www.isDone)
-        { 
+        {
             yield return null;
         }
 
@@ -60,15 +69,15 @@ public class ScenarioWebView : MonoBehaviour
         {
             //エラー表示
             errorObject.GetComponentInChildren<Text>().text = "ダウンロードに失敗しました";
-            StartCoroutine(DeleteError());
         }
         else
         { // ダウンロードが正常に完了した
             SafeCreateDirectory(Application.persistentDataPath + "/scenario");
             File.WriteAllBytes(Application.persistentDataPath + "/scenario/" + Path.GetFileName(System.Uri.UnescapeDataString(www.url)), www.bytes);
             errorObject.GetComponentInChildren<Text>().text = "<color=white>ダウンロード完了</color>";
-            StartCoroutine(DeleteError());
         }
+        StartCoroutine(DeleteError());
+        dlWaitNum--;
     }
 
         public static DirectoryInfo SafeCreateDirectory(string path)
@@ -82,8 +91,10 @@ public class ScenarioWebView : MonoBehaviour
 
     private IEnumerator DeleteError()
     {
-        for (int i = 0; i < 100; i++) { yield return null; }
-        errorObject.GetComponentInChildren<Text>().text = "";
+        for (int i = 0; i < 100; i++) { yield return null; }       
+        if (errorObject.activeSelf == true && visible==false) {
+            errorObject.GetComponentInChildren<Text>().text = "";
+            errorObject.SetActive(false); }
     }
    
 
