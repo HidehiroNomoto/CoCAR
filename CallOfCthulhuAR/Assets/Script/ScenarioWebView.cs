@@ -14,14 +14,18 @@ public class ScenarioWebView : MonoBehaviour
     
     void Start()
     {
+#if UNITY_STANDALONE_WIN
+#else
         webViewObject =
             webWindow.AddComponent<WebViewObject>();
         webViewObject.Init((msg) => {
             StartCoroutine(FileDownload(msg));
-        });
+        }
+        ,enableWKWebView: true);
         webViewObject.LoadURL(url);
         webViewObject.SetMargins(0, 0, 60, 100);
         webViewObject.SetVisibility(false);
+#endif
     }
 
     void Update()
@@ -30,8 +34,12 @@ public class ScenarioWebView : MonoBehaviour
 
     public void OpenCloseWebView()
     {
+#if UNITY_STANDALONE_WIN
+        Application.OpenURL("https://wp026.wappy.ne.jp/brainmixer.net/CoCAR/scenario/upload.cgi");
+#else
         if (visible) { CloseWebView(); }
         else { OpenWebView(); }
+#endif
     }
 
     private void OpenWebView()

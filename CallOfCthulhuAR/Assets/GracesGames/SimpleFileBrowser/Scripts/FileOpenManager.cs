@@ -44,6 +44,8 @@ namespace GracesGames.SimpleFileBrowser.Scripts
             if (Application.platform == RuntimePlatform.Android && (GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]CharacterSheet" || GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]消去ファイルCS")) { startFolder = Application.persistentDataPath; }
             if (Application.platform == RuntimePlatform.IPhonePlayer && (GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]CharacterSheet" || GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]CharacterIllstPath")) { startFolder = Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/Documents"; }
             if (GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]消去ファイル") { string path = Application.persistentDataPath + "/scenario"; if (Directory.Exists(path)) { startFolder = path; } }
+#if UNITY_STANDALONE_WIN
+#else
             if (GameObject.Find("BGMManager").GetComponent<BGMManager>().saveKey == "[system]進行中シナリオ") { string path=Application.persistentDataPath + "/scenario"; if (Directory.Exists(path)) { startFolder = path; } else
                 {
                     GameObject.Find("TitleManager").GetComponent<TitleManager>().SelectButton.SetActive(true);
@@ -54,6 +56,7 @@ namespace GracesGames.SimpleFileBrowser.Scripts
                     obj.GetComponent<RectTransform>().localPosition = new Vector3(0, -370, 0);
                     return;
                 } }
+#endif
             // Create the file browser and name it
             GameObject fileBrowserObject = Instantiate(FileBrowserPrefab, transform);
             fileBrowserObject.name = "FileBrowser";
