@@ -493,7 +493,7 @@ i++;
     private void PushRediceButtonIn()
     {
         decideText.GetComponent<Text>().text = "";
-        while (adnum==adnumbefore) { adnum = Random.Range(0, 5); }
+        while (adnum==adnumbefore) { adnum = Random.Range(0, 6); }
         adnumbefore=adnum;
         canvas.SetActive(false);
         StartCoroutine(VideoPlay());
@@ -501,7 +501,7 @@ i++;
 
     private IEnumerator VideoPlay()
     {
-        string[] videoname= {"rule","yibb","bugg","zoth","rahn" };
+        string[] videoname= {"rule","yibb","bugg","zoth","rahn","groth" };
         Text t1 = GameObject.Find("VideoTime").GetComponent<Text>();
         GameObject.Find("BGMManager").GetComponent<AudioSource>().mute = true;
         GetComponent<AudioSource>().clip = Resources.Load<AudioClip>(videoname[adnum]);

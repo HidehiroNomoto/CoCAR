@@ -1948,7 +1948,7 @@ j++;
             text = System.Text.RegularExpressions.Regex.Replace(text,match.ToString(), tmpstr);
             match = match.NextMatch();
         }
-        backtext[1] = text.Replace(" ", " ");
+        backtext[1] = text.Replace(" ", "\u00A0");
         string text2=text;
         System.Text.RegularExpressions.Regex reg2 = new System.Text.RegularExpressions.Regex("<size=.+?>");
         System.Text.RegularExpressions.Match match2 = System.Text.RegularExpressions.Regex.Match(text, "<size=.+?>");
@@ -1957,14 +1957,14 @@ j++;
             text2 = reg2.Replace(text2,"");
             match2 = match2.NextMatch();
         }
-        backtext[2]=text2.Replace("</size>","") + "\r\n";
+        backtext[2]=text2.Replace("</size>","").Replace(" ", "\u00A0") + "\r\n";
         if (name == "[PC]" || name == "<PC>")
             {
-                backtext[0] =  yourName.Replace(" ", " ");
+                backtext[0] =  yourName.Replace(" ", "\u00A0");
             }
             else
             {
-                backtext[0] = name.Replace(" ", " ");
+                backtext[0] = name.Replace(" ", "\u00A0");
             }
         return backtext;
     }

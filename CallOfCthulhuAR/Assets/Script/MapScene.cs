@@ -277,7 +277,7 @@ public class MapScene : MonoBehaviour
         {
             for (int i = 4000; i < 8000; i += 40)
             {
-                mapImageObj.GetComponent<RectTransform>().sizeDelta = new Vector2(i, i);
+                mapImageObj.GetComponent<RectTransform>().localScale = new Vector2((float)i/4000, (float)i/4000);
                 mapImageObj.GetComponent<RectTransform>().localPosition = new Vector2(-targetX*i/4000, -targetY*i/4000);
                 yield return null;
             }
@@ -286,13 +286,13 @@ public class MapScene : MonoBehaviour
         {
             for (int i = 4000; i > 2000; i -= 20)
             {
-                mapImageObj.GetComponent<RectTransform>().sizeDelta = new Vector2(i, i);
+                mapImageObj.GetComponent<RectTransform>().localScale = new Vector2((float)i/4000, (float)i/4000);
                 mapImageObj.GetComponent<RectTransform>().localPosition = new Vector2(-targetX * i / 4000, -targetY * i / 4000);
                 yield return null;
             }
         }
         while (getmapflag) { yield return null; }
-        mapImageObj.GetComponent<RectTransform>().sizeDelta = new Vector2(4000, 4000);
+        mapImageObj.GetComponent<RectTransform>().localScale = new Vector2(1,1);
         zoomNow = false;
     }
 
