@@ -149,12 +149,12 @@ i++;
 
     public void PushHelpButton()
     {
-        StartCoroutine(GetComponent<Utility>().GoToURL("https://wp026.wappy.ne.jp/brainmixer.net/CoCAR/CoCARguide.pdf", 0f));
+        StartCoroutine(GetComponent<Utility>().GoToURL("https://brainmixer.net/CoCAR/CoCARguide.pdf", 0f));
     }
 
     public void PushJumpButton()
     {
-            StartCoroutine(GetComponent<Utility>().GoToURL("https://wp026.wappy.ne.jp/brainmixer.net/CoCAR/scenario/upload.cgi", 0f));
+            StartCoroutine(GetComponent<Utility>().GoToURL("https://brainmixer.net/CoCAR/scenario/read.cgi", 0f));
     }
 
 }

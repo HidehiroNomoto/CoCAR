@@ -151,19 +151,24 @@ public class Utility : MonoBehaviour {
         StartCoroutine(TweetCoroutine(name));
     }
 
-    private IEnumerator TweetCoroutine(string name)
+    public void PushFileBrowserClose()
+    {
+        GetComponent<GracesGames.SimpleFileBrowser.Scripts.FileBrowser>().CloseFileBrowser();
+    }
+
+        private IEnumerator TweetCoroutine(string name)
     {
         ScreenCapture.CaptureScreenshot("CoCARcapture.png");
         yield return null;
         string imagePath = Application.persistentDataPath + "/CoCARcapture.png";
         if (SceneManager.GetActiveScene().name == "TitleScene")
         {
-            SocialConnector.SocialConnector.Share("\n[TRPG型ADVゲーム『クトゥルフ神話AR』] #クトゥルフ神話AR ", "\nhttp://brainmixer.net/CoCAR/linker/");
+            SocialConnector.SocialConnector.Share("\n[TRPG型ADVゲーム『クトゥルフ神話AR』] #クトゥルフ神話AR ", "\nhttps://brainmixer.net/CoCAR/linker/");
             if (objBGM.GetComponent<BGMManager>().makuma == 1) { string[] separateText=new string[2]; separateText[0] ="[system]正気度ポイント";separateText[1] ="1D6+0"; StartCoroutine(Gain(separateText)); objBGM.GetComponent<BGMManager>().makuma = 0;GameObject.Find("tweetguide").SetActive(false); }
         }
         else
         {
-            SocialConnector.SocialConnector.Share("\n[TRPG型ADVゲーム『クトゥルフ神話AR』] #クトゥルフ神話AR " + name, "\nbrainmixer.net/CoCAR/linker/", imagePath);
+            SocialConnector.SocialConnector.Share("\n[TRPG型ADVゲーム『クトゥルフ神話AR』] #クトゥルフ神話AR " + name, "\nhttps://brainmixer.net/CoCAR/linker/", imagePath);
         }
         
     }

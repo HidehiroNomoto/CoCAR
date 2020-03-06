@@ -10,8 +10,8 @@ public class MapScene : MonoBehaviour
     Sprite mapImage;
     private int width = 1000;
     private int height = 1000;
-    public double longitude;
-    public double latitude;
+    public float longitude;
+    public float latitude;
     private double longitudeMap;
     private double latitudeMap;
     private int zoom = 16;
@@ -36,8 +36,8 @@ public class MapScene : MonoBehaviour
     FixedJoystick stick;
     private bool zoomNow = false;
     public GameObject objErrorBack;
-    private double beforeLatitude;//イベント直前に保存する用
-    private double beforeLongitude;
+    private float beforeLatitude;//イベント直前に保存する用
+    private float beforeLongitude;
     private bool getmapflag = false;
 
     public GameObject objTitleBack;
@@ -173,16 +173,16 @@ public class MapScene : MonoBehaviour
         //★②PC版（キー入力で動かす）
         if (Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer)
         {
-            if (Input.GetKey(KeyCode.DownArrow)) { latitude -= 0.65536 / zoomPow; }
-            if (Input.GetKey(KeyCode.UpArrow)) { latitude += 0.65536 / zoomPow; }
-            if (Input.GetKey(KeyCode.LeftArrow)) { longitude -= 0.65536 / zoomPow; }
-            if (Input.GetKey(KeyCode.RightArrow)) { longitude += 0.65536 / zoomPow; }
+            if (Input.GetKey(KeyCode.DownArrow)) { latitude -= (float)(0.65536 / zoomPow); }
+            if (Input.GetKey(KeyCode.UpArrow)) { latitude += (float)(0.65536 / zoomPow); }
+            if (Input.GetKey(KeyCode.LeftArrow)) { longitude -= (float)(0.65536 / zoomPow); }
+            if (Input.GetKey(KeyCode.RightArrow)) { longitude += (float)(0.65536 / zoomPow); }
         }
         //★③机上プレイ（バーチャルスティックから）
         if (VMode > 0)
         {
-            longitude += stick.Horizontal * 0.65536 / zoomPow;
-            latitude += stick.Vertical * 0.65536 / zoomPow;
+            longitude += (float)(stick.Horizontal * 0.65536 / zoomPow);
+            latitude += (float)(stick.Vertical * 0.65536 / zoomPow);
         }
         targetX = (float)((longitude - longitudeMap) * 2.05993652344 * zoomPow * Math.Cos(latitude * (Math.PI / 180)));
         targetY = (float)((latitude - latitudeMap) * 2.05993652344 * zoomPow);
@@ -231,7 +231,7 @@ public class MapScene : MonoBehaviour
 
     private IEnumerator ZoomWait(bool UPFlag)
     {
-        while (getmapflag) { yield return null; }
+        //while (getmapflag) { yield return null; }
         if (UPFlag == true)
         {
             ZoomUpButton();
@@ -240,13 +240,14 @@ public class MapScene : MonoBehaviour
         {
             ZoomDownButton();
         }
+        yield return null;
     }
 
     public void ZoomUpButton()
     {
         if (zoom >= 21) { return; }
         if (zoomNow == true) { return; }
-        if (getmapflag == true) { StartCoroutine(ZoomWait(true)); return; }
+        //if (getmapflag == true) { StartCoroutine(ZoomWait(true)); return; }
         zoomNow = true;
         zoom++;
         PlayerPrefs.SetInt("[system]Zoom", zoom);
@@ -259,7 +260,7 @@ public class MapScene : MonoBehaviour
     {
         if (zoom <= 10) { return; }
         if (zoomNow == true) { return; }
-        if (getmapflag == true) { StartCoroutine(ZoomWait(false)); return; }
+        //if (getmapflag == true) { StartCoroutine(ZoomWait(false)); return; }
         zoom--;
         PlayerPrefs.SetInt("[system]Zoom", zoom);
         zoomNow = true;
@@ -271,6 +272,8 @@ public class MapScene : MonoBehaviour
 
     private IEnumerator ZoomEffect(bool UPFlag)
     {
+        for (int i = 0; i < objSP.Count; i++) { Destroy(objSP[i]); }
+        objSP.Clear();
         getmapflag = true;
         StartCoroutine(GetStreetViewImage(latitude, longitude, zoom));
         if (UPFlag)

@@ -831,7 +831,7 @@ v++;
                             for (int k = 0; k < 2; k++) { objDice[k].gameObject.SetActive(false); }
                             objRollText.gameObject.SetActive(false);//ダイスは出っ放しにならない
                             if (avoid >= 2) { selectNum = -1; }         
-                            if (avoid <= 1) { sentenceEnd = false;SEPlay(4);for (int j = 0; j < 10; j++) { yield return null;
+                            if (avoid <= 1) { sentenceEnd = false;for (int j = 0; j < 10; j++) { yield return null;
 #if UNITY_IOS
 j++;
 #endif
@@ -844,8 +844,8 @@ j++;
                             if (tmpDice <= AttackPercent / 5){ special = true; }
                             damage = u1.DiceRoll(ATDiceNum, ATDice);
                             sentenceEnd = false;
-                            StartCoroutine(EnemyHit(i,enemyNum, damage,special,attacktype));
                             StartCoroutine(Status(playerHP, damage));
+                            yield return StartCoroutine(EnemyHit(i, enemyNum, damage, special, attacktype));
                             playerHP -= damage;
                             if (playerHP <= 2) { break; }
                             if (tmpDice<=AttackPercent/5) { i--; }
@@ -1076,7 +1076,7 @@ i++;
                     {
                         int damage2;
                         damage2 = u1.DiceRoll(1, 6);
-                        yield return StartCoroutine(MAEffect());
+                        yield return StartCoroutine(AttackEffect(1));
                         yield return StartCoroutine(DiceEffect(1, 6, damage2));
                         damage += damage2;
                         for(int i = 0; i < 30; i++) { yield return null;
@@ -1161,16 +1161,26 @@ i++;
         selectNum = -1;
     }
 
-    private IEnumerator MAEffect()
+    /// <summary>
+    /// effect:MA=1,Gun=2,Spell=3
+    /// </summary>
+    private IEnumerator AttackEffect(int effect)
     {
         Image bo = GameObject.Find("BlackOut").GetComponent<Image>();
         bo.enabled = true;
         Sprite sp= bo.sprite;
-        bo.sprite = Resources.Load<Sprite>("MAEffect");
-        SEPlay(1);
+        string graph="MAEffect";
+        if (effect == 1) { graph = "MAEffect"; }
+        if (effect == 2) { graph = "GunEffect"; }
+        if (effect == 3) { graph = "SpellEffect"; }
+        bo.sprite = Resources.Load<Sprite>(graph);
         for (int i = 0; i < 60; i++)
         {
-            bo.color = new Color(1,1,1, (float)(60-i) / 60);
+            if (i < 50) { bo.color = new Color(1, 1, 1, 1); }
+            else
+            {
+                bo.color = new Color(1, 1, 1, (float)(59-i) / 9);
+            }
 #if UNITY_IOS
 i++;
 #endif
@@ -1363,38 +1373,25 @@ v++;
         objCharacter[target].GetComponent<Image>().color = new Color(1, 1, 1);
     }
 
-    private IEnumerator EnemyHit(int target,int enemyNum, int damage,bool special,int attacktype)
+    private IEnumerator EnemyHit(int target, int enemyNum, int damage, bool special, int attacktype)
     {
+        int wait = 100;if (attacktype == 2 || attacktype == 3) { wait = 45; }
         int targetGra = target;
         if (enemyNum == 1 && target == 0) { targetGra = 2; }
         if (enemyNum == 2) { if (target == 0) { targetGra = 1; } else { targetGra = 3; } }
         if (enemyNum == 3) { if (target == 0) { targetGra = 0; } else if (target == 1) { targetGra = 2; } else { targetGra = 4; } }
         objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(targetGra * 150 - 300, CHARACTER_Y - 100, 0);
-        if (attacktype == 0) { SystemSEPlay(systemAudio[5]); }
-        if (attacktype == 1) { SystemSEPlay(systemAudio[6]); }
-        if (attacktype == 2) { SystemSEPlay(systemAudio[4]); }
-        if (attacktype == 3) { SystemSEPlay(systemAudio[10]); }
-
-        Image bo = GameObject.Find("BlackOut").GetComponent<Image>();
-        bo.enabled = true;
-        for (int i = 0; i < 5; i++)
-        {
-            bo.color = new Color(1, 0, 0, (float)(5 - i) / 5);
-            yield return null;
+        if (special == false) { TextDraw("", damage.ToString() + "点のダメージを受けた。");
         }
-        bo.enabled = false;
-        if (special == false) { TextDraw("", damage.ToString() + "点のダメージを受けた。"); }
         else { TextDraw("","<color=red>スペシャル攻撃！</color>\n" + damage.ToString() + "点のダメージを受けた。\n敵は追加攻撃を行う。"); }
-        for (int v = 0; v < 100; v++)
-        {
-            if (v < 30) { objCanvas.GetComponent<RectTransform>().localPosition = new Vector3(0, 5 * (v % 2), 0); }
-            yield return null;
+        yield return StartCoroutine(AttackTypeEffect(attacktype));
+        objCanvas.GetComponent<RectTransform>().localPosition = new Vector3(0, 0, 0);
+        objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(targetGra * 150 - 300, CHARACTER_Y, 0);
+        for (int i = 0; i < wait; i++) { yield return null;
 #if UNITY_IOS
 v++;
 #endif
         }
-        objCanvas.GetComponent<RectTransform>().localPosition = new Vector3(0, 0, 0);
-        objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(targetGra * 150 - 300, CHARACTER_Y, 0);
     }
 
     private IEnumerator Cut(int target,int enemyNum)
@@ -1413,6 +1410,46 @@ v++;
 #endif
         }
         objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(targetGra * 150 - 300, CHARACTER_Y, 0);
+    }
+
+    private IEnumerator DamageShake()
+    {
+        for (int v = 0; v < 30; v++)
+        {
+           objCanvas.GetComponent<RectTransform>().localPosition = new Vector3(0, 5 * (v % 2), 0); 
+            yield return null;
+#if UNITY_IOS
+v++;
+#endif
+        }
+    }
+
+    private IEnumerator AttackTypeEffect(int attacktype)
+    {
+        StartCoroutine(DamageShake());
+        if (attacktype == 0) { SystemSEPlay(systemAudio[5]); }
+        if (attacktype == 1) { SystemSEPlay(systemAudio[6]); }
+        if (attacktype < 2)
+        {
+            Image bo = GameObject.Find("BlackOut").GetComponent<Image>();
+            bo.enabled = true;
+            for (int i = 0; i < 5; i++)
+            {
+                bo.color = new Color(1, 0, 0, (float)(5 - i) / 5);
+                yield return null;
+            }
+            bo.enabled = false;
+        }
+        if (attacktype == 2)
+        {
+            SystemSEPlay(systemAudio[4]);
+            yield return StartCoroutine(AttackEffect(2));
+        }
+        if (attacktype == 3)
+        {
+            SystemSEPlay(systemAudio[10]);
+            yield return StartCoroutine(AttackEffect(3));
+        }
     }
 
     private IEnumerator Avoid(int target,int enemyNum)

@@ -4,7 +4,7 @@ using System.IO;
 using UnityEngine.UI;
 public class ScenarioWebView : MonoBehaviour
 {
-    private string url = "https://wp026.wappy.ne.jp/brainmixer.net/CoCAR/scenario/read.cgi";
+    private string url = "https://brainmixer.net/CoCAR/scenario/read.cgi";
     public GameObject errorObject;
     public GameObject closeObject;
     public GameObject webWindow;
@@ -14,7 +14,7 @@ public class ScenarioWebView : MonoBehaviour
     
     void Start()
     {
-#if UNITY_STANDALONE_WIN
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR
 #else
         webViewObject =
             webWindow.AddComponent<WebViewObject>();
@@ -35,7 +35,7 @@ public class ScenarioWebView : MonoBehaviour
     public void OpenCloseWebView()
     {
 #if UNITY_STANDALONE_WIN
-        Application.OpenURL("https://wp026.wappy.ne.jp/brainmixer.net/CoCAR/scenario/upload.cgi");
+        Application.OpenURL("https://brainmixer.net/CoCAR/scenario/upload.cgi");
 #else
         if (visible) { CloseWebView(); }
         else { OpenWebView(); }
@@ -67,9 +67,10 @@ public class ScenarioWebView : MonoBehaviour
         if (dlWaitNum > 0) { yield break; }
         WWW www = new WWW(msg);
         dlWaitNum++;
-        errorObject.GetComponentInChildren<Text>().text = "<color=yellow>ダウンロード中です</color>";
+        //errorObject.GetComponentInChildren<Text>().text = "<color=yellow>ダウンロード中です</color>";
         while (!www.isDone)
         {
+            errorObject.GetComponentInChildren<Text>().text = "<color=yellow>ダウンロード中 " + ((int)(www.progress*100)).ToString() + "%</color>";
             yield return null;
         }
 

@@ -43,21 +43,21 @@ namespace GracesGames.SimpleFileBrowser.Scripts.UI {
         }
 
         private IEnumerator ClickRoutine() {
-            while (_clickCount != 0) {
+            //while (_clickCount != 0) {
                 yield return new WaitForEndOfFrame();
 
                 _currentTime += Time.deltaTime;
 
-                if (!(_currentTime > _firstClickTime + DoubleClickInterval)) continue;
-                if (_clickCount == 1) {
-                    _fileBrowser.FileClick(_path);
-                } else {
+                //if (!(_currentTime > _firstClickTime + DoubleClickInterval)) continue;
+                //if (_clickCount == 1) {
+                //    _fileBrowser.FileClick(_path);
+                //} else {
                     _fileBrowser.FileClick(_path);
                     _fileBrowser.SelectFile();
-                }
+                //}
 
                 _clickCount = 0;
-            }
+            //}
         }
     }
 }

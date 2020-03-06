@@ -534,11 +534,12 @@ i++;
         if(video.isPlaying) { return; }
         adButton.SetActive(false);
         canvas.SetActive(true);
-        if (adnum == 0) { Application.OpenURL("https://www.melonbooks.com/index.php?main_page=maker_affiliate_go&affiliate_id=AF0000028251"); }
-        if (adnum == 1) { Application.OpenURL("https://www.melonbooks.com/index.php?main_page=maker_affiliate_go&affiliate_id=AF0000027414"); }
-        if (adnum == 2) { Application.OpenURL("https://www.melonbooks.com/index.php?main_page=maker_affiliate_go&affiliate_id=AF0000028253"); }
-        if (adnum == 3) { Application.OpenURL("https://www.melonbooks.com/index.php?main_page=maker_affiliate_go&affiliate_id=AF0000029264"); }
-        if (adnum == 4) { Application.OpenURL("https://www.amazon.co.jp/gp/product/4047294640/ref=as_li_tl?ie=UTF8&camp=247&creative=1211&creativeASIN=4047294640&linkCode=as2&tag=permanentpapy-22&linkId=44241ba025c599790c39a2ee2d7a3774"); }
+        if (adnum == 1) { Application.OpenURL("https://permanentpapyrus.booth.pm/items/1786415"); }
+        if (adnum == 2) { Application.OpenURL("https://permanentpapyrus.booth.pm/items/1786403"); }
+        if (adnum == 3) { Application.OpenURL("https://permanentpapyrus.booth.pm/items/1786396"); }
+        if (adnum == 4) { Application.OpenURL("https://permanentpapyrus.booth.pm/items/1786158"); }
+        if (adnum == 5) { Application.OpenURL("https://permanentpapyrus.booth.pm/items/1786128"); }
+        if (adnum == 0) { Application.OpenURL("https://www.amazon.co.jp/gp/product/4047294640/ref=as_li_tl?ie=UTF8&camp=247&creative=1211&creativeASIN=4047294640&linkCode=as2&tag=permanentpapy-22&linkId=44241ba025c599790c39a2ee2d7a3774"); }
         for (int i = 0; i < SKILLNUM; i++)
         {
             skills[i] = 0;
