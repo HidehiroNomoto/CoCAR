@@ -121,7 +121,7 @@ PlayerSettings:
     16:10: 1
     16:9: 1
     Others: 1
-  bundleVersion: 1.95
+  bundleVersion: 1.97
   preloadedAssets: []
   metroInputSource: 0
   wsaTransparentSwapchain: 0
@@ -167,8 +167,8 @@ PlayerSettings:
     iPhone: com.Brainmixer.CoCAR
   buildNumber:
     Standalone: 7
-    iPhone: 36
-  AndroidBundleVersionCode: 40
+    iPhone: 41
+  AndroidBundleVersionCode: 42
   AndroidMinSdkVersion: 16
   AndroidTargetSdkVersion: 0
   AndroidPreferredInstallLocation: 1

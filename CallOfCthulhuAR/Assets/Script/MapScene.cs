@@ -181,8 +181,8 @@ public class MapScene : MonoBehaviour
         //★③机上プレイ（バーチャルスティックから）
         if (VMode > 0)
         {
-            longitude += (float)(stick.Horizontal * 0.65536 / zoomPow);
-            latitude += (float)(stick.Vertical * 0.65536 / zoomPow);
+            longitude += (float)(stick.Horizontal * 0.65536 * 3 / zoomPow);
+            latitude += (float)(stick.Vertical * 0.65536 * 3 / zoomPow);
         }
         targetX = (float)((longitude - longitudeMap) * 2.05993652344 * zoomPow * Math.Cos(latitude * (Math.PI / 180)));
         targetY = (float)((latitude - latitudeMap) * 2.05993652344 * zoomPow);

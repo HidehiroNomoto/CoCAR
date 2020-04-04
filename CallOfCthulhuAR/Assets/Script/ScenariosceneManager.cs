@@ -1389,7 +1389,7 @@ v++;
         objCharacter[target].GetComponent<RectTransform>().localPosition = new Vector3(targetGra * 150 - 300, CHARACTER_Y, 0);
         for (int i = 0; i < wait; i++) { yield return null;
 #if UNITY_IOS
-v++;
+i++;
 #endif
         }
     }
